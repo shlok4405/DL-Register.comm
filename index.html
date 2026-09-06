@@ -61,7 +61,7 @@
     td { padding: 8px; border: 1px solid #ddd; white-space: nowrap; }
     tr:nth-child(even) { background-color: #f9f9f9; }
 
-    /* Print Receipt Styling (Black & White Only, No Vehicle Field) */
+    /* Print Receipt Styling */
     @media print {
       body * { visibility: hidden; }
       #printableReceipt, #printableReceipt * { visibility: visible; }
@@ -98,11 +98,11 @@
   <p id="verifyMsg" style="color: green; font-size: 13px; margin-top: 10px;"></p>
 </div>
 
-<!-- 3. PROFILE NAME SETUP SECTION (First Time Setup) -->
+<!-- 3. PROFILE NAME SETUP SECTION -->
 <div id="profileSetupSection" class="auth-card" style="display: none;">
   <h2 style="color: #0b3c5d; margin-top: 0;">Profile Setup 👤</h2>
   <p style="color: #666; font-size: 14px;">Email Verification Complete! Apna full name enter karein jo Receipt aur Registry me aayega.</p>
-  <input type="text" id="staffDisplayName" placeholder="Enter Your Name" required>
+  <input type="text" id="staffDisplayName" placeholder="Enter Your Name (e.g. Shlok Prajapati)" required>
   <button onclick="saveProfileName()">Save Name & Enter Portal 🚀</button>
   <p id="setupError" style="color: red; font-size: 13px; margin-top: 10px;"></p>
 </div>
@@ -257,7 +257,7 @@
   </div>
 </div>
 
-<!-- PRINTABLE RECEIPT TEMPLATE (NO VEHICLE FIELD) -->
+<!-- PRINTABLE RECEIPT TEMPLATE -->
 <div id="printableReceipt">
   <h2>Tej Singh Motor Training School</h2>
   <p>Payment & Admission Receipt</p>
@@ -309,7 +309,6 @@
   let globalRecords = [];
   let activeStaffName = "";
 
-  // Default Date Setup
   document.getElementById('paymentDate').valueAsDate = new Date();
 
   // AUTHENTICATION & VERIFICATION FLOW CONTROLLER
@@ -317,13 +316,10 @@
     hideAllSections();
     if (user) {
       if (!user.emailVerified) {
-        // Step 1: Email Verification Required
         document.getElementById('verifySection').style.display = 'block';
       } else if (!user.displayName) {
-        // Step 2: Set Display Name First Time
         document.getElementById('profileSetupSection').style.display = 'block';
       } else {
-        // Step 3: Verified & Profile Set -> Show Main Portal
         activeStaffName = user.displayName;
         document.getElementById('userGreeting').innerText = activeStaffName;
         document.getElementById('mainDashboard').style.display = 'block';
@@ -341,7 +337,6 @@
     document.getElementById('mainDashboard').style.display = 'none';
   }
 
-  // Login Function
   function loginUser() {
     const email = document.getElementById('loginEmail').value;
     const pass = document.getElementById('loginPassword').value;
@@ -352,7 +347,6 @@
       .catch(err => { errorEl.innerText = "Login Failed: " + err.message; });
   }
 
-  // Send Verification Email
   function sendVerificationEmail() {
     const user = auth.currentUser;
     if (user) {
@@ -366,13 +360,12 @@
     }
   }
 
-  // Check Email Verification Status
   function checkVerificationStatus() {
     const user = auth.currentUser;
     if (user) {
       user.reload().then(() => {
         if (user.emailVerified) {
-          auth.onAuthStateChanged(); // Refresh State
+          auth.onAuthStateChanged();
         } else {
           alert("Email abhi tak verify nahi hua hai. Kripya link par click karein.");
         }
@@ -380,7 +373,6 @@
     }
   }
 
-  // Save First-Time Profile Display Name
   function saveProfileName() {
     const nameInput = document.getElementById('staffDisplayName').value.trim();
     const errorEl = document.getElementById('setupError');
@@ -394,15 +386,13 @@
     user.updateProfile({ displayName: nameInput })
       .then(() => {
         activeStaffName = nameInput;
-        location.reload(); // Reload to apply verified profile state
+        location.reload();
       })
       .catch(err => { errorEl.innerText = "Error: " + err.message; });
   }
 
-  // Logout
   function logoutUser() { auth.signOut(); }
 
-  // Auto Balance Calculation
   function calculateBalance() {
     const total = parseFloat(document.getElementById('totalFee').value) || 0;
     const advance = parseFloat(document.getElementById('advancePayment').value) || 0;
@@ -410,7 +400,6 @@
     document.getElementById('balanceAmount').value = balance >= 0 ? balance : 0;
   }
 
-  // Date Formatting Helper (DD-MM-YYYY)
   function formatDateToDMY(dateString) {
     if (!dateString || dateString === '-') return '-';
     const parts = dateString.split('-');
@@ -444,7 +433,7 @@
     };
 
     if (editId) {
-      // UPDATE
+      // UPDATE (Note: createdAt stays unchanged)
       db.collection("dl_records").doc(editId).update(recordData)
         .then(() => {
           alert("Entry Updated Successfully!");
@@ -452,7 +441,7 @@
         })
         .catch(err => alert("Update Error: " + err.message));
     } else {
-      // CREATE
+      // CREATE NEW ENTRY
       recordData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
       db.collection("dl_records").add(recordData)
         .then(() => {
@@ -463,9 +452,9 @@
     }
   }
 
-  // Realtime Live Firestore Data Loader
+  // REALTIME LOADER: Sorted by createdAt DESC (Original Creation Order Saved)
   function loadLiveEntries() {
-    db.collection("dl_records").orderBy("updatedAt", "desc").onSnapshot(snapshot => {
+    db.collection("dl_records").orderBy("createdAt", "desc").onSnapshot(snapshot => {
       let tbody = document.getElementById('tableBody');
       tbody.innerHTML = "";
       globalRecords = [];
@@ -500,7 +489,6 @@
     });
   }
 
-  // Edit Entry
   function editRecord(id) {
     const rec = globalRecords.find(r => r.id === id);
     if (!rec) return;
@@ -530,7 +518,6 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  // Reset Form
   function resetForm() {
     document.getElementById('admissionForm').reset();
     document.getElementById('editRecordId').value = "";
@@ -540,7 +527,6 @@
     document.getElementById('cancelBtn').style.display = 'none';
   }
 
-  // Delete Entry
   function deleteRecord(id) {
     if (confirm("Kya aap sach me ye entry delete karna chahte hain?")) {
       db.collection("dl_records").doc(id).delete()
@@ -549,7 +535,6 @@
     }
   }
 
-  // Add Installment Payment
   function addInstallment(id) {
     const rec = globalRecords.find(r => r.id === id);
     if (!rec) return;
@@ -574,7 +559,6 @@
     });
   }
 
-  // Print Receipt (Without Vehicle Type Field)
   function printReceipt(id) {
     const rec = globalRecords.find(r => r.id === id);
     if (!rec) return;
@@ -594,7 +578,6 @@
     printArea.style.display = 'none';
   }
 
-  // Filter Search
   function filterTable() {
     let input = document.getElementById("searchInput").value.toLowerCase();
     let rows = document.querySelectorAll("#tableBody tr");
@@ -603,7 +586,6 @@
     });
   }
 
-  // Export to Excel
   function exportToExcel() {
     if (globalRecords.length === 0) {
       alert("Export ke liye koi record nahi hai!");
@@ -633,7 +615,6 @@
     XLSX.writeFile(workbook, `Tej_Singh_DL_Register_${new Date().toISOString().slice(0,10)}.xlsx`);
   }
 
-  // Backup Data
   function backupData() {
     if (globalRecords.length === 0) return alert("No data to backup!");
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(globalRecords, null, 2));
@@ -645,7 +626,6 @@
     dlAnchor.remove();
   }
 
-  // Restore Data
   function triggerRestore() { document.getElementById('restoreFileInput').click(); }
   function restoreData(event) {
     const file = event.target.files[0];
@@ -659,6 +639,7 @@
           let batch = db.batch();
           records.forEach(rec => {
             let docRef = db.collection("dl_records").doc();
+            rec.createdAt = firebase.firestore.FieldValue.serverTimestamp();
             rec.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
             batch.set(docRef, rec);
           });
