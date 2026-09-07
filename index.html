@@ -9,7 +9,7 @@
   <style>
     * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     body { background-color: #f0f4f8; margin: 0; padding: 20px; }
-    .container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
+    .container { max-width: 1250px; margin: 0 auto; background: white; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
     
     /* Auth Cards (Login, Verify, Setup Profile) */
     .auth-card { max-width: 420px; margin: 60px auto; padding: 30px; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center; }
@@ -120,7 +120,7 @@
       <input type="hidden" id="editRecordId" value="">
       
       <!-- Section 1 -->
-      <h3 class="section-title">1. Customer & Reference Details</h3>
+      <h3 class="section-title">1. Customer & Application Details</h3>
       <div class="form-grid">
         <div class="form-group">
           <label>Customer Name *</label>
@@ -152,6 +152,21 @@
             <option value="Renewal">Renewal</option>
           </select>
         </div>
+        
+        <!-- Newly Added Fields -->
+        <div class="form-group">
+          <label>LL Application No.:</label>
+          <input type="text" id="llAppNo" placeholder="Enter LL Application No.">
+        </div>
+        <div class="form-group">
+          <label>LL Number:</label>
+          <input type="text" id="llNo" placeholder="Enter LL Number">
+        </div>
+        <div class="form-group">
+          <label>DL Application No.:</label>
+          <input type="text" id="dlAppNo" placeholder="Enter DL Application No.">
+        </div>
+
         <div class="form-group">
           <label>Referred By / Reference Name:</label>
           <input type="text" id="reference" placeholder="e.g. Self, Friend Name, Agent">
@@ -224,7 +239,7 @@
     <!-- Search Section -->
     <div class="search-box">
       <label><strong>🔍 Search Customer:</strong></label>
-      <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search by Name, Mobile, Reference, Comment or Date (DD-MM-YYYY)...">
+      <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search by Name, Mobile, Application No, LL No, Reference, or Date...">
     </div>
 
     <!-- Table List -->
@@ -238,7 +253,9 @@
             <th>Father's Name</th>
             <th>Mobile</th>
             <th>DOB</th>
-            <th>Reference</th>
+            <th>LL App No.</th>
+            <th>LL Number</th>
+            <th>DL App No.</th>
             <th>Vehicle</th>
             <th>Total Fee</th>
             <th>Paid</th>
@@ -417,6 +434,9 @@
       mobile: document.getElementById('mobile').value,
       dob: document.getElementById('dob').value,
       vehicleType: document.getElementById('vehicleType').value,
+      llAppNo: document.getElementById('llAppNo').value || '-',
+      llNo: document.getElementById('llNo').value || '-',
+      dlAppNo: document.getElementById('dlAppNo').value || '-',
       reference: document.getElementById('reference').value || '-',
       llOutside: document.getElementById('llOutside').value,
       address: document.getElementById('address').value || '-',
@@ -433,7 +453,6 @@
     };
 
     if (editId) {
-      // UPDATE (Note: createdAt stays unchanged)
       db.collection("dl_records").doc(editId).update(recordData)
         .then(() => {
           alert("Entry Updated Successfully!");
@@ -441,7 +460,6 @@
         })
         .catch(err => alert("Update Error: " + err.message));
     } else {
-      // CREATE NEW ENTRY
       recordData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
       db.collection("dl_records").add(recordData)
         .then(() => {
@@ -452,7 +470,7 @@
     }
   }
 
-  // REALTIME LOADER: Sorted by createdAt DESC (Original Creation Order Saved)
+  // REALTIME LOADER: Sorted by createdAt DESC
   function loadLiveEntries() {
     db.collection("dl_records").orderBy("createdAt", "desc").onSnapshot(snapshot => {
       let tbody = document.getElementById('tableBody');
@@ -470,7 +488,9 @@
           <td>${d.fatherName}</td>
           <td>${d.mobile}</td>
           <td>${formatDateToDMY(d.dob)}</td>
-          <td>${d.reference}</td>
+          <td>${d.llAppNo || '-'}</td>
+          <td>${d.llNo || '-'}</td>
+          <td>${d.dlAppNo || '-'}</td>
           <td>${d.vehicleType}</td>
           <td>₹${d.totalFee}</td>
           <td>₹${d.advancePayment}</td>
@@ -499,6 +519,9 @@
     document.getElementById('mobile').value = rec.mobile;
     document.getElementById('dob').value = rec.dob;
     document.getElementById('vehicleType').value = rec.vehicleType;
+    document.getElementById('llAppNo').value = rec.llAppNo && rec.llAppNo !== '-' ? rec.llAppNo : '';
+    document.getElementById('llNo').value = rec.llNo && rec.llNo !== '-' ? rec.llNo : '';
+    document.getElementById('dlAppNo').value = rec.dlAppNo && rec.dlAppNo !== '-' ? rec.dlAppNo : '';
     document.getElementById('reference').value = rec.reference;
     document.getElementById('llOutside').value = rec.llOutside;
     document.getElementById('address').value = rec.address;
@@ -597,6 +620,9 @@
       "Father Name": r.fatherName,
       "Mobile": r.mobile,
       "DOB": formatDateToDMY(r.dob),
+      "LL Application No": r.llAppNo || '-',
+      "LL Number": r.llNo || '-',
+      "DL Application No": r.dlAppNo || '-',
       "Vehicle Type": r.vehicleType,
       "Reference": r.reference,
       "LL Outside": r.llOutside,
