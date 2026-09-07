@@ -152,20 +152,6 @@
             <option value="Renewal">Renewal</option>
           </select>
         </div>
-        
-        <!-- Newly Added Fields -->
-        <div class="form-group">
-          <label>LL Application No.:</label>
-          <input type="text" id="llAppNo" placeholder="Enter LL Application No.">
-        </div>
-        <div class="form-group">
-          <label>LL Number:</label>
-          <input type="text" id="llNo" placeholder="Enter LL Number">
-        </div>
-        <div class="form-group">
-          <label>DL Application No.:</label>
-          <input type="text" id="dlAppNo" placeholder="Enter DL Application No.">
-        </div>
 
         <div class="form-group">
           <label>Referred By / Reference Name:</label>
@@ -181,6 +167,20 @@
         <div class="form-group">
           <label>Address</label>
           <input type="text" id="address" placeholder="Enter address">
+        </div>
+
+        <!-- Positioned After Address -->
+        <div class="form-group">
+          <label>LL Application No.:</label>
+          <input type="text" id="llAppNo" placeholder="Enter LL Application No.">
+        </div>
+        <div class="form-group">
+          <label>LL Number:</label>
+          <input type="text" id="llNo" placeholder="Enter LL Number">
+        </div>
+        <div class="form-group">
+          <label>DL Application No.:</label>
+          <input type="text" id="dlAppNo" placeholder="Enter DL Application No.">
         </div>
         
         <div class="form-group full-width">
@@ -434,12 +434,12 @@
       mobile: document.getElementById('mobile').value,
       dob: document.getElementById('dob').value,
       vehicleType: document.getElementById('vehicleType').value,
-      llAppNo: document.getElementById('llAppNo').value || '-',
-      llNo: document.getElementById('llNo').value || '-',
-      dlAppNo: document.getElementById('dlAppNo').value || '-',
       reference: document.getElementById('reference').value || '-',
       llOutside: document.getElementById('llOutside').value,
       address: document.getElementById('address').value || '-',
+      llAppNo: document.getElementById('llAppNo').value || '-',
+      llNo: document.getElementById('llNo').value || '-',
+      dlAppNo: document.getElementById('dlAppNo').value || '-',
       remarks: document.getElementById('remarks').value || '-',
       discountNote: document.getElementById('discountNote').value || '-',
       discountAmount: parseFloat(document.getElementById('discountAmount').value) || 0,
@@ -519,12 +519,12 @@
     document.getElementById('mobile').value = rec.mobile;
     document.getElementById('dob').value = rec.dob;
     document.getElementById('vehicleType').value = rec.vehicleType;
-    document.getElementById('llAppNo').value = rec.llAppNo && rec.llAppNo !== '-' ? rec.llAppNo : '';
-    document.getElementById('llNo').value = rec.llNo && rec.llNo !== '-' ? rec.llNo : '';
-    document.getElementById('dlAppNo').value = rec.dlAppNo && rec.dlAppNo !== '-' ? rec.dlAppNo : '';
     document.getElementById('reference').value = rec.reference;
     document.getElementById('llOutside').value = rec.llOutside;
     document.getElementById('address').value = rec.address;
+    document.getElementById('llAppNo').value = rec.llAppNo && rec.llAppNo !== '-' ? rec.llAppNo : '';
+    document.getElementById('llNo').value = rec.llNo && rec.llNo !== '-' ? rec.llNo : '';
+    document.getElementById('dlAppNo').value = rec.dlAppNo && rec.dlAppNo !== '-' ? rec.dlAppNo : '';
     document.getElementById('remarks').value = rec.remarks;
     document.getElementById('discountNote').value = rec.discountNote;
     document.getElementById('discountAmount').value = rec.discountAmount;
