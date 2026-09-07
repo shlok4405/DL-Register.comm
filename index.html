@@ -3,720 +3,306 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TEJ SINGH MOTOR TRAINING SCHOOL - Secure Portal</title>
-  <!-- SheetJS for Excel Export -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <title>Tej Singh Motor Training School - Registration & Receipt</title>
   <style>
-    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    body { background-color: #f0f4f8; margin: 0; padding: 20px; }
-    .container { max-width: 1250px; margin: 0 auto; background: white; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
-    
-    /* Auth Cards (Login, Verify, Setup Profile) */
-    .auth-card { max-width: 420px; margin: 60px auto; padding: 30px; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center; }
-    .auth-card input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; }
-    .auth-card button { width: 100%; padding: 12px; background: #0b3c5d; color: white; border: none; font-size: 15px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 8px; }
-    .auth-card button.secondary-btn { background: #6c757d; }
+    /* Reset & General Styles */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
 
-    /* Main Dashboard Header */
-    .header { background-color: #0b3c5d; color: white; text-align: center; padding: 20px; position: relative; }
-    .header h1 { margin: 0; color: #ff3b30; font-size: 26px; text-transform: uppercase; font-weight: 800; }
-    .header p { margin: 5px 0 0; font-size: 15px; font-weight: 500; }
-    .logout-btn { position: absolute; right: 20px; top: 20px; background: #d9534f; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    body {
+      background-color: #f4f7f6;
+      padding: 20px;
+    }
 
-    /* Form Design */
-    .form-container { padding: 25px; }
-    .section-title { color: #1d70b8; border-bottom: 2px solid #1d70b8; padding-bottom: 5px; margin-top: 20px; font-size: 18px; }
-    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-top: 15px; }
-    
-    .form-group { display: flex; flex-direction: column; }
-    .form-group label { font-size: 13px; font-weight: bold; margin-bottom: 5px; color: #333; }
-    .form-group input, .form-group select, .form-group textarea { padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
-    .form-group input[readonly] { background-color: #e9ecef; }
-    .full-width { grid-column: 1 / -1; }
-    
-    /* Action Buttons */
-    .button-group { display: flex; gap: 10px; margin-top: 25px; flex-wrap: wrap; }
-    .btn { flex: 1; min-width: 140px; padding: 12px; border: none; border-radius: 5px; font-weight: bold; color: white; cursor: pointer; font-size: 14px; text-align: center; }
-    .btn-save { background-color: #28a745; }
-    .btn-update { background-color: #ff9800; display: none; }
-    .btn-cancel { background-color: #6c757d; display: none; }
-    .btn-export { background-color: #004085; }
-    .btn-backup { background-color: #d9534f; }
-    .btn-restore { background-color: #17a2b8; }
+    .container {
+      max-width: 700px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
 
-    /* Table Buttons */
-    .btn-sm { padding: 4px 8px; font-size: 11px; border-radius: 3px; border: none; cursor: pointer; font-weight: bold; color: white; margin-right: 2px; }
-    .btn-edit { background-color: #ff9800; }
-    .btn-del { background-color: #dc3545; }
-    .btn-pay { background-color: #28a745; }
-    .btn-print { background-color: #17a2b8; }
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 20px;
+      font-size: 22px;
+    }
 
-    /* Search & Table */
-    .search-box { background: #eef5fc; padding: 15px; border-radius: 6px; margin-top: 25px; border: 1px solid #1d70b8; }
-    .search-box input { width: 100%; padding: 10px; border: 1px solid #1d70b8; border-radius: 4px; }
-    
-    .table-container { overflow-x: auto; margin-top: 20px; }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
-    th { background-color: #0b3c5d; color: white; padding: 10px; white-space: nowrap; }
-    td { padding: 8px; border: 1px solid #ddd; white-space: nowrap; }
-    tr:nth-child(even) { background-color: #f9f9f9; }
+    /* Form Styles */
+    .form-group {
+      margin-bottom: 15px;
+    }
 
-    /* Print Receipt Styling - Top Center Alignment */
+    .form-group label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: #555;
+    }
+
+    .form-group input, .form-group select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 15px;
+    }
+
+    .form-row .form-group {
+      flex: 1;
+    }
+
+    .btn-submit {
+      width: 100%;
+      background-color: #007bff;
+      color: white;
+      padding: 12px;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .btn-submit:hover {
+      background-color: #0056b3;
+    }
+
+    /* Receipt Styling (On Screen) */
+    .receipt-container {
+      max-width: 400px;
+      margin: 30px auto 0 auto;
+      padding: 20px;
+      border: 1px solid #000;
+      background-color: #fff;
+      color: #000;
+    }
+
+    .receipt-header {
+      text-align: center;
+      border-bottom: 2px dashed #000;
+      padding-bottom: 10px;
+      margin-bottom: 15px;
+    }
+
+    .receipt-header h2 {
+      margin: 0;
+      font-size: 18px;
+      text-transform: uppercase;
+    }
+
+    .receipt-header p {
+      margin: 3px 0;
+      font-size: 12px;
+    }
+
+    .receipt-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .receipt-row .label {
+      font-weight: bold;
+    }
+
+    .receipt-divider {
+      border-top: 1px dashed #000;
+      margin: 12px 0;
+    }
+
+    .receipt-footer {
+      text-align: center;
+      margin-top: 15px;
+      font-size: 12px;
+      border-top: 2px dashed #000;
+      padding-top: 10px;
+    }
+
+    .btn-print {
+      display: block;
+      width: 100%;
+      max-width: 400px;
+      margin: 15px auto 0 auto;
+      background-color: #28a745;
+      color: white;
+      padding: 10px;
+      border: none;
+      border-radius: 4px;
+      font-size: 15px;
+      cursor: pointer;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    .btn-print:hover {
+      background-color: #218838;
+    }
+
+    /* Print Configuration Rule */
     @media print {
-      body {
-        margin: 0;
-        padding: 0;
-        background: white !important;
-        display: flex;
-        justify-content: center;
-        align-items: flex-start;
+      body * {
+        visibility: hidden;
       }
-      body * { visibility: hidden; }
-      #printableReceipt, #printableReceipt * { visibility: visible; }
-      #printableReceipt {
-        position: relative;
-        left: auto;
+      #printSection, #printSection * {
+        visibility: visible;
+      }
+      #printSection {
+        position: absolute;
+        left: 50%;
         top: 20px;
-        transform: none;
-        width: 650px;
-        color: black !important;
-        background: white !important;
-        font-family: 'Times New Roman', serif;
-        box-shadow: none !important;
-        border: 2px solid #000 !important;
-        margin: 0 auto !important;
+        transform: translateX(-50%);
+        width: 100%;
+        max-width: 400px;
+        border: none;
       }
     }
-    
-    #printableReceipt { 
-      display: none; 
-      padding: 30px; 
-      border: 2px solid #000; 
-      width: 650px; 
-      margin: 0 auto; 
-      color: #000; 
-      background: #fff; 
-    }
-    #printableReceipt h2 { text-align: center; margin: 0; font-size: 22px; text-transform: uppercase; text-decoration: underline; }
-    #printableReceipt p { text-align: center; margin: 5px 0 20px 0; font-size: 14px; }
-    .receipt-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-    .receipt-table td { border: 1px solid #000; padding: 8px; font-size: 14px; color: #000; }
-    .receipt-footer { margin-top: 50px; display: flex; justify-content: space-between; font-size: 14px; }
   </style>
 </head>
 <body>
 
-<!-- 1. LOGIN SECTION -->
-<div id="loginSection" class="auth-card">
-  <h2 style="color: #0b3c5d; margin-top: 0;">Tej Singh Portal</h2>
-  <p style="color: #666; font-size: 14px;">Staff Login to Access Portal</p>
-  <input type="email" id="loginEmail" placeholder="Enter Staff Email" required>
-  <input type="password" id="loginPassword" placeholder="Enter Password" required>
-  <button onclick="loginUser()">Login to Portal</button>
-  <p id="loginError" style="color: red; font-size: 13px; margin-top: 10px;"></p>
-</div>
-
-<!-- 2. EMAIL VERIFICATION SECTION -->
-<div id="verifySection" class="auth-card" style="display: none;">
-  <h2 style="color: #0b3c5d; margin-top: 0;">Verify Email Required ✉️</h2>
-  <p style="color: #666; font-size: 14px;">Aapka Email verified nahi hai. Kripya apna inbox check karein aur link par click karke verify karein.</p>
-  <button onclick="sendVerificationEmail()">Send Verification Link Again</button>
-  <button onclick="checkVerificationStatus()" style="background: #28a745;">I Have Verified (Check Status)</button>
-  <button onclick="logoutUser()" class="secondary-btn">Logout</button>
-  <p id="verifyMsg" style="color: green; font-size: 13px; margin-top: 10px;"></p>
-</div>
-
-<!-- 3. PROFILE NAME SETUP SECTION -->
-<div id="profileSetupSection" class="auth-card" style="display: none;">
-  <h2 style="color: #0b3c5d; margin-top: 0;">Profile Setup 👤</h2>
-  <p style="color: #666; font-size: 14px;">Email Verification Complete! Apna full name enter karein jo Receipt aur Registry me aayega.</p>
-  <input type="text" id="staffDisplayName" placeholder="Enter Your Name (e.g. Shlok Prajapati)" required>
-  <button onclick="saveProfileName()">Save Name & Enter Portal 🚀</button>
-  <p id="setupError" style="color: red; font-size: 13px; margin-top: 10px;"></p>
-</div>
-
-<!-- 4. MAIN REGISTER DASHBOARD -->
-<div class="container" id="mainDashboard" style="display: none;">
-  <div class="header">
+  <!-- Main Container -->
+  <div class="container">
     <h1>Tej Singh Motor Training School</h1>
-    <p>Customer Admission & Payment Register | Welcome, <span id="userGreeting" style="text-decoration: underline;">Staff</span></p>
-    <button class="logout-btn" onclick="logoutUser()">Logout 🔒</button>
-  </div>
-
-  <div class="form-container">
-    <form id="admissionForm" onsubmit="handleFormSubmit(event)">
-      <input type="hidden" id="editRecordId" value="">
-      
-      <!-- Section 1 -->
-      <h3 class="section-title">1. Customer & Application Details</h3>
-      <div class="form-grid">
-        <div class="form-group">
-          <label>Customer Name *</label>
-          <input type="text" id="customerName" placeholder="Enter customer name" required>
-        </div>
-        <div class="form-group">
-          <label>Father's Name *</label>
-          <input type="text" id="fatherName" placeholder="Enter father's name" required>
-        </div>
-        <div class="form-group">
-          <label>Mobile Number *</label>
-          <input type="tel" id="mobile" placeholder="xxxxxxxxxx" required>
-        </div>
-        <div class="form-group">
-          <label>Date of Birth (DOB) *</label>
-          <input type="date" id="dob" required>
-        </div>
-        
-        <div class="form-group">
-          <label>Vehicle Type *</label>
-          <select id="vehicleType" required>
-            <option value="">-- Select Vehicle Type --</option>
-            <option value="Two Wheeler">Two Wheeler</option>
-            <option value="Four Wheeler">Four Wheeler</option>
-            <option value="Both (2W + 4W)">Both (2W + 4W)</option>
-            <option value="Commercial / Heavy">Commercial / Heavy</option>
-            <option value="Crane">Crane</option>
-            <option value="Forklift">Forklift</option>
-            <option value="Renewal">Renewal</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label>Referred By / Reference Name:</label>
-          <input type="text" id="reference" placeholder="e.g. Self, Friend Name, Agent">
-        </div>
-        <div class="form-group">
-          <label>LL Made Outside?</label>
-          <select id="llOutside">
-            <option value="No (Made Here)">No (Made Here)</option>
-            <option value="Yes">Yes</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Address</label>
-          <input type="text" id="address" placeholder="Enter address">
-        </div>
-
-        <!-- Positioned After Address -->
-        <div class="form-group">
-          <label>LL Application No.:</label>
-          <input type="text" id="llAppNo" placeholder="Enter LL Application No.">
-        </div>
-        <div class="form-group">
-          <label>LL Number:</label>
-          <input type="text" id="llNo" placeholder="Enter LL Number">
-        </div>
-        <div class="form-group">
-          <label>DL Application No.:</label>
-          <input type="text" id="dlAppNo" placeholder="Enter DL Application No.">
-        </div>
-        
-        <div class="form-group full-width">
-          <label>Internal Comment / Remarks (Private - Web Only):</label>
-          <textarea id="remarks" rows="2" placeholder="Any internal notes..."></textarea>
-        </div>
-      </div>
-
-      <!-- Section 2 -->
-      <h3 class="section-title">2. Payment & Installments</h3>
-      <div class="form-grid">
-        <div class="form-group">
-          <label>Discount Reference Note:</label>
-          <input type="text" id="discountNote" placeholder="e.g. Offered by Sir">
-        </div>
-        <div class="form-group">
-          <label>Discount Amount (₹):</label>
-          <input type="number" id="discountAmount" value="0" oninput="calculateBalance()">
-        </div>
-        
-        <div class="form-group">
-          <label>Total Fee / Amount (₹) *</label>
-          <input type="number" id="totalFee" placeholder="Enter total fee" required oninput="calculateBalance()">
-        </div>
-        <div class="form-group">
-          <label>Advance Payment (₹) *</label>
-          <input type="number" id="advancePayment" placeholder="Enter paid amount" required oninput="calculateBalance()">
-        </div>
-        <div class="form-group">
-          <label>Balance Amount (₹)</label>
-          <input type="number" id="balanceAmount" readonly placeholder="0">
-        </div>
-        
-        <div class="form-group">
-          <label>Payment Date *</label>
-          <input type="date" id="paymentDate" required>
-        </div>
-        <div class="form-group">
-          <label>Next Due Date:</label>
-          <input type="date" id="dueDate">
-        </div>
-      </div>
-
-      <!-- Action Buttons -->
-      <div class="button-group">
-        <button type="submit" class="btn btn-save" id="saveBtn">Save Entry ☁️</button>
-        <button type="submit" class="btn btn-update" id="updateBtn">Update Entry ✏️</button>
-        <button type="button" class="btn btn-cancel" id="cancelBtn" onclick="resetForm()">Cancel</button>
-        <button type="button" class="btn btn-export" onclick="exportToExcel()">Export Excel 📊</button>
-        <button type="button" class="btn btn-backup" onclick="backupData()">Backup Data 💾</button>
-        <button type="button" class="btn btn-restore" onclick="triggerRestore()">Restore Data 📑</button>
-        <input type="file" id="restoreFileInput" accept=".json" style="display:none;" onchange="restoreData(event)">
-      </div>
-    </form>
-
-    <!-- Search Section -->
-    <div class="search-box">
-      <label><strong>🔍 Search Customer:</strong></label>
-      <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search by Name, Mobile, Application No, LL No, Reference, or Date...">
-    </div>
-
-    <!-- Table List -->
-    <h3 style="margin-top: 25px; color: #0b3c5d;">Saved Customer Register</h3>
-    <div class="table-container">
-      <table id="customerTable">
-        <thead>
-          <tr>
-            <th>Entry Date</th>
-            <th>Name</th>
-            <th>Father's Name</th>
-            <th>Mobile</th>
-            <th>DOB</th>
-            <th>LL App No.</th>
-            <th>LL Number</th>
-            <th>DL App No.</th>
-            <th>Vehicle</th>
-            <th>Total Fee</th>
-            <th>Discount</th>
-            <th>Paid</th>
-            <th>Balance</th>
-            <th>Due Date</th>
-            <th>Added By</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="tableBody">
-          <!-- Dynamically populated from Firestore -->
-        </tbody>
-      </table>
-    </div>
-
-  </div>
-</div>
-
-<!-- PRINTABLE RECEIPT TEMPLATE -->
-<div id="printableReceipt">
-  <h2>Tej Singh Motor Training School</h2>
-  <p>Payment & Admission Receipt</p>
-  <hr style="border: 1px solid #000;">
-  <table class="receipt-table">
-    <tr>
-      <td><strong>Customer Name:</strong> <span id="rName"></span></td>
-      <td><strong>Father's Name:</strong> <span id="rFather"></span></td>
-    </tr>
-    <tr>
-      <td><strong>Address:</strong> <span id="rAddress"></span></td>
-      <td><strong>Receipt Date:</strong> <span id="rDate"></span></td>
-    </tr>
-    <tr>
-      <td><strong>Total Fee:</strong> ₹<span id="rTotal"></span></td>
-      <td><strong>Discount:</strong> ₹<span id="rDiscount"></span></td>
-    </tr>
-    <tr>
-      <td><strong>Paid Amount:</strong> ₹<span id="rPaid"></span></td>
-      <td><strong>Balance Amount:</strong> ₹<span id="rBalance"></span></td>
-    </tr>
-  </table>
-  <div class="receipt-footer">
-    <div><strong>Prepared By:</strong> <span id="rOperator"></span></div>
-    <div><strong>Authorized Signature:</strong> _______________</div>
-  </div>
-</div>
-
-<!-- Firebase SDKs -->
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-
-<script>
-  // FIREBASE CONFIGURATION
-  const firebaseConfig = {
-    apiKey: "AIzaSyCp1lsu9hOQKUic1jRQvXVRYIm5MkdI1AI",
-    authDomain: "dl-register.firebaseapp.com",
-    projectId: "dl-register",
-    storageBucket: "dl-register.firebasestorage.app",
-    messagingSenderId: "497510713850",
-    appId: "1:497510713850:web:cd5b9707fe85e0871f7c43",
-    measurementId: "G-F8LQE3C5LN"
-  };
-
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.firestore();
-
-  let globalRecords = [];
-  let activeStaffName = "";
-
-  document.getElementById('paymentDate').valueAsDate = new Date();
-
-  // AUTHENTICATION & VERIFICATION FLOW CONTROLLER
-  auth.onAuthStateChanged(user => {
-    hideAllSections();
-    if (user) {
-      if (!user.emailVerified) {
-        document.getElementById('verifySection').style.display = 'block';
-      } else if (!user.displayName) {
-        document.getElementById('profileSetupSection').style.display = 'block';
-      } else {
-        activeStaffName = user.displayName;
-        document.getElementById('userGreeting').innerText = activeStaffName;
-        document.getElementById('mainDashboard').style.display = 'block';
-        loadLiveEntries();
-      }
-    } else {
-      document.getElementById('loginSection').style.display = 'block';
-    }
-  });
-
-  function hideAllSections() {
-    document.getElementById('loginSection').style.display = 'none';
-    document.getElementById('verifySection').style.display = 'none';
-    document.getElementById('profileSetupSection').style.display = 'none';
-    document.getElementById('mainDashboard').style.display = 'none';
-  }
-
-  function loginUser() {
-    const email = document.getElementById('loginEmail').value;
-    const pass = document.getElementById('loginPassword').value;
-    const errorEl = document.getElementById('loginError');
-
-    auth.signInWithEmailAndPassword(email, pass)
-      .then(() => { errorEl.innerText = ""; })
-      .catch(err => { errorEl.innerText = "Login Failed: " + err.message; });
-  }
-
-  function sendVerificationEmail() {
-    const user = auth.currentUser;
-    if (user) {
-      user.sendEmailVerification()
-        .then(() => {
-          document.getElementById('verifyMsg').innerText = "Verification link aapke email par bhej diya gaya hai!";
-        })
-        .catch(err => {
-          document.getElementById('verifyMsg').innerText = "Error: " + err.message;
-        });
-    }
-  }
-
-  function checkVerificationStatus() {
-    const user = auth.currentUser;
-    if (user) {
-      user.reload().then(() => {
-        if (user.emailVerified) {
-          auth.onAuthStateChanged();
-        } else {
-          alert("Email abhi tak verify nahi hua hai. Kripya link par click karein.");
-        }
-      });
-    }
-  }
-
-  function saveProfileName() {
-    const nameInput = document.getElementById('staffDisplayName').value.trim();
-    const errorEl = document.getElementById('setupError');
-
-    if (!nameInput) {
-      errorEl.innerText = "Kripya apna naam enter karein!";
-      return;
-    }
-
-    const user = auth.currentUser;
-    user.updateProfile({ displayName: nameInput })
-      .then(() => {
-        activeStaffName = nameInput;
-        location.reload();
-      })
-      .catch(err => { errorEl.innerText = "Error: " + err.message; });
-  }
-
-  function logoutUser() { auth.signOut(); }
-
-  // BALANCE CALCULATION LOGIC
-  function calculateBalance() {
-    const total = parseFloat(document.getElementById('totalFee').value) || 0;
-    const discount = parseFloat(document.getElementById('discountAmount').value) || 0;
-    const advance = parseFloat(document.getElementById('advancePayment').value) || 0;
-
-    const netFee = total - discount;
-    const balance = netFee - advance;
-
-    document.getElementById('balanceAmount').value = balance >= 0 ? balance : 0;
-  }
-
-  function formatDateToDMY(dateString) {
-    if (!dateString || dateString === '-') return '-';
-    const parts = dateString.split('-');
-    return parts.length === 3 ? `${parts[2]}-${parts[1]}-${parts[0]}` : dateString;
-  }
-
-  // Save OR Update Entry Handler
-  function handleFormSubmit(e) {
-    e.preventDefault();
-    const editId = document.getElementById('editRecordId').value;
-
-    const recordData = {
-      customerName: document.getElementById('customerName').value,
-      fatherName: document.getElementById('fatherName').value,
-      mobile: document.getElementById('mobile').value,
-      dob: document.getElementById('dob').value,
-      vehicleType: document.getElementById('vehicleType').value,
-      reference: document.getElementById('reference').value || '-',
-      llOutside: document.getElementById('llOutside').value,
-      address: document.getElementById('address').value || '-',
-      llAppNo: document.getElementById('llAppNo').value || '-',
-      llNo: document.getElementById('llNo').value || '-',
-      dlAppNo: document.getElementById('dlAppNo').value || '-',
-      remarks: document.getElementById('remarks').value || '-',
-      discountNote: document.getElementById('discountNote').value || '-',
-      discountAmount: parseFloat(document.getElementById('discountAmount').value) || 0,
-      totalFee: parseFloat(document.getElementById('totalFee').value) || 0,
-      advancePayment: parseFloat(document.getElementById('advancePayment').value) || 0,
-      balanceAmount: parseFloat(document.getElementById('balanceAmount').value) || 0,
-      paymentDate: document.getElementById('paymentDate').value,
-      dueDate: document.getElementById('dueDate').value || '-',
-      addedBy: activeStaffName || 'Staff',
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    };
-
-    if (editId) {
-      db.collection("dl_records").doc(editId).update(recordData)
-        .then(() => {
-          alert("Entry Updated Successfully!");
-          resetForm();
-        })
-        .catch(err => alert("Update Error: " + err.message));
-    } else {
-      recordData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-      db.collection("dl_records").add(recordData)
-        .then(() => {
-          alert("New Entry Saved Successfully!");
-          resetForm();
-        })
-        .catch(err => alert("Save Error: " + err.message));
-    }
-  }
-
-  // REALTIME LOADER
-  function loadLiveEntries() {
-    db.collection("dl_records").orderBy("createdAt", "desc").onSnapshot(snapshot => {
-      let tbody = document.getElementById('tableBody');
-      tbody.innerHTML = "";
-      globalRecords = [];
-
-      snapshot.forEach(doc => {
-        let d = doc.data();
-        d.id = doc.id;
-        globalRecords.push(d);
-
-        let row = `<tr>
-          <td>${formatDateToDMY(d.paymentDate)}</td>
-          <td><b>${d.customerName}</b></td>
-          <td>${d.fatherName}</td>
-          <td>${d.mobile}</td>
-          <td>${formatDateToDMY(d.dob)}</td>
-          <td>${d.llAppNo || '-'}</td>
-          <td>${d.llNo || '-'}</td>
-          <td>${d.dlAppNo || '-'}</td>
-          <td>${d.vehicleType}</td>
-          <td>₹${d.totalFee}</td>
-          <td style="color: green;">₹${d.discountAmount || 0}</td>
-          <td>₹${d.advancePayment}</td>
-          <td style="color: ${d.balanceAmount > 0 ? 'red' : 'green'}; font-weight: bold;">₹${d.balanceAmount}</td>
-          <td>${formatDateToDMY(d.dueDate)}</td>
-          <td><small><b>${d.addedBy || 'Staff'}</b></small></td>
-          <td>
-            <button class="btn-sm btn-edit" onclick="editRecord('${d.id}')">Edit</button>
-            <button class="btn-sm btn-pay" onclick="addInstallment('${d.id}')">+ Pay</button>
-            <button class="btn-sm btn-print" onclick="printReceipt('${d.id}')">Receipt</button>
-            <button class="btn-sm btn-del" onclick="deleteRecord('${d.id}')">Del</button>
-          </td>
-        </tr>`;
-        tbody.innerHTML += row;
-      });
-    });
-  }
-
-  function editRecord(id) {
-    const rec = globalRecords.find(r => r.id === id);
-    if (!rec) return;
-
-    document.getElementById('editRecordId').value = rec.id;
-    document.getElementById('customerName').value = rec.customerName;
-    document.getElementById('fatherName').value = rec.fatherName;
-    document.getElementById('mobile').value = rec.mobile;
-    document.getElementById('dob').value = rec.dob;
-    document.getElementById('vehicleType').value = rec.vehicleType;
-    document.getElementById('reference').value = rec.reference;
-    document.getElementById('llOutside').value = rec.llOutside;
-    document.getElementById('address').value = rec.address;
-    document.getElementById('llAppNo').value = rec.llAppNo && rec.llAppNo !== '-' ? rec.llAppNo : '';
-    document.getElementById('llNo').value = rec.llNo && rec.llNo !== '-' ? rec.llNo : '';
-    document.getElementById('dlAppNo').value = rec.dlAppNo && rec.dlAppNo !== '-' ? rec.dlAppNo : '';
-    document.getElementById('remarks').value = rec.remarks;
-    document.getElementById('discountNote').value = rec.discountNote;
-    document.getElementById('discountAmount').value = rec.discountAmount || 0;
-    document.getElementById('totalFee').value = rec.totalFee;
-    document.getElementById('advancePayment').value = rec.advancePayment;
-    document.getElementById('balanceAmount').value = rec.balanceAmount;
-    document.getElementById('paymentDate').value = rec.paymentDate;
-    document.getElementById('dueDate').value = rec.dueDate;
-
-    document.getElementById('saveBtn').style.display = 'none';
-    document.getElementById('updateBtn').style.display = 'inline-block';
-    document.getElementById('cancelBtn').style.display = 'inline-block';
-
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  function resetForm() {
-    document.getElementById('admissionForm').reset();
-    document.getElementById('editRecordId').value = "";
-    document.getElementById('paymentDate').valueAsDate = new Date();
-    document.getElementById('saveBtn').style.display = 'inline-block';
-    document.getElementById('updateBtn').style.display = 'none';
-    document.getElementById('cancelBtn').style.display = 'none';
-  }
-
-  function deleteRecord(id) {
-    if (confirm("Kya aap sach me ye entry delete karna chahte hain?")) {
-      db.collection("dl_records").doc(id).delete()
-        .then(() => alert("Entry Deleted!"))
-        .catch(err => alert("Delete Error: " + err.message));
-    }
-  }
-
-  function addInstallment(id) {
-    const rec = globalRecords.find(r => r.id === id);
-    if (!rec) return;
-
-    let newPay = prompt(`Current Balance: ₹${rec.balanceAmount}\nKitne paise deposit kar rhe hain?`);
-    if (!newPay || isNaN(newPay) || parseFloat(newPay) <= 0) return;
-
-    let paidNow = parseFloat(newPay);
-    let updatedPaid = rec.advancePayment + paidNow;
     
-    let discount = rec.discountAmount || 0;
-    let netFee = rec.totalFee - discount;
-    let updatedBalance = netFee - updatedPaid;
-    if (updatedBalance < 0) updatedBalance = 0;
+    <!-- Registration Form -->
+    <form id="registrationForm" onsubmit="generateReceipt(event)">
+      <div class="form-group">
+        <label for="name">Student Name:</label>
+        <input type="text" id="name" placeholder="Enter Full Name" required>
+      </div>
 
-    let updatedRemarks = `${rec.remarks || ''} | [Installment Paid: ₹${paidNow} on ${new Date().toLocaleDateString()}]`;
+      <div class="form-row">
+        <div class="form-group">
+          <label for="llAppNo">LL Application No:</label>
+          <input type="text" id="llAppNo" placeholder="LL Number">
+        </div>
+        <div class="form-group">
+          <label for="dlAppNo">DL Application No:</label>
+          <input type="text" id="dlAppNo" placeholder="DL Number">
+        </div>
+      </div>
 
-    db.collection("dl_records").doc(id).update({
-      advancePayment: updatedPaid,
-      balanceAmount: updatedBalance,
-      remarks: updatedRemarks,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    }).then(() => {
-      alert(`Payment Updated! Naya Balance: ₹${updatedBalance}`);
-    });
-  }
+      <div class="form-row">
+        <div class="form-group">
+          <label for="total">Total Amount (₹):</label>
+          <input type="number" id="total" placeholder="0.00" oninput="calculateBalance()" required>
+        </div>
+        <div class="form-group">
+          <label for="paid">Paid Amount (₹):</label>
+          <input type="number" id="paid" placeholder="0.00" oninput="calculateBalance()" required>
+        </div>
+        <div class="form-group">
+          <label for="balance">Balance Due (₹):</label>
+          <input type="number" id="balance" placeholder="0.00" readonly>
+        </div>
+      </div>
 
-  function printReceipt(id) {
-    const rec = globalRecords.find(r => r.id === id);
-    if (!rec) return;
+      <button type="submit" class="btn-submit">Generate Receipt</button>
+    </form>
+  </div>
 
-    document.getElementById('rDate').innerText = formatDateToDMY(rec.paymentDate);
-    document.getElementById('rName').innerText = rec.customerName;
-    document.getElementById('rFather').innerText = rec.fatherName;
-    document.getElementById('rAddress').innerText = rec.address || '-';
-    document.getElementById('rTotal').innerText = rec.totalFee;
-    document.getElementById('rDiscount').innerText = rec.discountAmount || 0;
-    document.getElementById('rPaid').innerText = rec.advancePayment;
-    document.getElementById('rBalance').innerText = rec.balanceAmount;
-    document.getElementById('rOperator').innerText = rec.addedBy || activeStaffName || 'Staff';
+  <!-- Print Receipt Section -->
+  <div id="printSection" class="receipt-container">
+    <div class="receipt-header">
+      <h2>TEJ SINGH MOTOR TRAINING SCHOOL</h2>
+      <p>Learner & Driving License Registration</p>
+      <p>Ghazipur | Contact: +91-XXXXXXXXXX</p>
+    </div>
 
-    let printArea = document.getElementById('printableReceipt');
-    printArea.style.display = 'block';
-    window.print();
-    printArea.style.display = 'none';
-  }
+    <div class="receipt-row">
+      <span class="label">Date:</span>
+      <span id="receiptDate">--/--/----</span>
+    </div>
+    <div class="receipt-row">
+      <span class="label">Receipt No:</span>
+      <span id="receiptNo">TSMTS-1001</span>
+    </div>
 
-  function filterTable() {
-    let input = document.getElementById("searchInput").value.toLowerCase();
-    let rows = document.querySelectorAll("#tableBody tr");
-    rows.forEach(row => {
-      row.style.display = row.innerText.toLowerCase().includes(input) ? "" : "none";
-    });
-  }
+    <div class="receipt-divider"></div>
 
-  function exportToExcel() {
-    if (globalRecords.length === 0) {
-      alert("Export ke liye koi record nahi hai!");
-      return;
+    <div class="receipt-row">
+      <span class="label">Student Name:</span>
+      <span id="receiptStudentName">--</span>
+    </div>
+    <div class="receipt-row">
+      <span class="label">LL App No:</span>
+      <span id="receiptLLNo">--</span>
+    </div>
+    <div class="receipt-row">
+      <span class="label">DL App No:</span>
+      <span id="receiptDLNo">--</span>
+    </div>
+
+    <div class="receipt-divider"></div>
+
+    <div class="receipt-row">
+      <span class="label">Total Amount:</span>
+      <span id="receiptTotal">₹0.00</span>
+    </div>
+    <div class="receipt-row">
+      <span class="label">Paid Amount:</span>
+      <span id="receiptPaid">₹0.00</span>
+    </div>
+    <div class="receipt-row">
+      <span class="label">Balance Due:</span>
+      <span id="receiptBalance">₹0.00</span>
+    </div>
+
+    <div class="receipt-footer">
+      <p>Thank You!</p>
+      <p>This is a computer-generated receipt.</p>
+    </div>
+  </div>
+
+  <button class="btn-print" onclick="window.print()">Print Receipt</button>
+
+  <!-- JavaScript logic -->
+  <script>
+    // Auto calculate balance amount
+    function calculateBalance() {
+      const total = parseFloat(document.getElementById('total').value) || 0;
+      const paid = parseFloat(document.getElementById('paid').value) || 0;
+      const balance = total - paid;
+      document.getElementById('balance').value = balance >= 0 ? balance.toFixed(2) : 0;
     }
-    const excelData = globalRecords.map(r => ({
-      "Payment Date": formatDateToDMY(r.paymentDate),
-      "Customer Name": r.customerName,
-      "Father Name": r.fatherName,
-      "Mobile": r.mobile,
-      "DOB": formatDateToDMY(r.dob),
-      "LL Application No": r.llAppNo || '-',
-      "LL Number": r.llNo || '-',
-      "DL Application No": r.dlAppNo || '-',
-      "Vehicle Type": r.vehicleType,
-      "Reference": r.reference,
-      "LL Outside": r.llOutside,
-      "Address": r.address,
-      "Remarks": r.remarks,
-      "Total Fee (₹)": r.totalFee,
-      "Discount (₹)": r.discountAmount || 0,
-      "Paid Amount (₹)": r.advancePayment,
-      "Balance (₹)": r.balanceAmount,
-      "Due Date": formatDateToDMY(r.dueDate),
-      "Entry Operator": r.addedBy || 'Staff'
-    }));
 
-    const worksheet = XLSX.utils.json_to_sheet(excelData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Register");
-    XLSX.writeFile(workbook, `Tej_Singh_DL_Register_${new Date().toISOString().slice(0,10)}.xlsx`);
-  }
+    // Populate receipt data from form
+    function generateReceipt(event) {
+      event.preventDefault();
 
-  function backupData() {
-    if (globalRecords.length === 0) return alert("No data to backup!");
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(globalRecords, null, 2));
-    const dlAnchor = document.createElement('a');
-    dlAnchor.setAttribute("href", dataStr);
-    dlAnchor.setAttribute("download", `Tej_Singh_Backup_${new Date().toISOString().slice(0,10)}.json`);
-    document.body.appendChild(dlAnchor);
-    dlAnchor.click();
-    dlAnchor.remove();
-  }
+      const name = document.getElementById('name').value;
+      const llNo = document.getElementById('llAppNo').value || 'N/A';
+      const dlNo = document.getElementById('dlAppNo').value || 'N/A';
+      const total = parseFloat(document.getElementById('total').value) || 0;
+      const paid = parseFloat(document.getElementById('paid').value) || 0;
+      const balance = parseFloat(document.getElementById('balance').value) || 0;
 
-  function triggerRestore() { document.getElementById('restoreFileInput').click(); }
-  function restoreData(event) {
-    const file = event.target.files[0];
-    if (!file) return;
+      // Set current date
+      const today = new Date();
+      const formattedDate = today.toLocaleDateString('en-IN');
 
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      try {
-        const records = JSON.parse(e.target.result);
-        if (Array.isArray(records)) {
-          let batch = db.batch();
-          records.forEach(rec => {
-            let docRef = db.collection("dl_records").doc();
-            rec.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-            rec.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
-            batch.set(docRef, rec);
-          });
-          batch.commit().then(() => alert("Backup restored to cloud!"));
-        }
-      } catch (err) { alert("Restore Error: " + err.message); }
-    };
-    reader.readAsText(file);
-  }
-</script>
-
+      // Update receipt text
+      document.getElementById('receiptDate').innerText = formattedDate;
+      document.getElementById('receiptStudentName').innerText = name;
+      document.getElementById('receiptLLNo').innerText = llNo;
+      document.getElementById('receiptDLNo').innerText = dlNo;
+      document.getElementById('receiptTotal').innerText = '₹' + total.toFixed(2);
+      document.getElementById('receiptPaid').innerText = '₹' + paid.toFixed(2);
+      document.getElementById('receiptBalance').innerText = '₹' + balance.toFixed(2);
+    }
+  </script>
 </body>
 </html>
