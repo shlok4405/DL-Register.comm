@@ -61,14 +61,43 @@
     td { padding: 8px; border: 1px solid #ddd; white-space: nowrap; }
     tr:nth-child(even) { background-color: #f9f9f9; }
 
-    /* Print Receipt Styling */
+    /* Print Receipt Styling - Centered Alignment */
     @media print {
+      body {
+        margin: 0;
+        padding: 0;
+        background: white !important;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+      }
       body * { visibility: hidden; }
       #printableReceipt, #printableReceipt * { visibility: visible; }
-      #printableReceipt { position: absolute; left: 0; top: 0; width: 100%; color: black !important; background: white !important; font-family: 'Times New Roman', serif; }
+      #printableReceipt {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 650px;
+        color: black !important;
+        background: white !important;
+        font-family: 'Times New Roman', serif;
+        box-shadow: none !important;
+        border: 2px solid #000 !important;
+        margin: 0 !important;
+      }
     }
     
-    #printableReceipt { display: none; padding: 30px; border: 2px solid #000; width: 650px; margin: 0 auto; color: #000; background: #fff; }
+    #printableReceipt { 
+      display: none; 
+      padding: 30px; 
+      border: 2px solid #000; 
+      width: 650px; 
+      margin: 0 auto; 
+      color: #000; 
+      background: #fff; 
+    }
     #printableReceipt h2 { text-align: center; margin: 0; font-size: 22px; text-transform: uppercase; text-decoration: underline; }
     #printableReceipt p { text-align: center; margin: 5px 0 20px 0; font-size: 14px; }
     .receipt-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
