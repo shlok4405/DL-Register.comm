@@ -198,7 +198,7 @@
         </div>
         <div class="form-group">
           <label>Discount Amount (₹):</label>
-          <input type="number" id="discountAmount" value="0">
+          <input type="number" id="discountAmount" value="0" oninput="calculateBalance()">
         </div>
         
         <div class="form-group">
@@ -258,6 +258,7 @@
             <th>DL App No.</th>
             <th>Vehicle</th>
             <th>Total Fee</th>
+            <th>Discount</th>
             <th>Paid</th>
             <th>Balance</th>
             <th>Due Date</th>
@@ -289,7 +290,8 @@
       <td><strong>Receipt Date:</strong> <span id="rDate"></span></td>
     </tr>
     <tr>
-      <td colspan="2"><strong>Total Amount:</strong> ₹<span id="rTotal"></span></td>
+      <td><strong>Total Fee:</strong> ₹<span id="rTotal"></span></td>
+      <td><strong>Discount:</strong> ₹<span id="rDiscount"></span></td>
     </tr>
     <tr>
       <td><strong>Paid Amount:</strong> ₹<span id="rPaid"></span></td>
@@ -410,10 +412,15 @@
 
   function logoutUser() { auth.signOut(); }
 
+  // UPDATED BALANCE CALCULATION LOGIC (Total Fee - Discount - Advance = Balance)
   function calculateBalance() {
     const total = parseFloat(document.getElementById('totalFee').value) || 0;
+    const discount = parseFloat(document.getElementById('discountAmount').value) || 0;
     const advance = parseFloat(document.getElementById('advancePayment').value) || 0;
-    const balance = total - advance;
+
+    const netFee = total - discount;
+    const balance = netFee - advance;
+
     document.getElementById('balanceAmount').value = balance >= 0 ? balance : 0;
   }
 
@@ -493,6 +500,7 @@
           <td>${d.dlAppNo || '-'}</td>
           <td>${d.vehicleType}</td>
           <td>₹${d.totalFee}</td>
+          <td style="color: green;">₹${d.discountAmount || 0}</td>
           <td>₹${d.advancePayment}</td>
           <td style="color: ${d.balanceAmount > 0 ? 'red' : 'green'}; font-weight: bold;">₹${d.balanceAmount}</td>
           <td>${formatDateToDMY(d.dueDate)}</td>
@@ -527,7 +535,7 @@
     document.getElementById('dlAppNo').value = rec.dlAppNo && rec.dlAppNo !== '-' ? rec.dlAppNo : '';
     document.getElementById('remarks').value = rec.remarks;
     document.getElementById('discountNote').value = rec.discountNote;
-    document.getElementById('discountAmount').value = rec.discountAmount;
+    document.getElementById('discountAmount').value = rec.discountAmount || 0;
     document.getElementById('totalFee').value = rec.totalFee;
     document.getElementById('advancePayment').value = rec.advancePayment;
     document.getElementById('balanceAmount').value = rec.balanceAmount;
@@ -567,7 +575,10 @@
 
     let paidNow = parseFloat(newPay);
     let updatedPaid = rec.advancePayment + paidNow;
-    let updatedBalance = rec.totalFee - updatedPaid;
+    
+    let discount = rec.discountAmount || 0;
+    let netFee = rec.totalFee - discount;
+    let updatedBalance = netFee - updatedPaid;
     if (updatedBalance < 0) updatedBalance = 0;
 
     let updatedRemarks = `${rec.remarks || ''} | [Installment Paid: ₹${paidNow} on ${new Date().toLocaleDateString()}]`;
@@ -591,6 +602,7 @@
     document.getElementById('rFather').innerText = rec.fatherName;
     document.getElementById('rAddress').innerText = rec.address || '-';
     document.getElementById('rTotal').innerText = rec.totalFee;
+    document.getElementById('rDiscount').innerText = rec.discountAmount || 0;
     document.getElementById('rPaid').innerText = rec.advancePayment;
     document.getElementById('rBalance').innerText = rec.balanceAmount;
     document.getElementById('rOperator').innerText = rec.addedBy || activeStaffName || 'Staff';
@@ -629,6 +641,7 @@
       "Address": r.address,
       "Remarks": r.remarks,
       "Total Fee (₹)": r.totalFee,
+      "Discount (₹)": r.discountAmount || 0,
       "Paid Amount (₹)": r.advancePayment,
       "Balance (₹)": r.balanceAmount,
       "Due Date": formatDateToDMY(r.dueDate),
