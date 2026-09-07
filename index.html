@@ -61,7 +61,7 @@
     td { padding: 8px; border: 1px solid #ddd; white-space: nowrap; }
     tr:nth-child(even) { background-color: #f9f9f9; }
 
-    /* Print Receipt Styling - Centered Alignment */
+    /* Print Receipt Styling - Top Center Alignment */
     @media print {
       body {
         margin: 0;
@@ -69,23 +69,22 @@
         background: white !important;
         display: flex;
         justify-content: center;
-        align-items: center;
-        min-height: 100vh;
+        align-items: flex-start;
       }
       body * { visibility: hidden; }
       #printableReceipt, #printableReceipt * { visibility: visible; }
       #printableReceipt {
-        position: absolute;
-        left: 50%;
-        top: 50%;
-        transform: translate(-50%, -50%);
+        position: relative;
+        left: auto;
+        top: 20px;
+        transform: none;
         width: 650px;
         color: black !important;
         background: white !important;
         font-family: 'Times New Roman', serif;
         box-shadow: none !important;
         border: 2px solid #000 !important;
-        margin: 0 !important;
+        margin: 0 auto !important;
       }
     }
     
@@ -441,7 +440,7 @@
 
   function logoutUser() { auth.signOut(); }
 
-  // UPDATED BALANCE CALCULATION LOGIC (Total Fee - Discount - Advance = Balance)
+  // BALANCE CALCULATION LOGIC
   function calculateBalance() {
     const total = parseFloat(document.getElementById('totalFee').value) || 0;
     const discount = parseFloat(document.getElementById('discountAmount').value) || 0;
@@ -506,7 +505,7 @@
     }
   }
 
-  // REALTIME LOADER: Sorted by createdAt DESC
+  // REALTIME LOADER
   function loadLiveEntries() {
     db.collection("dl_records").orderBy("createdAt", "desc").onSnapshot(snapshot => {
       let tbody = document.getElementById('tableBody');
