@@ -51,9 +51,10 @@
     .btn-pay { background-color: #28a745; }
     .btn-print { background-color: #17a2b8; }
 
-    /* Search & Table */
-    .search-box { background: #eef5fc; padding: 15px; border-radius: 6px; margin-top: 25px; border: 1px solid #1d70b8; }
-    .search-box input { width: 100%; padding: 10px; border: 1px solid #1d70b8; border-radius: 4px; }
+    /* Search & Filter Box Design */
+    .filter-box { background: #eef5fc; padding: 15px; border-radius: 6px; margin-top: 25px; border: 1px solid #1d70b8; }
+    .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-top: 10px; }
+    .filter-grid input, .filter-grid select { padding: 9px; border: 1px solid #1d70b8; border-radius: 4px; font-size: 13px; width: 100%; }
     
     .table-container { overflow-x: auto; margin-top: 20px; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
@@ -91,7 +92,7 @@
 <!-- 2. EMAIL VERIFICATION SECTION -->
 <div id="verifySection" class="auth-card" style="display: none;">
   <h2 style="color: #0b3c5d; margin-top: 0;">Verify Email Required ✉️</h2>
-  <p style="color: #666; font-size: 14px;">Your email is not verified. Please check your inbox and clik on the link to verify it.</p>
+  <p style="color: #666; font-size: 14px;">Your email is not verified. Please check your inbox and click on the link to verify it.</p>
   <button onclick="sendVerificationEmail()">Send Verification Link Again</button>
   <button onclick="checkVerificationStatus()" style="background: #28a745;">I Have Verified (Check Status)</button>
   <button onclick="logoutUser()" class="secondary-btn">Logout</button>
@@ -236,10 +237,35 @@
       </div>
     </form>
 
-    <!-- Search Section -->
-    <div class="search-box">
-      <label><strong>🔍 Search Customer:</strong></label>
-      <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Search by Name, Mobile, Application No, LL No, Reference, or Date...">
+    <!-- MULTI-OPTION FILTER & SEARCH SECTION -->
+    <div class="filter-box">
+      <label style="color: #0b3c5d;"><strong>🔍 Advanced Register Search & Filters:</strong></label>
+      <div class="filter-grid">
+        <input type="text" id="searchInput" onkeyup="applyFilters()" placeholder="Search Name, Mobile, App No, Ref...">
+        
+        <select id="filterVehicle" onchange="applyFilters()">
+          <option value="">-- Filter Vehicle --</option>
+          <option value="Two Wheeler">Two Wheeler</option>
+          <option value="Four Wheeler">Four Wheeler</option>
+          <option value="Both (2W + 4W)">Both (2W + 4W)</option>
+          <option value="Commercial / Heavy">Commercial / Heavy</option>
+          <option value="Crane">Crane</option>
+          <option value="Forklift">Forklift</option>
+          <option value="Renewal">Renewal</option>
+        </select>
+
+        <select id="filterPaymentStatus" onchange="applyFilters()">
+          <option value="">-- Payment Status --</option>
+          <option value="due">Pending Balance (Due)</option>
+          <option value="paid">Fully Paid</option>
+        </select>
+
+        <select id="filterLLStatus" onchange="applyFilters()">
+          <option value="">-- LL Outside Status --</option>
+          <option value="Yes">LL Outside: Yes</option>
+          <option value="No">LL Outside: No</option>
+        </select>
+      </div>
     </div>
 
     <!-- Table List -->
@@ -412,7 +438,7 @@
 
   function logoutUser() { auth.signOut(); }
 
-  // UPDATED BALANCE CALCULATION LOGIC (Total Fee - Discount - Advance = Balance)
+  // BALANCE CALCULATION LOGIC (Total Fee - Discount - Advance = Balance)
   function calculateBalance() {
     const total = parseFloat(document.getElementById('totalFee').value) || 0;
     const discount = parseFloat(document.getElementById('discountAmount').value) || 0;
@@ -477,43 +503,48 @@
     }
   }
 
-  // REALTIME LOADER: Sorted by createdAt DESC
+  // REALTIME LOADER & RENDERER
   function loadLiveEntries() {
     db.collection("dl_records").orderBy("createdAt", "desc").onSnapshot(snapshot => {
-      let tbody = document.getElementById('tableBody');
-      tbody.innerHTML = "";
       globalRecords = [];
-
       snapshot.forEach(doc => {
         let d = doc.data();
         d.id = doc.id;
         globalRecords.push(d);
-
-        let row = `<tr>
-          <td>${formatDateToDMY(d.paymentDate)}</td>
-          <td><b>${d.customerName}</b></td>
-          <td>${d.fatherName}</td>
-          <td>${d.mobile}</td>
-          <td>${formatDateToDMY(d.dob)}</td>
-          <td>${d.llAppNo || '-'}</td>
-          <td>${d.llNo || '-'}</td>
-          <td>${d.dlAppNo || '-'}</td>
-          <td>${d.vehicleType}</td>
-          <td>₹${d.totalFee}</td>
-          <td style="color: green;">₹${d.discountAmount || 0}</td>
-          <td>₹${d.advancePayment}</td>
-          <td style="color: ${d.balanceAmount > 0 ? 'red' : 'green'}; font-weight: bold;">₹${d.balanceAmount}</td>
-          <td>${formatDateToDMY(d.dueDate)}</td>
-          <td><small><b>${d.addedBy || 'Staff'}</b></small></td>
-          <td>
-            <button class="btn-sm btn-edit" onclick="editRecord('${d.id}')">Edit</button>
-            <button class="btn-sm btn-pay" onclick="addInstallment('${d.id}')">+ Pay</button>
-            <button class="btn-sm btn-print" onclick="printReceipt('${d.id}')">Receipt</button>
-            <button class="btn-sm btn-del" onclick="deleteRecord('${d.id}')">Del</button>
-          </td>
-        </tr>`;
-        tbody.innerHTML += row;
       });
+      renderTable(globalRecords);
+    });
+  }
+
+  function renderTable(records) {
+    let tbody = document.getElementById('tableBody');
+    tbody.innerHTML = "";
+
+    records.forEach(d => {
+      let row = `<tr data-vehicle="${d.vehicleType}" data-balance="${d.balanceAmount}" data-lloutside="${d.llOutside}">
+        <td>${formatDateToDMY(d.paymentDate)}</td>
+        <td><b>${d.customerName}</b></td>
+        <td>${d.fatherName}</td>
+        <td>${d.mobile}</td>
+        <td>${formatDateToDMY(d.dob)}</td>
+        <td>${d.llAppNo || '-'}</td>
+        <td>${d.llNo || '-'}</td>
+        <td>${d.dlAppNo || '-'}</td>
+        <td>${d.vehicleType}</td>
+        <td>₹${d.totalFee}</td>
+        <td style="color: green;">₹${d.discountAmount || 0}</td>
+        <td>₹${d.advancePayment}</td>
+        <td style="color: ${d.balanceAmount > 0 ? 'red' : 'green'}; font-weight: bold;">₹${d.balanceAmount}</td>
+        <td>${formatDateToDMY(d.dueDate)}</td>
+        <td><small><b>${d.addedBy || 'Staff'}</b></small></td>
+        <td>
+          <button class="btn-sm btn-edit" onclick="editRecord('${d.id}')">Edit</button>
+          <button class="btn-sm btn-pay" onclick="addInstallment('${d.id}')">+ Pay</button>
+          <button class="btn-sm btn-print" onclick="printReceipt('${d.id}')">Receipt</button>
+          <button class="btn-sm btn-del" onclick="deleteRecord('${d.id}')">Del</button>
+        </td>
+      </tr>`;
+      tbody.innerHTML += row;
     });
   }
 
@@ -613,11 +644,34 @@
     printArea.style.display = 'none';
   }
 
-  function filterTable() {
-    let input = document.getElementById("searchInput").value.toLowerCase();
+  // ADVANCED MULTI-FILTER FUNCTION
+  function applyFilters() {
+    let searchText = document.getElementById("searchInput").value.toLowerCase();
+    let vehicleVal = document.getElementById("filterVehicle").value;
+    let payStatusVal = document.getElementById("filterPaymentStatus").value;
+    let llStatusVal = document.getElementById("filterLLStatus").value;
+
     let rows = document.querySelectorAll("#tableBody tr");
+
     rows.forEach(row => {
-      row.style.display = row.innerText.toLowerCase().includes(input) ? "" : "none";
+      let textMatch = row.innerText.toLowerCase().includes(searchText);
+      
+      let rowVehicle = row.getAttribute("data-vehicle");
+      let vehicleMatch = !vehicleVal || rowVehicle === vehicleVal;
+
+      let rowBalance = parseFloat(row.getAttribute("data-balance")) || 0;
+      let payMatch = true;
+      if (payStatusVal === "due") payMatch = rowBalance > 0;
+      if (payStatusVal === "paid") payMatch = rowBalance === 0;
+
+      let rowLL = row.getAttribute("data-lloutside");
+      let llMatch = !llStatusVal || rowLL.startsWith(llStatusVal);
+
+      if (textMatch && vehicleMatch && payMatch && llMatch) {
+        row.style.display = "";
+      } else {
+        row.style.display = "none";
+      }
     });
   }
 
