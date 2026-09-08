@@ -102,7 +102,7 @@
 <div id="profileSetupSection" class="auth-card" style="display: none;">
   <h2 style="color: #0b3c5d; margin-top: 0;">Profile Setup 👤</h2>
   <p style="color: #666; font-size: 14px;">Email Verification Complete! Apna full name enter karein jo Receipt aur Registry me aayega.</p>
-  <input type="text" id="staffDisplayName" placeholder="Enter Your Name (e.g. Shlok Prajapati)" required>
+  <input type="text" id="staffDisplayName" placeholder="Enter Your Name" required>
   <button onclick="saveProfileName()">Save Name & Enter Portal 🚀</button>
   <p id="setupError" style="color: red; font-size: 13px; margin-top: 10px;"></p>
 </div>
@@ -155,12 +155,12 @@
 
         <div class="form-group">
           <label>Referred By / Reference Name:</label>
-          <input type="text" id="reference" placeholder="e.g. Self, Friend Name, Agent">
+          <input type="text" id="reference" placeholder="e.g. Self, Friend Name, Other">
         </div>
         <div class="form-group">
-          <label>LL Made Outside?</label>
+          <label>LL Issued elsewhere</label>
           <select id="llOutside">
-            <option value="No (Made Here)">No (Made Here)</option>
+            <option value="No (Made Here)">No</option>
             <option value="Yes">Yes</option>
           </select>
         </div>
