@@ -147,13 +147,14 @@
           <input type="date" id="dob" required>
         </div>
         
-        <!-- Multi-Select Vehicle Types (Checkboxes) -->
+        <!-- Multi-Select Vehicle Types (Checkboxes including LDRX) -->
         <div class="form-group full-width">
           <label>Vehicle Type (Select Multiple) *</label>
           <div class="checkbox-group" id="vehicleCheckboxGroup">
             <label><input type="checkbox" value="Two Wheeler"> Two Wheeler</label>
             <label><input type="checkbox" value="Four Wheeler"> Four Wheeler</label>
             <label><input type="checkbox" value="AD"> AD</label>
+            <label><input type="checkbox" value="LDRX"> LDRX</label>
             <label><input type="checkbox" value="Commercial / Heavy"> Commercial / Heavy</label>
             <label><input type="checkbox" value="Crane"> Crane</label>
             <label><input type="checkbox" value="Forklift"> Forklift</label>
@@ -243,7 +244,7 @@
       </div>
     </form>
 
-    <!-- FILTER SECTION WITH MULTI-SELECT VEHICLE & TODAY/YESTERDAY OPTIMIZATION -->
+    <!-- FILTER SECTION WITH MULTI-SELECT VEHICLE (INCLUDING LDRX) & TODAY/YESTERDAY OPTIMIZATION -->
     <div class="filter-box">
       <div class="notice-bar">
         ⚡ <b>Optimization Note:</b> Server par load kam rakhne ke liye default me sirf <b>Aaj (Today)</b> aur <b>Pichle Din (Yesterday)</b> ki entries dikhai de rahi hain. Purani entries dekhne ke liye From/To date choose karein.
@@ -258,6 +259,7 @@
             <option value="Two Wheeler">Two Wheeler</option>
             <option value="Four Wheeler">Four Wheeler</option>
             <option value="AD">AD</option>
+            <option value="LDRX">LDRX</option>
             <option value="Commercial / Heavy">Commercial / Heavy</option>
             <option value="Crane">Crane</option>
             <option value="Forklift">Forklift</option>
