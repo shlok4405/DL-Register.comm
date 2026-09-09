@@ -148,7 +148,7 @@
             <option value="Four Wheeler">Four Wheeler</option>
             <option value="Both (2W + 4W)">Both (2W + 4W)</option>
             <option value="AD">AD</option>
-            <option value="2+4 DL + AD">2+4 + AD</option>
+            <option value="2+4 DL + AD">2+4 DL + AD</option>
             <option value="Commercial / Heavy">Commercial / Heavy</option>
             <option value="Crane">Crane</option>
             <option value="Forklift">Forklift</option>
@@ -239,11 +239,11 @@
       </div>
     </form>
 
-    <!-- MULTI-OPTION FILTER & SEARCH SECTION -->
+    <!-- UPDATED FILTER SECTION: REFERENCE INSTEAD OF LL OUTSIDE -->
     <div class="filter-box">
       <label style="color: #0b3c5d;"><strong>🔍 Advanced Register Search & Filters:</strong></label>
       <div class="filter-grid">
-        <input type="text" id="searchInput" onkeyup="applyFilters()" placeholder="Search Name, Mobile, App No, Ref...">
+        <input type="text" id="searchInput" onkeyup="applyFilters()" placeholder="Search Name, Mobile, App No...">
         
         <select id="filterVehicle" onchange="applyFilters()">
           <option value="">-- Filter Vehicle --</option>
@@ -264,11 +264,8 @@
           <option value="paid">Fully Paid</option>
         </select>
 
-        <select id="filterLLStatus" onchange="applyFilters()">
-          <option value="">-- LL Outside Status --</option>
-          <option value="Yes">LL Outside: Yes</option>
-          <option value="No">LL Outside: No</option>
-        </select>
+        <!-- Replaced LL Filter with Reference Search Filter -->
+        <input type="text" id="filterReference" onkeyup="applyFilters()" placeholder="Filter by Reference Name...">
       </div>
     </div>
 
@@ -283,6 +280,7 @@
             <th>Father's Name</th>
             <th>Mobile</th>
             <th>DOB</th>
+            <th>Reference</th>
             <th>LL App No.</th>
             <th>LL Number</th>
             <th>DL App No.</th>
@@ -525,12 +523,13 @@
     tbody.innerHTML = "";
 
     records.forEach(d => {
-      let row = `<tr data-vehicle="${d.vehicleType}" data-balance="${d.balanceAmount}" data-lloutside="${d.llOutside}">
+      let row = `<tr data-vehicle="${d.vehicleType}" data-balance="${d.balanceAmount}" data-reference="${(d.reference || '').toLowerCase()}">
         <td>${formatDateToDMY(d.paymentDate)}</td>
         <td><b>${d.customerName}</b></td>
         <td>${d.fatherName}</td>
         <td>${d.mobile}</td>
         <td>${formatDateToDMY(d.dob)}</td>
+        <td>${d.reference || '-'}</td>
         <td>${d.llAppNo || '-'}</td>
         <td>${d.llNo || '-'}</td>
         <td>${d.dlAppNo || '-'}</td>
@@ -648,12 +647,12 @@
     printArea.style.display = 'none';
   }
 
-  // ADVANCED MULTI-FILTER FUNCTION
+  // ADVANCED MULTI-FILTER FUNCTION WITH REFERENCE SEARCH
   function applyFilters() {
     let searchText = document.getElementById("searchInput").value.toLowerCase();
     let vehicleVal = document.getElementById("filterVehicle").value;
     let payStatusVal = document.getElementById("filterPaymentStatus").value;
-    let llStatusVal = document.getElementById("filterLLStatus").value;
+    let refVal = document.getElementById("filterReference").value.toLowerCase();
 
     let rows = document.querySelectorAll("#tableBody tr");
 
@@ -668,10 +667,10 @@
       if (payStatusVal === "due") payMatch = rowBalance > 0;
       if (payStatusVal === "paid") payMatch = rowBalance === 0;
 
-      let rowLL = row.getAttribute("data-lloutside");
-      let llMatch = !llStatusVal || rowLL.startsWith(llStatusVal);
+      let rowRef = row.getAttribute("data-reference") || "";
+      let refMatch = !refVal || rowRef.includes(refVal);
 
-      if (textMatch && vehicleMatch && payMatch && llMatch) {
+      if (textMatch && vehicleMatch && payMatch && refMatch) {
         row.style.display = "";
       } else {
         row.style.display = "none";
@@ -679,6 +678,7 @@
     });
   }
 
+  // EXCEL EXPORT WITH REFERENCE COLUMN INCLUDED
   function exportToExcel() {
     if (globalRecords.length === 0) {
       alert("Export ke liye koi record nahi hai!");
@@ -690,11 +690,11 @@
       "Father Name": r.fatherName,
       "Mobile": r.mobile,
       "DOB": formatDateToDMY(r.dob),
+      "Reference": r.reference || '-',
       "LL Application No": r.llAppNo || '-',
       "LL Number": r.llNo || '-',
       "DL Application No": r.dlAppNo || '-',
       "Vehicle Type": r.vehicleType,
-      "Reference": r.reference,
       "LL Outside": r.llOutside,
       "Address": r.address,
       "Remarks": r.remarks,
