@@ -55,6 +55,7 @@
     .filter-box { background: #eef5fc; padding: 15px; border-radius: 6px; margin-top: 25px; border: 1px solid #1d70b8; }
     .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-top: 10px; }
     .filter-grid input, .filter-grid select { padding: 9px; border: 1px solid #1d70b8; border-radius: 4px; font-size: 13px; width: 100%; }
+    .clear-btn { background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
     
     .table-container { overflow-x: auto; margin-top: 20px; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
@@ -239,9 +240,9 @@
       </div>
     </form>
 
-    <!-- UPDATED FILTER SECTION: REFERENCE INSTEAD OF LL OUTSIDE -->
+    <!-- FILTER SECTION WITH DATE-RANGE & REFERENCE SEARCH -->
     <div class="filter-box">
-      <label style="color: #0b3c5d;"><strong>🔍 Advanced Register Search & Filters:</strong></label>
+      <label style="color: #0b3c5d;"><strong>🔍 Advanced Search & Date-Range Export Filters:</strong></label>
       <div class="filter-grid">
         <input type="text" id="searchInput" onkeyup="applyFilters()" placeholder="Search Name, Mobile, App No...">
         
@@ -264,8 +265,18 @@
           <option value="paid">Fully Paid</option>
         </select>
 
-        <!-- Replaced LL Filter with Reference Search Filter -->
-        <input type="text" id="filterReference" onkeyup="applyFilters()" placeholder="Filter by Reference Name...">
+        <input type="text" id="filterReference" onkeyup="applyFilters()" placeholder="Filter by Reference...">
+        
+        <!-- Date Range Inputs -->
+        <div style="display:flex; flex-direction:column;">
+          <small style="font-weight:bold; color:#555;">From Date:</small>
+          <input type="date" id="fromDate" onchange="applyFilters()">
+        </div>
+        <div style="display:flex; flex-direction:column;">
+          <small style="font-weight:bold; color:#555;">To Date:</small>
+          <input type="date" id="toDate" onchange="applyFilters()">
+        </div>
+        <button type="button" class="clear-btn" onclick="clearFilters()" style="margin-top: auto; padding: 9px;">Clear Filters 🔄</button>
       </div>
     </div>
 
@@ -440,7 +451,7 @@
 
   function logoutUser() { auth.signOut(); }
 
-  // BALANCE CALCULATION LOGIC (Total Fee - Discount - Advance = Balance)
+  // BALANCE CALCULATION LOGIC
   function calculateBalance() {
     const total = parseFloat(document.getElementById('totalFee').value) || 0;
     const discount = parseFloat(document.getElementById('discountAmount').value) || 0;
@@ -523,7 +534,7 @@
     tbody.innerHTML = "";
 
     records.forEach(d => {
-      let row = `<tr data-vehicle="${d.vehicleType}" data-balance="${d.balanceAmount}" data-reference="${(d.reference || '').toLowerCase()}">
+      let row = `<tr data-vehicle="${d.vehicleType}" data-balance="${d.balanceAmount}" data-reference="${(d.reference || '').toLowerCase()}" data-date="${d.paymentDate}">
         <td>${formatDateToDMY(d.paymentDate)}</td>
         <td><b>${d.customerName}</b></td>
         <td>${d.fatherName}</td>
@@ -647,44 +658,65 @@
     printArea.style.display = 'none';
   }
 
-  // ADVANCED MULTI-FILTER FUNCTION WITH REFERENCE SEARCH
-  function applyFilters() {
+  // ADVANCED MULTI-FILTER FUNCTION INCLUDING DATE RANGE
+  function getFilteredRecords() {
     let searchText = document.getElementById("searchInput").value.toLowerCase();
     let vehicleVal = document.getElementById("filterVehicle").value;
     let payStatusVal = document.getElementById("filterPaymentStatus").value;
     let refVal = document.getElementById("filterReference").value.toLowerCase();
+    let fromDateVal = document.getElementById("fromDate").value;
+    let toDateVal = document.getElementById("toDate").value;
 
-    let rows = document.querySelectorAll("#tableBody tr");
-
-    rows.forEach(row => {
-      let textMatch = row.innerText.toLowerCase().includes(searchText);
+    return globalRecords.filter(r => {
+      let textMatch = !searchText || 
+        (r.customerName && r.customerName.toLowerCase().includes(searchText)) ||
+        (r.mobile && r.mobile.includes(searchText)) ||
+        (r.fatherName && r.fatherName.toLowerCase().includes(searchText)) ||
+        (r.llAppNo && r.llAppNo.toLowerCase().includes(searchText)) ||
+        (r.llNo && r.llNo.toLowerCase().includes(searchText)) ||
+        (r.dlAppNo && r.dlAppNo.toLowerCase().includes(searchText));
       
-      let rowVehicle = row.getAttribute("data-vehicle");
-      let vehicleMatch = !vehicleVal || rowVehicle === vehicleVal;
+      let vehicleMatch = !vehicleVal || r.vehicleType === vehicleVal;
 
-      let rowBalance = parseFloat(row.getAttribute("data-balance")) || 0;
       let payMatch = true;
-      if (payStatusVal === "due") payMatch = rowBalance > 0;
-      if (payStatusVal === "paid") payMatch = rowBalance === 0;
+      if (payStatusVal === "due") payMatch = r.balanceAmount > 0;
+      if (payStatusVal === "paid") payMatch = r.balanceAmount === 0;
 
-      let rowRef = row.getAttribute("data-reference") || "";
-      let refMatch = !refVal || rowRef.includes(refVal);
+      let refMatch = !refVal || (r.reference && r.reference.toLowerCase().includes(refVal));
 
-      if (textMatch && vehicleMatch && payMatch && refMatch) {
-        row.style.display = "";
-      } else {
-        row.style.display = "none";
-      }
+      let dateMatch = true;
+      if (fromDateVal && r.paymentDate < fromDateVal) dateMatch = false;
+      if (toDateVal && r.paymentDate > toDateVal) dateMatch = false;
+
+      return textMatch && vehicleMatch && payMatch && refMatch && dateMatch;
     });
   }
 
-  // EXCEL EXPORT WITH REFERENCE COLUMN INCLUDED
+  function applyFilters() {
+    const filtered = getFilteredRecords();
+    renderTable(filtered);
+  }
+
+  function clearFilters() {
+    document.getElementById("searchInput").value = "";
+    document.getElementById("filterVehicle").value = "";
+    document.getElementById("filterPaymentStatus").value = "";
+    document.getElementById("filterReference").value = "";
+    document.getElementById("fromDate").value = "";
+    document.getElementById("toDate").value = "";
+    renderTable(globalRecords);
+  }
+
+  // EXCEL EXPORT (EXPORTS FILTERED / DATE RANGE DATA ONLY)
   function exportToExcel() {
-    if (globalRecords.length === 0) {
-      alert("Export ke liye koi record nahi hai!");
+    const recordsToExport = getFilteredRecords();
+
+    if (recordsToExport.length === 0) {
+      alert("Selected Filters ya Date Range me koi record nahi mila!");
       return;
     }
-    const excelData = globalRecords.map(r => ({
+
+    const excelData = recordsToExport.map(r => ({
       "Payment Date": formatDateToDMY(r.paymentDate),
       "Customer Name": r.customerName,
       "Father Name": r.fatherName,
@@ -709,7 +741,15 @@
     const worksheet = XLSX.utils.json_to_sheet(excelData);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Register");
-    XLSX.writeFile(workbook, `Tej_Singh_DL_Register_${new Date().toISOString().slice(0,10)}.xlsx`);
+    
+    let fileName = `Tej_Singh_DL_Register_${new Date().toISOString().slice(0,10)}.xlsx`;
+    const fromDateVal = document.getElementById("fromDate").value;
+    const toDateVal = document.getElementById("toDate").value;
+    if (fromDateVal || toDateVal) {
+      fileName = `Tej_Singh_Register_${fromDateVal || 'Start'}_to_${toDateVal || 'End'}.xlsx`;
+    }
+
+    XLSX.writeFile(workbook, fileName);
   }
 
   function backupData() {
