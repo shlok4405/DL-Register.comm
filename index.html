@@ -11,13 +11,13 @@
     body { background-color: #f0f4f8; margin: 0; padding: 20px; }
     .container { max-width: 1250px; margin: 0 auto; background: white; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
     
-    /* Auth Cards (Login, Verify, Setup Profile) */
+    /* Auth Cards */
     .auth-card { max-width: 420px; margin: 60px auto; padding: 30px; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center; }
     .auth-card input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; }
     .auth-card button { width: 100%; padding: 12px; background: #0b3c5d; color: white; border: none; font-size: 15px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 8px; }
     .auth-card button.secondary-btn { background: #6c757d; }
 
-    /* Main Dashboard Header */
+    /* Header */
     .header { background-color: #0b3c5d; color: white; text-align: center; padding: 20px; position: relative; }
     .header h1 { margin: 0; color: #ff3b30; font-size: 26px; text-transform: uppercase; font-weight: 800; }
     .header p { margin: 5px 0 0; font-size: 15px; font-weight: 500; }
@@ -31,9 +31,14 @@
     .form-group { display: flex; flex-direction: column; }
     .form-group label { font-size: 13px; font-weight: bold; margin-bottom: 5px; color: #333; }
     .form-group input, .form-group select, .form-group textarea { padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+    .form-group select[multiple] { height: 110px; }
     .form-group input[readonly] { background-color: #e9ecef; }
     .full-width { grid-column: 1 / -1; }
     
+    /* Multi-select Vehicle Checkbox Box */
+    .checkbox-group { display: flex; flex-wrap: wrap; gap: 10px; background: #f8f9fa; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
+    .checkbox-group label { font-size: 13px; font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+
     /* Action Buttons */
     .button-group { display: flex; gap: 10px; margin-top: 25px; flex-wrap: wrap; }
     .btn { flex: 1; min-width: 140px; padding: 12px; border: none; border-radius: 5px; font-weight: bold; color: white; cursor: pointer; font-size: 14px; text-align: center; }
@@ -51,11 +56,12 @@
     .btn-pay { background-color: #28a745; }
     .btn-print { background-color: #17a2b8; }
 
-    /* Search & Filter Box Design */
+    /* Filter Box */
     .filter-box { background: #eef5fc; padding: 15px; border-radius: 6px; margin-top: 25px; border: 1px solid #1d70b8; }
     .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-top: 10px; }
     .filter-grid input, .filter-grid select { padding: 9px; border: 1px solid #1d70b8; border-radius: 4px; font-size: 13px; width: 100%; }
     .clear-btn { background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    .notice-bar { background-color: #fff3cd; color: #856404; padding: 8px 12px; border-radius: 4px; font-size: 12px; margin-bottom: 10px; border: 1px solid #ffeeba; }
     
     .table-container { overflow-x: auto; margin-top: 20px; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
@@ -63,7 +69,7 @@
     td { padding: 8px; border: 1px solid #ddd; white-space: nowrap; }
     tr:nth-child(even) { background-color: #f9f9f9; }
 
-    /* Print Receipt Styling */
+    /* Printable Receipt */
     @media print {
       body * { visibility: hidden; }
       #printableReceipt, #printableReceipt * { visibility: visible; }
@@ -80,7 +86,7 @@
 </head>
 <body>
 
-<!-- 1. LOGIN SECTION -->
+<!-- LOGIN SECTION -->
 <div id="loginSection" class="auth-card">
   <h2 style="color: #0b3c5d; margin-top: 0;">Tej Singh Portal</h2>
   <p style="color: #666; font-size: 14px;">Login to Access Portal</p>
@@ -90,7 +96,7 @@
   <p id="loginError" style="color: red; font-size: 13px; margin-top: 10px;"></p>
 </div>
 
-<!-- 2. EMAIL VERIFICATION SECTION -->
+<!-- EMAIL VERIFICATION SECTION -->
 <div id="verifySection" class="auth-card" style="display: none;">
   <h2 style="color: #0b3c5d; margin-top: 0;">Verify Email Required ✉️</h2>
   <p style="color: #666; font-size: 14px;">Your email is not verified. Please check your inbox and click on the link to verify it.</p>
@@ -100,7 +106,7 @@
   <p id="verifyMsg" style="color: green; font-size: 13px; margin-top: 10px;"></p>
 </div>
 
-<!-- 3. PROFILE NAME SETUP SECTION -->
+<!-- PROFILE SETUP SECTION -->
 <div id="profileSetupSection" class="auth-card" style="display: none;">
   <h2 style="color: #0b3c5d; margin-top: 0;">Profile Setup 👤</h2>
   <p style="color: #666; font-size: 14px;">Email Verification Complete!.</p>
@@ -109,7 +115,7 @@
   <p id="setupError" style="color: red; font-size: 13px; margin-top: 10px;"></p>
 </div>
 
-<!-- 4. MAIN REGISTER DASHBOARD -->
+<!-- MAIN DASHBOARD -->
 <div class="container" id="mainDashboard" style="display: none;">
   <div class="header">
     <h1>Tej Singh Motor Training School</h1>
@@ -141,20 +147,18 @@
           <input type="date" id="dob" required>
         </div>
         
-        <div class="form-group">
-          <label>Vehicle Type *</label>
-          <select id="vehicleType" required>
-            <option value="">-- Select Vehicle Type --</option>
-            <option value="Two Wheeler">Two Wheeler</option>
-            <option value="Four Wheeler">Four Wheeler</option>
-            <option value="Both (2W + 4W)">Both (2W + 4W)</option>
-            <option value="AD">AD</option>
-            <option value="2+4 DL + AD">2+4 DL + AD</option>
-            <option value="Commercial / Heavy">Commercial / Heavy</option>
-            <option value="Crane">Crane</option>
-            <option value="Forklift">Forklift</option>
-            <option value="Renewal">Renewal</option>
-          </select>
+        <!-- Multi-Select Vehicle Types (Checkboxes) -->
+        <div class="form-group full-width">
+          <label>Vehicle Type (Select Multiple) *</label>
+          <div class="checkbox-group" id="vehicleCheckboxGroup">
+            <label><input type="checkbox" value="Two Wheeler"> Two Wheeler</label>
+            <label><input type="checkbox" value="Four Wheeler"> Four Wheeler</label>
+            <label><input type="checkbox" value="AD"> AD</label>
+            <label><input type="checkbox" value="Commercial / Heavy"> Commercial / Heavy</label>
+            <label><input type="checkbox" value="Crane"> Crane</label>
+            <label><input type="checkbox" value="Forklift"> Forklift</label>
+            <label><input type="checkbox" value="Renewal"> Renewal</label>
+          </div>
         </div>
 
         <div class="form-group">
@@ -173,7 +177,6 @@
           <input type="text" id="address" placeholder="Enter address">
         </div>
 
-        <!-- Positioned After Address -->
         <div class="form-group">
           <label>LL Application No.:</label>
           <input type="text" id="llAppNo" placeholder="Enter LL Application No.">
@@ -240,24 +243,27 @@
       </div>
     </form>
 
-    <!-- FILTER SECTION WITH DATE-RANGE & REFERENCE SEARCH -->
+    <!-- FILTER SECTION WITH MULTI-SELECT VEHICLE & TODAY/YESTERDAY OPTIMIZATION -->
     <div class="filter-box">
-      <label style="color: #0b3c5d;"><strong>🔍 Advanced Search & Date-Range Export Filters:</strong></label>
+      <div class="notice-bar">
+        ⚡ <b>Optimization Note:</b> Server par load kam rakhne ke liye default me sirf <b>Aaj (Today)</b> aur <b>Pichle Din (Yesterday)</b> ki entries dikhai de rahi hain. Purani entries dekhne ke liye From/To date choose karein.
+      </div>
+      <label style="color: #0b3c5d;"><strong>🔍 Advanced Register Search & Filters:</strong></label>
       <div class="filter-grid">
         <input type="text" id="searchInput" onkeyup="applyFilters()" placeholder="Search Name, Mobile, App No...">
         
-        <select id="filterVehicle" onchange="applyFilters()">
-          <option value="">-- Filter Vehicle --</option>
-          <option value="Two Wheeler">Two Wheeler</option>
-          <option value="Four Wheeler">Four Wheeler</option>
-          <option value="Both (2W + 4W)">Both (2W + 4W)</option>
-          <option value="AD">AD</option>
-          <option value="2+4 DL + AD">2+4 DL + AD</option>
-          <option value="Commercial / Heavy">Commercial / Heavy</option>
-          <option value="Crane">Crane</option>
-          <option value="Forklift">Forklift</option>
-          <option value="Renewal">Renewal</option>
-        </select>
+        <div style="display:flex; flex-direction:column;">
+          <small style="font-weight:bold; color:#555;">Filter Vehicles (Hold Ctrl/Cmd):</small>
+          <select id="filterVehicle" multiple onchange="applyFilters()">
+            <option value="Two Wheeler">Two Wheeler</option>
+            <option value="Four Wheeler">Four Wheeler</option>
+            <option value="AD">AD</option>
+            <option value="Commercial / Heavy">Commercial / Heavy</option>
+            <option value="Crane">Crane</option>
+            <option value="Forklift">Forklift</option>
+            <option value="Renewal">Renewal</option>
+          </select>
+        </div>
 
         <select id="filterPaymentStatus" onchange="applyFilters()">
           <option value="">-- Payment Status --</option>
@@ -267,7 +273,6 @@
 
         <input type="text" id="filterReference" onkeyup="applyFilters()" placeholder="Filter by Reference...">
         
-        <!-- Date Range Inputs -->
         <div style="display:flex; flex-direction:column;">
           <small style="font-weight:bold; color:#555;">From Date:</small>
           <input type="date" id="fromDate" onchange="applyFilters()">
@@ -369,7 +374,7 @@
 
   document.getElementById('paymentDate').valueAsDate = new Date();
 
-  // AUTHENTICATION & VERIFICATION FLOW CONTROLLER
+  // AUTHENTICATION FLOW
   auth.onAuthStateChanged(user => {
     hideAllSections();
     if (user) {
@@ -469,17 +474,52 @@
     return parts.length === 3 ? `${parts[2]}-${parts[1]}-${parts[0]}` : dateString;
   }
 
+  // HELPER TO GET SELECTED VEHICLE CHECKBOX VALUES
+  function getSelectedVehicles() {
+    const checkboxes = document.querySelectorAll('#vehicleCheckboxGroup input[type="checkbox"]:checked');
+    let selected = [];
+    checkboxes.forEach(cb => selected.push(cb.value));
+    return selected.join(", ");
+  }
+
+  // HELPER TO SET VEHICLE CHECKBOXES ON EDIT
+  function setSelectedVehicles(vehicleString) {
+    const checkboxes = document.querySelectorAll('#vehicleCheckboxGroup input[type="checkbox"]');
+    checkboxes.forEach(cb => {
+      cb.checked = vehicleString && vehicleString.includes(cb.value);
+    });
+  }
+
+  // MIGRATION HELPER: Convert old combined terms into individual comma-separated strings
+  function normalizeVehicleType(vehicleStr) {
+    if (!vehicleStr) return "";
+    let normalized = vehicleStr;
+    if (normalized.includes("Both (2W + 4W)")) {
+      normalized = normalized.replace("Both (2W + 4W)", "Two Wheeler, Four Wheeler");
+    }
+    if (normalized.includes("2+4 DL + AD")) {
+      normalized = normalized.replace("2+4 DL + AD", "Two Wheeler, Four Wheeler, AD");
+    }
+    return normalized;
+  }
+
   // Save OR Update Entry Handler
   function handleFormSubmit(e) {
     e.preventDefault();
     const editId = document.getElementById('editRecordId').value;
+    
+    const selectedVehicles = getSelectedVehicles();
+    if (!selectedVehicles) {
+      alert("Kripya kam se kam ek Vehicle Type zaroor chunein!");
+      return;
+    }
 
     const recordData = {
       customerName: document.getElementById('customerName').value,
       fatherName: document.getElementById('fatherName').value,
       mobile: document.getElementById('mobile').value,
       dob: document.getElementById('dob').value,
-      vehicleType: document.getElementById('vehicleType').value,
+      vehicleType: selectedVehicles,
       reference: document.getElementById('reference').value || '-',
       llOutside: document.getElementById('llOutside').value,
       address: document.getElementById('address').value || '-',
@@ -516,16 +556,18 @@
     }
   }
 
-  // REALTIME LOADER & RENDERER
+  // REALTIME LOADER
   function loadLiveEntries() {
     db.collection("dl_records").orderBy("createdAt", "desc").onSnapshot(snapshot => {
       globalRecords = [];
       snapshot.forEach(doc => {
         let d = doc.data();
         d.id = doc.id;
+        // Migration for old combined vehicle tags
+        d.vehicleType = normalizeVehicleType(d.vehicleType);
         globalRecords.push(d);
       });
-      renderTable(globalRecords);
+      applyFilters();
     });
   }
 
@@ -534,7 +576,7 @@
     tbody.innerHTML = "";
 
     records.forEach(d => {
-      let row = `<tr data-vehicle="${d.vehicleType}" data-balance="${d.balanceAmount}" data-reference="${(d.reference || '').toLowerCase()}" data-date="${d.paymentDate}">
+      let row = `<tr>
         <td>${formatDateToDMY(d.paymentDate)}</td>
         <td><b>${d.customerName}</b></td>
         <td>${d.fatherName}</td>
@@ -544,7 +586,7 @@
         <td>${d.llAppNo || '-'}</td>
         <td>${d.llNo || '-'}</td>
         <td>${d.dlAppNo || '-'}</td>
-        <td>${d.vehicleType}</td>
+        <td><b>${d.vehicleType}</b></td>
         <td>₹${d.totalFee}</td>
         <td style="color: green;">₹${d.discountAmount || 0}</td>
         <td>₹${d.advancePayment}</td>
@@ -571,7 +613,9 @@
     document.getElementById('fatherName').value = rec.fatherName;
     document.getElementById('mobile').value = rec.mobile;
     document.getElementById('dob').value = rec.dob;
-    document.getElementById('vehicleType').value = rec.vehicleType;
+    
+    setSelectedVehicles(rec.vehicleType);
+
     document.getElementById('reference').value = rec.reference;
     document.getElementById('llOutside').value = rec.llOutside;
     document.getElementById('address').value = rec.address;
@@ -596,6 +640,7 @@
 
   function resetForm() {
     document.getElementById('admissionForm').reset();
+    setSelectedVehicles("");
     document.getElementById('editRecordId').value = "";
     document.getElementById('paymentDate').valueAsDate = new Date();
     document.getElementById('saveBtn').style.display = 'inline-block';
@@ -658,14 +703,24 @@
     printArea.style.display = 'none';
   }
 
-  // ADVANCED MULTI-FILTER FUNCTION INCLUDING DATE RANGE
+  // ADVANCED MULTI-FILTER FUNCTION WITH TODAY / YESTERDAY OPTIMIZATION
   function getFilteredRecords() {
     let searchText = document.getElementById("searchInput").value.toLowerCase();
-    let vehicleVal = document.getElementById("filterVehicle").value;
+    
+    // Get Selected Multi-Vehicles
+    let vehicleSelect = document.getElementById("filterVehicle");
+    let selectedVehicles = Array.from(vehicleSelect.selectedOptions).map(opt => opt.value);
+
     let payStatusVal = document.getElementById("filterPaymentStatus").value;
     let refVal = document.getElementById("filterReference").value.toLowerCase();
     let fromDateVal = document.getElementById("fromDate").value;
     let toDateVal = document.getElementById("toDate").value;
+
+    // Default Date Range Calculation: Today & Yesterday
+    const today = new Date().toISOString().slice(0, 10);
+    const yesterdayDate = new Date();
+    yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+    const yesterday = yesterdayDate.toISOString().slice(0, 10);
 
     return globalRecords.filter(r => {
       let textMatch = !searchText || 
@@ -676,7 +731,11 @@
         (r.llNo && r.llNo.toLowerCase().includes(searchText)) ||
         (r.dlAppNo && r.dlAppNo.toLowerCase().includes(searchText));
       
-      let vehicleMatch = !vehicleVal || r.vehicleType === vehicleVal;
+      // Multi-Vehicle Selection Match Logic
+      let vehicleMatch = true;
+      if (selectedVehicles.length > 0) {
+        vehicleMatch = selectedVehicles.some(v => r.vehicleType && r.vehicleType.includes(v));
+      }
 
       let payMatch = true;
       if (payStatusVal === "due") payMatch = r.balanceAmount > 0;
@@ -684,9 +743,15 @@
 
       let refMatch = !refVal || (r.reference && r.reference.toLowerCase().includes(refVal));
 
+      // Date Range Match Logic (Default: Today + Yesterday)
       let dateMatch = true;
-      if (fromDateVal && r.paymentDate < fromDateVal) dateMatch = false;
-      if (toDateVal && r.paymentDate > toDateVal) dateMatch = false;
+      if (fromDateVal || toDateVal) {
+        if (fromDateVal && r.paymentDate < fromDateVal) dateMatch = false;
+        if (toDateVal && r.paymentDate > toDateVal) dateMatch = false;
+      } else {
+        // Default behavior: Show only Today and Yesterday
+        dateMatch = (r.paymentDate === today || r.paymentDate === yesterday);
+      }
 
       return textMatch && vehicleMatch && payMatch && refMatch && dateMatch;
     });
@@ -699,12 +764,17 @@
 
   function clearFilters() {
     document.getElementById("searchInput").value = "";
-    document.getElementById("filterVehicle").value = "";
+    
+    let vehicleSelect = document.getElementById("filterVehicle");
+    for (let i = 0; i < vehicleSelect.options.length; i++) {
+      vehicleSelect.options[i].selected = false;
+    }
+
     document.getElementById("filterPaymentStatus").value = "";
     document.getElementById("filterReference").value = "";
     document.getElementById("fromDate").value = "";
     document.getElementById("toDate").value = "";
-    renderTable(globalRecords);
+    applyFilters();
   }
 
   // EXCEL EXPORT (EXPORTS FILTERED / DATE RANGE DATA ONLY)
