@@ -22,7 +22,7 @@
     .header h1 { margin: 0; color: #ff3b30; font-size: 26px; text-transform: uppercase; font-weight: 800; }
     .header p { margin: 5px 0 0; font-size: 15px; font-weight: 500; }
     .header-btns { position: absolute; right: 20px; top: 20px; display: flex; gap: 10px; }
-    .log-btn { background: #ff9800; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    .log-btn { background: #ff9800; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; display: none; }
     .logout-btn { background: #d9534f; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
 
     /* Form Design */
@@ -135,7 +135,7 @@
     <h1>Tej Singh Motor Training School</h1>
     <p>Customer Admission & Payment Register | Welcome, <span id="userGreeting" style="text-decoration: underline;">Staff</span></p>
     <div class="header-btns">
-      <button class="log-btn" onclick="openAuditLogModal()">📜 Activity Logs</button>
+      <button class="log-btn" id="auditLogBtn" onclick="openAuditLogModal()">📜 Activity Logs</button>
       <button class="logout-btn" onclick="logoutUser()">Logout 🔒</button>
     </div>
   </div>
@@ -460,6 +460,9 @@
   let activeStaffName = "";
   let activeStaffEmail = "";
 
+  // Authorized Admin Emails who can view Activity Logs
+  const ADMIN_EMAILS = ["singharvind1082@gmail.com", "shlok44066@gmail.com"];
+
   document.getElementById('paymentDate').valueAsDate = new Date();
 
   // AUTHENTICATION FLOW
@@ -474,6 +477,14 @@
       } else {
         activeStaffName = user.displayName;
         document.getElementById('userGreeting').innerText = activeStaffName;
+        
+        // Show Activity Logs button ONLY for authorized admin emails
+        if (ADMIN_EMAILS.includes(activeStaffEmail.toLowerCase())) {
+          document.getElementById('auditLogBtn').style.display = 'block';
+        } else {
+          document.getElementById('auditLogBtn').style.display = 'none';
+        }
+
         document.getElementById('mainDashboard').style.display = 'block';
         loadLiveEntries();
       }
@@ -517,7 +528,7 @@
     if (user) {
       user.reload().then(() => {
         if (user.emailVerified) {
-          auth.onAuthStateChanged();
+          auth.onAuthStateChanged(user);
         } else {
           alert("Your email is not verified yet.");
         }
@@ -870,6 +881,12 @@
 
   // AUDIT LOG MODAL FUNCTIONS
   function openAuditLogModal() {
+    // Double check security before opening modal
+    if (!ADMIN_EMAILS.includes(activeStaffEmail.toLowerCase())) {
+      alert("Access Denied: You are not authorized to view activity logs.");
+      return;
+    }
+
     document.getElementById('auditLogModal').style.display = 'flex';
     db.collection("audit_logs").orderBy("timestamp", "desc").limit(100).get()
       .then(snapshot => {
