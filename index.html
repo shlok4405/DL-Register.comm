@@ -68,12 +68,14 @@
     td { padding: 8px; border: 1px solid #ddd; white-space: nowrap; }
     tr:nth-child(even) { background-color: #f9f9f9; }
 
-    /* Modal Popup Styling for Full Details (Kundali) */
+    /* Modal Popup Styling */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; }
-    .modal-content { background: white; width: 90%; max-width: 750px; max-height: 90vh; overflow-y: auto; border-radius: 8px; padding: 25px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); position: relative; }
+    .modal-content { background: white; width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto; border-radius: 8px; padding: 25px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); position: relative; }
     .modal-header { border-bottom: 2px solid #0b3c5d; padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
     .modal-header h2 { margin: 0; color: #0b3c5d; font-size: 20px; }
     .close-modal { background: #dc3545; color: white; border: none; padding: 5px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    
+    /* Kundali Layout */
     .kundali-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; font-size: 14px; }
     .kundali-item { background: #f8f9fa; padding: 10px; border-radius: 5px; border-left: 3px solid #1d70b8; }
     .kundali-item label { display: block; font-size: 11px; color: #666; font-weight: bold; text-transform: uppercase; }
@@ -150,7 +152,7 @@
           <input type="date" id="dob" required>
         </div>
         
-        <!-- Multi-Select Vehicle Types (Checkboxes including LDRX) -->
+        <!-- Multi-Select Vehicle Types -->
         <div class="form-group full-width">
           <label>Vehicle Type (Select Multiple) *</label>
           <div class="checkbox-group" id="vehicleCheckboxGroup">
@@ -228,11 +230,6 @@
         <div class="form-group">
           <label>Payment Date *</label>
           <input type="date" id="paymentDate" required>
-        </div>
-        <!-- CHANGED: Next Due Date -> Next Payment Date -->
-        <div class="form-group">
-          <label>Next Payment Date:</label>
-          <input type="date" id="dueDate">
         </div>
       </div>
 
@@ -322,6 +319,41 @@
   </div>
 </div>
 
+<!-- INSTALLMENT PAY MODAL POPUP -->
+<div id="payModal" class="modal-overlay">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2>💳 Add Installment Payment</h2>
+      <button class="close-modal" onclick="closePayModal()">X</button>
+    </div>
+    <form onsubmit="saveInstallment(event)">
+      <input type="hidden" id="payRecordId" value="">
+      <p style="margin-top:0;"><strong>Customer:</strong> <span id="payCustomerName">-</span></p>
+      <p><strong>Current Pending Balance:</strong> <span id="payCurrentBalance" style="color:red; font-weight:bold;">₹0</span></p>
+      
+      <div class="form-group" style="margin-bottom:12px;">
+        <label>Amount Being Paid (₹) *</label>
+        <input type="number" id="payAmountInput" placeholder="Enter amount" required min="1">
+      </div>
+
+      <div class="form-group" style="margin-bottom:12px;">
+        <label>Payment Date * (Aaj ki ya purani date select karein)</label>
+        <input type="date" id="payDateInput" required>
+      </div>
+
+      <div class="form-group" style="margin-bottom:15px;">
+        <label>Next Payment Date (Agli Dukan/Due Date Set Karein)</label>
+        <input type="date" id="payNextDueDateInput">
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button type="button" onclick="closePayModal()" class="btn btn-cancel" style="display:inline-block;">Cancel</button>
+        <button type="submit" class="btn btn-save">Save Payment 💰</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <!-- DETAILS MODAL (CUSTOMER PURI KUNDALI) -->
 <div id="detailsModal" class="modal-overlay">
   <div class="modal-content" id="modalKundaliContent">
@@ -348,7 +380,7 @@
       <div class="kundali-item"><label>Discount Note</label><span id="kDiscountNote">-</span></div>
       <div class="kundali-item"><label>Paid Amount</label><span id="kPaid">₹0</span></div>
       <div class="kundali-item"><label>Balance Amount</label><span id="kBalance" style="color:red;">₹0</span></div>
-      <div class="kundali-item"><label>Payment Date</label><span id="kPayDate">-</span></div>
+      <div class="kundali-item"><label>Last Payment Date</label><span id="kPayDate">-</span></div>
       <div class="kundali-item"><label>Next Payment Date</label><span id="kNextPayDate">-</span></div>
       <div class="kundali-item"><label>Added / Updated By</label><span id="kOperator">-</span></div>
       
@@ -546,7 +578,7 @@
       advancePayment: parseFloat(document.getElementById('advancePayment').value) || 0,
       balanceAmount: parseFloat(document.getElementById('balanceAmount').value) || 0,
       paymentDate: document.getElementById('paymentDate').value,
-      dueDate: document.getElementById('dueDate').value || '-',
+      dueDate: '-', // Set dynamically when +Pay installment is recorded
       addedBy: activeStaffName || 'Staff',
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     };
@@ -603,11 +635,11 @@
         <td style="color: green;">₹${d.discountAmount || 0}</td>
         <td>₹${d.advancePayment}</td>
         <td style="color: ${d.balanceAmount > 0 ? 'red' : 'green'}; font-weight: bold;">₹${d.balanceAmount}</td>
-        <td>${formatDateToDMY(d.dueDate)}</td>
+        <td style="color:#0b3c5d; font-weight:bold;">${formatDateToDMY(d.dueDate)}</td>
         <td><small><b>${d.addedBy || 'Staff'}</b></small></td>
         <td>
           <button class="btn-sm btn-edit" onclick="editRecord('${d.id}')">Edit</button>
-          <button class="btn-sm btn-pay" onclick="addInstallment('${d.id}')">+ Pay</button>
+          <button class="btn-sm btn-pay" onclick="openPayModal('${d.id}')">+ Pay</button>
           <button class="btn-sm btn-details" onclick="openDetailsModal('${d.id}')">Details 📜</button>
           <button class="btn-sm btn-del" onclick="deleteRecord('${d.id}')">Del</button>
         </td>
@@ -641,7 +673,6 @@
     document.getElementById('advancePayment').value = rec.advancePayment;
     document.getElementById('balanceAmount').value = rec.balanceAmount;
     document.getElementById('paymentDate').value = rec.paymentDate;
-    document.getElementById('dueDate').value = rec.dueDate;
 
     document.getElementById('saveBtn').style.display = 'none';
     document.getElementById('updateBtn').style.display = 'inline-block';
@@ -668,31 +699,60 @@
     }
   }
 
-  function addInstallment(id) {
+  // INSTALLMENT MODAL FUNCTIONS
+  function openPayModal(id) {
     const rec = globalRecords.find(r => r.id === id);
     if (!rec) return;
 
-    let newPay = prompt(`Current Balance: ₹${rec.balanceAmount}\nKitne paise deposit kar rhe hain?`);
-    if (!newPay || isNaN(newPay) || parseFloat(newPay) <= 0) return;
+    document.getElementById('payRecordId').value = rec.id;
+    document.getElementById('payCustomerName').innerText = rec.customerName;
+    document.getElementById('payCurrentBalance').innerText = `₹${rec.balanceAmount}`;
+    document.getElementById('payAmountInput').value = "";
+    document.getElementById('payDateInput').valueAsDate = new Date();
+    document.getElementById('payNextDueDateInput').value = rec.dueDate && rec.dueDate !== '-' ? rec.dueDate : '';
 
-    let paidNow = parseFloat(newPay);
+    document.getElementById('payModal').style.display = 'flex';
+  }
+
+  function closePayModal() {
+    document.getElementById('payModal').style.display = 'none';
+  }
+
+  function saveInstallment(e) {
+    e.preventDefault();
+    const id = document.getElementById('payRecordId').value;
+    const rec = globalRecords.find(r => r.id === id);
+    if (!rec) return;
+
+    const paidNow = parseFloat(document.getElementById('payAmountInput').value) || 0;
+    const chosenPayDate = document.getElementById('payDateInput').value;
+    const chosenNextDueDate = document.getElementById('payNextDueDateInput').value || '-';
+
+    if (paidNow <= 0) {
+      alert("Kripya sahi amount bharein!");
+      return;
+    }
+
     let updatedPaid = rec.advancePayment + paidNow;
-    
     let discount = rec.discountAmount || 0;
     let netFee = rec.totalFee - discount;
     let updatedBalance = netFee - updatedPaid;
     if (updatedBalance < 0) updatedBalance = 0;
 
-    let updatedRemarks = `${rec.remarks || ''}\n[Installment Paid: ₹${paidNow} on ${new Date().toLocaleDateString()}]`;
+    let formattedDate = formatDateToDMY(chosenPayDate);
+    let updatedRemarks = `${rec.remarks || ''}\n[Installment Paid: ₹${paidNow} on ${formattedDate}]`;
 
     db.collection("dl_records").doc(id).update({
       advancePayment: updatedPaid,
       balanceAmount: updatedBalance,
+      paymentDate: chosenPayDate,
+      dueDate: chosenNextDueDate,
       remarks: updatedRemarks,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     }).then(() => {
-      alert(`Payment Updated! Naya Balance: ₹${updatedBalance}`);
-    });
+      alert(`Payment Saved! Naya Balance: ₹${updatedBalance}`);
+      closePayModal();
+    }).catch(err => alert("Payment Update Error: " + err.message));
   }
 
   // DETAILS MODAL (PURI KUNDALI DISPLAY)
@@ -728,7 +788,7 @@
     document.getElementById('detailsModal').style.display = 'none';
   }
 
-  // ADVANCED MULTI-FILTER FUNCTION (NO DATE RESTRICTION DEFAULT)
+  // ADVANCED MULTI-FILTER FUNCTION
   function getFilteredRecords() {
     let searchText = document.getElementById("searchInput").value.toLowerCase();
     
@@ -788,12 +848,12 @@
     applyFilters();
   }
 
-  // EXCEL EXPORT (EXPORTS FILTERED OR ALL DATA)
+  // EXCEL EXPORT
   function exportToExcel() {
     const recordsToExport = getFilteredRecords();
 
     if (recordsToExport.length === 0) {
-      alert("Export ke liye koi record nahi mila!");
+      alert("No record for Export");
       return;
     }
 
