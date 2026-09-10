@@ -215,7 +215,7 @@
       </div>
 
       <!-- Section 2 -->
-      <h3 class="section-title">2. Payment & Installments</h3>
+      <h3 class="section-title">2. Payment Details</h3>
       <div class="form-grid">
         <div class="form-group">
           <label>Discount Reference Note:</label>
@@ -231,7 +231,7 @@
           <input type="number" id="totalFee" placeholder="Enter total fee" required oninput="calculateBalance()">
         </div>
         <div class="form-group">
-          <label>Advance Payment (₹) *</label>
+          <label>Advance / Initial Payment (₹) *</label>
           <input type="number" id="advancePayment" placeholder="Enter paid amount" required oninput="calculateBalance()">
         </div>
         <div class="form-group">
@@ -317,7 +317,6 @@
             <th>Discount</th>
             <th>Paid</th>
             <th>Balance</th>
-            <th>Next Payment Date</th>
             <th>Added By</th>
             <th>Actions</th>
           </tr>
@@ -348,14 +347,9 @@
         <input type="number" id="payAmountInput" placeholder="Enter amount" required min="1">
       </div>
 
-      <div class="form-group" style="margin-bottom:12px;">
+      <div class="form-group" style="margin-bottom:15px;">
         <label>Payment Date *</label>
         <input type="date" id="payDateInput" required>
-      </div>
-
-      <div class="form-group" style="margin-bottom:15px;">
-        <label>Next Payment Date (Optional)</label>
-        <input type="date" id="payNextDueDateInput">
       </div>
 
       <div style="display:flex; justify-content:flex-end; gap:10px;">
@@ -392,12 +386,16 @@
       <div class="details-item"><label>Discount Note</label><span id="kDiscountNote">-</span></div>
       <div class="details-item"><label>Paid Amount</label><span id="kPaid">₹0</span></div>
       <div class="details-item"><label>Balance Amount</label><span id="kBalance" style="color:red;">₹0</span></div>
-      <div class="details-item"><label>Payment Date</label><span id="kPayDate">-</span></div>
-      <div class="details-item"><label>Next Payment Date</label><span id="kNextPayDate">-</span></div>
+      <div class="details-item"><label>Initial Payment Date</label><span id="kPayDate">-</span></div>
       <div class="details-item"><label>Added / Updated By</label><span id="kOperator">-</span></div>
       
       <div class="details-item full-width" style="grid-column: 1 / -1;">
-        <label>Internal Remarks / Installment Logs</label>
+        <label>Payment History & Installment Dates</label>
+        <span id="kInstallmentHistory" style="white-space: pre-wrap; font-family: monospace; color: #0b3c5d;">-</span>
+      </div>
+
+      <div class="details-item full-width" style="grid-column: 1 / -1;">
+        <label>Internal Remarks / Notes</label>
         <span id="kRemarks" style="white-space: pre-wrap; font-family: monospace;">-</span>
       </div>
     </div>
@@ -415,7 +413,7 @@
       <h2>📜 Portal Activity & Change Logs</h2>
       <button class="close-modal" onclick="closeAuditLogModal()">X</button>
     </div>
-    <p style="font-size: 13px; color: #555; margin-top: 0;">Complete history record of all entries, edits, payments, and deletions:</p>
+    <p style="font-size: 13px; color: #555; margin-top: 0;">Complete history record of all entries, edits, payments, and deletions performed by staff:</p>
     <div class="table-container" style="max-height: 450px; overflow-y: auto;">
       <table>
         <thead>
@@ -643,32 +641,35 @@
       advancePayment: parseFloat(document.getElementById('advancePayment').value) || 0,
       balanceAmount: parseFloat(document.getElementById('balanceAmount').value) || 0,
       paymentDate: document.getElementById('paymentDate').value,
-      dueDate: '-',
       addedBy: activeStaffName || 'Staff',
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     };
 
     if (editId) {
       const oldRec = globalRecords.find(r => r.id === editId);
+      recordData.installmentsHistory = oldRec.installmentsHistory || [];
+      
       db.collection("dl_records").doc(editId).update(recordData)
         .then(() => {
           logActivity(
             'ENTRY_EDITED', 
             recordData.customerName, 
-            `Updated record. Fee: ₹${oldRec?.totalFee} ➔ ₹${recordData.totalFee}, Mobile: ${recordData.mobile}`
+            `Updated record details by ${activeStaffName}. Fee changed from ₹${oldRec?.totalFee} to ₹${recordData.totalFee}`
           );
           alert("Entry Updated Successfully!");
           resetForm();
         })
         .catch(err => alert("Update Error: " + err.message));
     } else {
+      recordData.installmentsHistory = [`Initial Payment: ₹${recordData.advancePayment} paid on ${formatDateToDMY(recordData.paymentDate)}`];
       recordData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+      
       db.collection("dl_records").add(recordData)
         .then(() => {
           logActivity(
             'ENTRY_CREATED', 
             recordData.customerName, 
-            `Created admission entry. Fee: ₹${recordData.totalFee}, Paid: ₹${recordData.advancePayment}`
+            `Created new admission entry. Total Fee: ₹${recordData.totalFee}, Paid: ₹${recordData.advancePayment}`
           );
           alert("New Entry Saved Successfully!");
           resetForm();
@@ -699,31 +700,31 @@
       let row = `<tr>
         <td>${formatDateToDMY(d.paymentDate)}</td>
         <td><b>${d.customerName}</b></td>
-        <td>${d.fatherName}</td>
+        <td>${d.fatherName || '-'}</td>
         <td>${d.mobile}</td>
-        <td>${formatDateToDMY(d.dob)}</td>
-        <td>${d.reference || '-'}</td>
-        <td>${d.llAppNo || '-'}</td>
-        <td>${d.llNo || '-'}</td>
-        <td>${d.dlAppNo || '-'}</td>
-        <td><b>${d.vehicleType}</b></td>
+        <td>${d.dob}</td>
+        <td>${d.reference}</td>
+        <td>${d.llAppNo}</td>
+        <td>${d.llNo}</td>
+        <td>${d.dlAppNo}</td>
+        <td>${d.vehicleType}</td>
         <td>₹${d.totalFee}</td>
-        <td style="color: green;">₹${d.discountAmount || 0}</td>
+        <td>₹${d.discountAmount}</td>
         <td>₹${d.advancePayment}</td>
-        <td style="color: ${d.balanceAmount > 0 ? 'red' : 'green'}; font-weight: bold;">₹${d.balanceAmount}</td>
-        <td style="color:#0b3c5d; font-weight:bold;">${formatDateToDMY(d.dueDate)}</td>
-        <td><small><b>${d.addedBy || 'Staff'}</b></small></td>
+        <td style="color: ${d.balanceAmount > 0 ? 'red' : 'green'}; font-weight:bold;">₹${d.balanceAmount}</td>
+        <td>${d.addedBy}</td>
         <td>
+          <button class="btn-sm btn-details" onclick="openDetailsModal('${d.id}')">View</button>
+          <button class="btn-sm btn-pay" onclick="openPayModal('${d.id}', '${d.customerName}', ${d.balanceAmount})">Pay</button>
           <button class="btn-sm btn-edit" onclick="editRecord('${d.id}')">Edit</button>
-          <button class="btn-sm btn-pay" onclick="openPayModal('${d.id}')">+ Pay</button>
-          <button class="btn-sm btn-details" onclick="openDetailsModal('${d.id}')">Details 📜</button>
-          <button class="btn-sm btn-del" onclick="deleteRecord('${d.id}')">Del</button>
+          <button class="btn-sm btn-del" onclick="deleteRecord('${d.id}', '${d.customerName}')">Del</button>
         </td>
       </tr>`;
       tbody.innerHTML += row;
     });
   }
 
+  // EDIT RECORD
   function editRecord(id) {
     const rec = globalRecords.find(r => r.id === id);
     if (!rec) return;
@@ -733,18 +734,16 @@
     document.getElementById('fatherName').value = rec.fatherName;
     document.getElementById('mobile').value = rec.mobile;
     document.getElementById('dob').value = rec.dob;
-    
     setSelectedVehicles(rec.vehicleType);
-
     document.getElementById('reference').value = rec.reference;
     document.getElementById('llOutside').value = rec.llOutside;
     document.getElementById('address').value = rec.address;
-    document.getElementById('llAppNo').value = rec.llAppNo && rec.llAppNo !== '-' ? rec.llAppNo : '';
-    document.getElementById('llNo').value = rec.llNo && rec.llNo !== '-' ? rec.llNo : '';
-    document.getElementById('dlAppNo').value = rec.dlAppNo && rec.dlAppNo !== '-' ? rec.dlAppNo : '';
+    document.getElementById('llAppNo').value = rec.llAppNo;
+    document.getElementById('llNo').value = rec.llNo;
+    document.getElementById('dlAppNo').value = rec.dlAppNo;
     document.getElementById('remarks').value = rec.remarks;
     document.getElementById('discountNote').value = rec.discountNote;
-    document.getElementById('discountAmount').value = rec.discountAmount || 0;
+    document.getElementById('discountAmount').value = rec.discountAmount;
     document.getElementById('totalFee').value = rec.totalFee;
     document.getElementById('advancePayment').value = rec.advancePayment;
     document.getElementById('balanceAmount').value = rec.balanceAmount;
@@ -757,46 +756,120 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  // DELETE RECORD
+  function deleteRecord(id, customerName) {
+    if (confirm(`Are you sure you want to delete the record for ${customerName}?`)) {
+      db.collection("dl_records").doc(id).delete()
+        .then(() => {
+          logActivity('ENTRY_DELETED', customerName, `Deleted record for ${customerName} by ${activeStaffName}`);
+          alert("Record successfully deleted!");
+        })
+        .catch(err => alert("Delete Error: " + err.message));
+    }
+  }
+
+  // RESET FORM
   function resetForm() {
     document.getElementById('admissionForm').reset();
-    setSelectedVehicles("");
-    document.getElementById('editRecordId').value = "";
+    document.getElementById('editRecordId').value = '';
     document.getElementById('paymentDate').valueAsDate = new Date();
     document.getElementById('saveBtn').style.display = 'inline-block';
     document.getElementById('updateBtn').style.display = 'none';
     document.getElementById('cancelBtn').style.display = 'none';
   }
 
-  function deleteRecord(id) {
-    const rec = globalRecords.find(r => r.id === id);
-    if (!rec) return;
+  // FILTERS
+  function applyFilters() {
+    const searchVal = document.getElementById('searchInput').value.toLowerCase();
+    const vehicleSelect = document.getElementById('filterVehicle');
+    const selectedVehicles = Array.from(vehicleSelect.selectedOptions).map(opt => opt.value);
+    const payStatus = document.getElementById('filterPaymentStatus').value;
+    const refVal = document.getElementById('filterReference').value.toLowerCase();
+    const fromDate = document.getElementById('fromDate').value;
+    const toDate = document.getElementById('toDate').value;
 
-    if (confirm(`Are you sure you want to delete entry for "${rec.customerName}"?`)) {
-      db.collection("dl_records").doc(id).delete()
-        .then(() => {
-          logActivity(
-            'ENTRY_DELETED', 
-            rec.customerName, 
-            `Deleted entry. Mobile: ${rec.mobile}, Total Fee was: ₹${rec.totalFee}`
-          );
-          alert("Entry Deleted Successfully!");
-        })
-        .catch(err => alert("Delete Error: " + err.message));
-    }
+    let filtered = globalRecords.filter(d => {
+      const matchSearch = (d.customerName && d.customerName.toLowerCase().includes(searchVal)) ||
+                          (d.mobile && d.mobile.includes(searchVal)) ||
+                          (d.llAppNo && d.llAppNo.toLowerCase().includes(searchVal)) ||
+                          (d.dlAppNo && d.dlAppNo.toLowerCase().includes(searchVal));
+
+      let matchVehicle = true;
+      if (selectedVehicles.length > 0) {
+        matchVehicle = selectedVehicles.some(v => d.vehicleType && d.vehicleType.includes(v));
+      }
+
+      let matchPay = true;
+      if (payStatus === 'due') matchPay = d.balanceAmount > 0;
+      if (payStatus === 'paid') matchPay = d.balanceAmount <= 0;
+
+      const matchRef = !refVal || (d.reference && d.reference.toLowerCase().includes(refVal));
+
+      let matchDate = true;
+      if (fromDate && d.paymentDate < fromDate) matchDate = false;
+      if (toDate && d.paymentDate > toDate) matchDate = false;
+
+      return matchSearch && matchVehicle && matchPay && matchRef && matchDate;
+    });
+
+    renderTable(filtered);
   }
 
-  // INSTALLMENT MODAL FUNCTIONS
-  function openPayModal(id) {
-    const rec = globalRecords.find(r => r.id === id);
-    if (!rec) return;
+  function clearFilters() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('filterVehicle').selectedIndex = -1;
+    document.getElementById('filterPaymentStatus').value = '';
+    document.getElementById('filterReference').value = '';
+    document.getElementById('fromDate').value = '';
+    document.getElementById('toDate').value = '';
+    renderTable(globalRecords);
+  }
 
-    document.getElementById('payRecordId').value = rec.id;
-    document.getElementById('payCustomerName').innerText = rec.customerName;
-    document.getElementById('payCurrentBalance').innerText = `₹${rec.balanceAmount}`;
-    document.getElementById('payAmountInput').value = "";
+  // MODALS & EXCEL EXPORT
+  function openDetailsModal(id) {
+    const d = globalRecords.find(r => r.id === id);
+    if (!d) return;
+
+    document.getElementById('kName').innerText = d.customerName || '-';
+    document.getElementById('kFather').innerText = d.fatherName || '-';
+    document.getElementById('kMobile').innerText = d.mobile || '-';
+    document.getElementById('kDob').innerText = formatDateToDMY(d.dob) || '-';
+    document.getElementById('kAddress').innerText = d.address || '-';
+    document.getElementById('kRef').innerText = d.reference || '-';
+    document.getElementById('kVehicles').innerText = d.vehicleType || '-';
+    document.getElementById('kLlOutside').innerText = d.llOutside || '-';
+    document.getElementById('kLlAppNo').innerText = d.llAppNo || '-';
+    document.getElementById('kLlNo').innerText = d.llNo || '-';
+    document.getElementById('kDlAppNo').innerText = d.dlAppNo || '-';
+    document.getElementById('kTotal').innerText = '₹' + (d.totalFee || 0);
+    document.getElementById('kDiscount').innerText = '₹' + (d.discountAmount || 0);
+    document.getElementById('kDiscountNote').innerText = d.discountNote || '-';
+    document.getElementById('kPaid').innerText = '₹' + (d.advancePayment || 0);
+    document.getElementById('kBalance').innerText = '₹' + (d.balanceAmount || 0);
+    document.getElementById('kPayDate').innerText = formatDateToDMY(d.paymentDate) || '-';
+    document.getElementById('kOperator').innerText = d.addedBy || '-';
+    document.getElementById('kRemarks').innerText = d.remarks || '-';
+
+    // Format Installment History list nicely
+    let historyText = "No additional installments recorded yet.";
+    if (d.installmentsHistory && d.installmentsHistory.length > 0) {
+      historyText = d.installmentsHistory.map((item, index) => `${index + 1}. ${item}`).join('\n');
+    }
+    document.getElementById('kInstallmentHistory').innerText = historyText;
+
+    document.getElementById('detailsModal').style.display = 'flex';
+  }
+
+  function closeDetailsModal() {
+    document.getElementById('detailsModal').style.display = 'none';
+  }
+
+  function openPayModal(id, name, balance) {
+    document.getElementById('payRecordId').value = id;
+    document.getElementById('payCustomerName').innerText = name;
+    document.getElementById('payCurrentBalance').innerText = '₹' + balance;
+    document.getElementById('payAmountInput').value = '';
     document.getElementById('payDateInput').valueAsDate = new Date();
-    document.getElementById('payNextDueDateInput').value = rec.dueDate && rec.dueDate !== '-' ? rec.dueDate : '';
-
     document.getElementById('payModal').style.display = 'flex';
   }
 
@@ -807,260 +880,124 @@
   function saveInstallment(e) {
     e.preventDefault();
     const id = document.getElementById('payRecordId').value;
-    const rec = globalRecords.find(r => r.id === id);
-    if (!rec) return;
+    const payAmt = parseFloat(document.getElementById('payAmountInput').value) || 0;
+    const payDate = document.getElementById('payDateInput').value;
 
-    const paidNow = parseFloat(document.getElementById('payAmountInput').value) || 0;
-    const chosenPayDate = document.getElementById('payDateInput').value;
-    const chosenNextDueDate = document.getElementById('payNextDueDateInput').value || '-';
+    const d = globalRecords.find(r => r.id === id);
+    if (!d) return;
 
-    if (paidNow <= 0) {
-      alert("Please enter a valid amount!");
-      return;
-    }
+    const newPaid = (d.advancePayment || 0) + payAmt;
+    const newBalance = (d.balanceAmount || 0) - payAmt;
+    const finalBalance = newBalance >= 0 ? newBalance : 0;
 
-    let updatedPaid = rec.advancePayment + paidNow;
-    let discount = rec.discountAmount || 0;
-    let netFee = rec.totalFee - discount;
-    let updatedBalance = netFee - updatedPaid;
-    if (updatedBalance < 0) updatedBalance = 0;
-
-    let formattedDate = formatDateToDMY(chosenPayDate);
-    let updatedRemarks = `${rec.remarks || ''}\n[Installment Paid: ₹${paidNow} on ${formattedDate}]`;
+    let historyArr = d.installmentsHistory || [];
+    historyArr.push(`Paid ₹${payAmt} on ${formatDateToDMY(payDate)} (By: ${activeStaffName}, Remaining Bal: ₹${finalBalance})`);
 
     db.collection("dl_records").doc(id).update({
-      advancePayment: updatedPaid,
-      balanceAmount: updatedBalance,
-      paymentDate: chosenPayDate,
-      dueDate: chosenNextDueDate,
-      remarks: updatedRemarks,
+      advancePayment: newPaid,
+      balanceAmount: finalBalance,
+      installmentsHistory: historyArr,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     }).then(() => {
-      logActivity(
-        'INSTALLMENT_PAID', 
-        rec.customerName, 
-        `Collected installment of ₹${paidNow} on ${formattedDate}. New Balance: ₹${updatedBalance}`
-      );
-      alert(`Payment Saved! New Balance: ₹${updatedBalance}`);
+      logActivity('PAYMENT_ADDED', d.customerName, `Added installment of ₹${payAmt} on ${formatDateToDMY(payDate)} by ${activeStaffName}. New balance: ₹${finalBalance}`);
+      alert("Installment payment successfully saved!");
       closePayModal();
-    }).catch(err => alert("Payment Update Error: " + err.message));
+    }).catch(err => alert("Payment Error: " + err.message));
   }
 
-  // DETAILS MODAL
-  function openDetailsModal(id) {
-    const rec = globalRecords.find(r => r.id === id);
-    if (!rec) return;
-
-    document.getElementById('kName').innerText = rec.customerName || '-';
-    document.getElementById('kFather').innerText = rec.fatherName || '-';
-    document.getElementById('kMobile').innerText = rec.mobile || '-';
-    document.getElementById('kDob').innerText = formatDateToDMY(rec.dob);
-    document.getElementById('kAddress').innerText = rec.address || '-';
-    document.getElementById('kRef').innerText = rec.reference || '-';
-    document.getElementById('kVehicles').innerText = rec.vehicleType || '-';
-    document.getElementById('kLlOutside').innerText = rec.llOutside || '-';
-    document.getElementById('kLlAppNo').innerText = rec.llAppNo || '-';
-    document.getElementById('kLlNo').innerText = rec.llNo || '-';
-    document.getElementById('kDlAppNo').innerText = rec.dlAppNo || '-';
-    document.getElementById('kTotal').innerText = `₹${rec.totalFee}`;
-    document.getElementById('kDiscount').innerText = `₹${rec.discountAmount || 0}`;
-    document.getElementById('kDiscountNote').innerText = rec.discountNote || '-';
-    document.getElementById('kPaid').innerText = `₹${rec.advancePayment}`;
-    document.getElementById('kBalance').innerText = `₹${rec.balanceAmount}`;
-    document.getElementById('kPayDate').innerText = formatDateToDMY(rec.paymentDate);
-    document.getElementById('kNextPayDate').innerText = formatDateToDMY(rec.dueDate);
-    document.getElementById('kOperator').innerText = rec.addedBy || 'Staff';
-    document.getElementById('kRemarks').innerText = rec.remarks || 'No remarks';
-
-    document.getElementById('detailsModal').style.display = 'flex';
-  }
-
-  function closeDetailsModal() {
-    document.getElementById('detailsModal').style.display = 'none';
-  }
-
-  // AUDIT LOG MODAL FUNCTIONS
   function openAuditLogModal() {
-    // Double check security before opening modal
-    if (!ADMIN_EMAILS.includes(activeStaffEmail.toLowerCase())) {
-      alert("Access Denied: You are not authorized to view activity logs.");
-      return;
-    }
-
+    const tbody = document.getElementById('auditLogTableBody');
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Loading logs...</td></tr>`;
     document.getElementById('auditLogModal').style.display = 'flex';
-    db.collection("audit_logs").orderBy("timestamp", "desc").limit(100).get()
-      .then(snapshot => {
-        let tbody = document.getElementById('auditLogTableBody');
-        tbody.innerHTML = "";
-        
-        if (snapshot.empty) {
-          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No activity logs recorded yet.</td></tr>`;
-          return;
-        }
 
-        snapshot.forEach(doc => {
-          let log = doc.data();
-          let badgeClass = "badge-create";
-          if (log.action === "ENTRY_EDITED") badgeClass = "badge-edit";
-          if (log.action === "INSTALLMENT_PAID") badgeClass = "badge-pay";
-          if (log.action === "ENTRY_DELETED") badgeClass = "badge-delete";
+    db.collection("audit_logs").orderBy("timestamp", "desc").limit(100).get().then(snapshot => {
+      tbody.innerHTML = "";
+      if (snapshot.empty) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No activity logs found.</td></tr>`;
+        return;
+      }
+      snapshot.forEach(doc => {
+        let log = doc.data();
+        let badgeClass = 'badge-edit';
+        if (log.action === 'ENTRY_CREATED') badgeClass = 'badge-create';
+        if (log.action === 'PAYMENT_ADDED') badgeClass = 'badge-pay';
+        if (log.action === 'ENTRY_DELETED') badgeClass = 'badge-delete';
 
-          let row = `<tr>
-            <td><small>${log.formattedTime || '-'}</small></td>
-            <td><b>${log.performedBy}</b><br><small style="color:#666;">${log.staffEmail}</small></td>
+        tbody.innerHTML += `
+          <tr>
+            <td>${log.formattedTime || 'N/A'}</td>
+            <td><b>${log.performedBy}</b><br><small>${log.staffEmail || ''}</small></td>
             <td><span class="badge ${badgeClass}">${log.action}</span></td>
             <td><b>${log.customerName}</b></td>
-            <td><small style="white-space: pre-wrap;">${log.details}</small></td>
-          </tr>`;
-          tbody.innerHTML += row;
-        });
-      }).catch(err => alert("Error fetching logs: " + err.message));
+            <td>${log.details}</td>
+          </tr>
+        `;
+      });
+    }).catch(err => {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Error loading logs: ${err.message}</td></tr>`;
+    });
   }
 
   function closeAuditLogModal() {
     document.getElementById('auditLogModal').style.display = 'none';
   }
 
-  // ADVANCED MULTI-FILTER FUNCTION
-  function getFilteredRecords() {
-    let searchText = document.getElementById("searchInput").value.toLowerCase();
-    
-    let vehicleSelect = document.getElementById("filterVehicle");
-    let selectedVehicles = Array.from(vehicleSelect.selectedOptions).map(opt => opt.value);
-
-    let payStatusVal = document.getElementById("filterPaymentStatus").value;
-    let refVal = document.getElementById("filterReference").value.toLowerCase();
-    let fromDateVal = document.getElementById("fromDate").value;
-    let toDateVal = document.getElementById("toDate").value;
-
-    return globalRecords.filter(r => {
-      let textMatch = !searchText || 
-        (r.customerName && r.customerName.toLowerCase().includes(searchText)) ||
-        (r.mobile && r.mobile.includes(searchText)) ||
-        (r.fatherName && r.fatherName.toLowerCase().includes(searchText)) ||
-        (r.llAppNo && r.llAppNo.toLowerCase().includes(searchText)) ||
-        (r.llNo && r.llNo.toLowerCase().includes(searchText)) ||
-        (r.dlAppNo && r.dlAppNo.toLowerCase().includes(searchText));
-      
-      let vehicleMatch = true;
-      if (selectedVehicles.length > 0) {
-        vehicleMatch = selectedVehicles.some(v => r.vehicleType && r.vehicleType.includes(v));
-      }
-
-      let payMatch = true;
-      if (payStatusVal === "due") payMatch = r.balanceAmount > 0;
-      if (payStatusVal === "paid") payMatch = r.balanceAmount === 0;
-
-      let refMatch = !refVal || (r.reference && r.reference.toLowerCase().includes(refVal));
-
-      let dateMatch = true;
-      if (fromDateVal && r.paymentDate < fromDateVal) dateMatch = false;
-      if (toDateVal && r.paymentDate > toDateVal) dateMatch = false;
-
-      return textMatch && vehicleMatch && payMatch && refMatch && dateMatch;
-    });
-  }
-
-  function applyFilters() {
-    const filtered = getFilteredRecords();
-    renderTable(filtered);
-  }
-
-  function clearFilters() {
-    document.getElementById("searchInput").value = "";
-    
-    let vehicleSelect = document.getElementById("filterVehicle");
-    for (let i = 0; i < vehicleSelect.options.length; i++) {
-      vehicleSelect.options[i].selected = false;
-    }
-
-    document.getElementById("filterPaymentStatus").value = "";
-    document.getElementById("filterReference").value = "";
-    document.getElementById("fromDate").value = "";
-    document.getElementById("toDate").value = "";
-    applyFilters();
-  }
-
-  // EXCEL EXPORT
   function exportToExcel() {
-    const recordsToExport = getFilteredRecords();
-
-    if (recordsToExport.length === 0) {
-      alert("No records found to export!");
-      return;
-    }
-
-    const excelData = recordsToExport.map(r => ({
-      "Payment Date": formatDateToDMY(r.paymentDate),
-      "Customer Name": r.customerName,
-      "Father Name": r.fatherName,
-      "Mobile": r.mobile,
-      "DOB": formatDateToDMY(r.dob),
-      "Reference": r.reference || '-',
-      "LL Application No": r.llAppNo || '-',
-      "LL Number": r.llNo || '-',
-      "DL Application No": r.dlAppNo || '-',
-      "Vehicle Type": r.vehicleType,
-      "LL Outside": r.llOutside,
-      "Address": r.address,
-      "Remarks": r.remarks,
-      "Total Fee (₹)": r.totalFee,
-      "Discount (₹)": r.discountAmount || 0,
-      "Paid Amount (₹)": r.advancePayment,
-      "Balance (₹)": r.balanceAmount,
-      "Next Payment Date": formatDateToDMY(r.dueDate),
-      "Entry Operator": r.addedBy || 'Staff'
-    }));
-
-    const worksheet = XLSX.utils.json_to_sheet(excelData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Register");
-    
-    let fileName = `Tej_Singh_DL_Register_${new Date().toISOString().slice(0,10)}.xlsx`;
-    const fromDateVal = document.getElementById("fromDate").value;
-    const toDateVal = document.getElementById("toDate").value;
-    if (fromDateVal || toDateVal) {
-      fileName = `Tej_Singh_Register_${fromDateVal || 'Start'}_to_${toDateVal || 'End'}.xlsx`;
-    }
-
-    XLSX.writeFile(workbook, fileName);
+    let table = document.getElementById("customerTable");
+    let wb = XLSX.utils.table_to_book(table, {sheet: "Customer Register"});
+    XLSX.writeFile(wb, "TejSingh_Customer_Register.xlsx");
   }
 
   function backupData() {
-    if (globalRecords.length === 0) return alert("No data available to backup!");
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(globalRecords, null, 2));
-    const dlAnchor = document.createElement('a');
-    dlAnchor.setAttribute("href", dataStr);
-    dlAnchor.setAttribute("download", `Tej_Singh_Backup_${new Date().toISOString().slice(0,10)}.json`);
-    document.body.appendChild(dlAnchor);
-    dlAnchor.click();
-    dlAnchor.remove();
+    db.collection("dl_records").get().then(snapshot => {
+      let data = [];
+      snapshot.forEach(doc => {
+        let obj = doc.data();
+        obj.firebaseId = doc.id;
+        data.push(obj);
+      });
+      let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
+      let dlAnchor = document.createElement('a');
+      dlAnchor.setAttribute("href", dataStr);
+      dlAnchor.setAttribute("download", "TejSingh_Backup_" + new Date().toISOString().slice(0,10) + ".json");
+      document.body.appendChild(dlAnchor);
+      dlAnchor.click();
+      dlAnchor.remove();
+    }).catch(err => alert("Backup error: " + err.message));
   }
 
-  function triggerRestore() { document.getElementById('restoreFileInput').click(); }
-  function restoreData(event) {
-    const file = event.target.files[0];
-    if (!file) return;
+  function triggerRestore() {
+    if (confirm("Restoring may overwrite existing data. Do you want to continue?")) {
+      document.getElementById('restoreFileInput').click();
+    }
+  }
 
-    const reader = new FileReader();
+  function restoreData(event) {
+    let file = event.target.files[0];
+    if (!file) return;
+    let reader = new FileReader();
     reader.onload = function(e) {
       try {
-        const records = JSON.parse(e.target.result);
-        if (Array.isArray(records)) {
-          let batch = db.batch();
-          records.forEach(rec => {
-            let docRef = db.collection("dl_records").doc();
-            rec.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-            rec.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
-            batch.set(docRef, rec);
-          });
-          batch.commit().then(() => alert("Backup successfully restored to cloud!"));
-        }
-      } catch (err) { alert("Restore Error: " + err.message); }
+        let records = JSON.parse(e.target.result);
+        let batchCount = 0;
+        records.forEach(rec => {
+          let id = rec.firebaseId;
+          delete rec.firebaseId;
+          if (id) {
+            db.collection("dl_records").doc(id).set(rec, { merge: true });
+          } else {
+            db.collection("dl_records").add(rec);
+          }
+          batchCount++;
+        });
+        alert(`Successfully restored ${batchCount} records!`);
+        location.reload();
+      } catch (err) {
+        alert("Invalid JSON file format!");
+      }
     };
     reader.readAsText(file);
   }
 </script>
-
 </body>
 </html>
