@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -84,16 +84,16 @@
     .badge-pay { background-color: #17a2b8; }
     .badge-delete { background-color: #dc3545; }
 
-    /* Kundali Layout */
-    .kundali-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; font-size: 14px; }
-    .kundali-item { background: #f8f9fa; padding: 10px; border-radius: 5px; border-left: 3px solid #1d70b8; }
-    .kundali-item label { display: block; font-size: 11px; color: #666; font-weight: bold; text-transform: uppercase; }
-    .kundali-item span { font-size: 14px; font-weight: 600; color: #222; }
+    /* Profile Details Layout */
+    .details-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; font-size: 14px; }
+    .details-item { background: #f8f9fa; padding: 10px; border-radius: 5px; border-left: 3px solid #1d70b8; }
+    .details-item label { display: block; font-size: 11px; color: #666; font-weight: bold; text-transform: uppercase; }
+    .details-item span { font-size: 14px; font-weight: 600; color: #222; }
 
     @media print {
       body * { visibility: hidden; }
-      #modalKundaliContent, #modalKundaliContent * { visibility: visible; }
-      #modalKundaliContent { position: absolute; left: 0; top: 0; width: 100%; }
+      #modalDetailsContent, #modalDetailsContent * { visibility: visible; }
+      #modalDetailsContent { position: absolute; left: 0; top: 0; width: 100%; }
       .close-modal, .no-print { display: none !important; }
     }
   </style>
@@ -112,9 +112,9 @@
 
 <!-- EMAIL VERIFICATION SECTION -->
 <div id="verifySection" class="auth-card" style="display: none;">
-  <h2 style="color: #0b3c5d; margin-top: 0;">Verify Email Required ✉️</h2>
-  <p style="color: #666; font-size: 14px;">Your email is not verified. Please check your inbox and click on the link to verify it.</p>
-  <button onclick="sendVerificationEmail()">Send Verification Link Again</button>
+  <h2 style="color: #0b3c5d; margin-top: 0;">Email Verification Required ✉️</h2>
+  <p style="color: #666; font-size: 14px;">Your email is not verified. Please check your inbox and verify your email.</p>
+  <button onclick="sendVerificationEmail()">Resend Verification Link</button>
   <button onclick="checkVerificationStatus()" style="background: #28a745;">I Have Verified (Check Status)</button>
   <button onclick="logoutUser()" class="secondary-btn">Logout</button>
   <p id="verifyMsg" style="color: green; font-size: 13px; margin-top: 10px;"></p>
@@ -123,9 +123,9 @@
 <!-- PROFILE SETUP SECTION -->
 <div id="profileSetupSection" class="auth-card" style="display: none;">
   <h2 style="color: #0b3c5d; margin-top: 0;">Profile Setup 👤</h2>
-  <p style="color: #666; font-size: 14px;">Email Verification Complete!.</p>
+  <p style="color: #666; font-size: 14px;">Email verification complete. Please enter your name.</p>
   <input type="text" id="staffDisplayName" placeholder="Enter Your Name" required>
-  <button onclick="saveProfileName()">Save Name & Enter Portal 🚀</button>
+  <button onclick="saveProfileName()">Save & Enter Portal 🚀</button>
   <p id="setupError" style="color: red; font-size: 13px; margin-top: 10px;"></p>
 </div>
 
@@ -184,7 +184,7 @@
           <input type="text" id="reference" placeholder="e.g. Self, Friend Name, Other">
         </div>
         <div class="form-group">
-          <label>LL Issued elsewhere</label>
+          <label>LL Issued Elsewhere</label>
           <select id="llOutside">
             <option value="No (Made Here)">No</option>
             <option value="Yes">Yes</option>
@@ -209,7 +209,7 @@
         </div>
         
         <div class="form-group full-width">
-          <label>Internal Comment / Remarks (Private - Web Only):</label>
+          <label>Internal Comments / Remarks (Private - Web Only):</label>
           <textarea id="remarks" rows="2" placeholder="Any internal notes..."></textarea>
         </div>
       </div>
@@ -349,12 +349,12 @@
       </div>
 
       <div class="form-group" style="margin-bottom:12px;">
-        <label>Payment Date * (Aaj ki ya purani date select karein)</label>
+        <label>Payment Date *</label>
         <input type="date" id="payDateInput" required>
       </div>
 
       <div class="form-group" style="margin-bottom:15px;">
-        <label>Next Payment Date (Agli Dukan/Due Date Set Karein)</label>
+        <label>Next Payment Date (Optional)</label>
         <input type="date" id="payNextDueDateInput">
       </div>
 
@@ -366,37 +366,37 @@
   </div>
 </div>
 
-<!-- DETAILS MODAL (CUSTOMER PURI KUNDALI) -->
+<!-- DETAILS MODAL -->
 <div id="detailsModal" class="modal-overlay">
-  <div class="modal-content" id="modalKundaliContent">
+  <div class="modal-content" id="modalDetailsContent">
     <div class="modal-header">
-      <h2>📜 Customer Full Details (Kundali)</h2>
+      <h2>📜 Customer Profile Details</h2>
       <button class="close-modal" onclick="closeDetailsModal()">X</button>
     </div>
-    <div class="kundali-grid">
-      <div class="kundali-item"><label>Customer Name</label><span id="kName">-</span></div>
-      <div class="kundali-item"><label>Father's Name</label><span id="kFather">-</span></div>
-      <div class="kundali-item"><label>Mobile Number</label><span id="kMobile">-</span></div>
-      <div class="kundali-item"><label>Date of Birth</label><span id="kDob">-</span></div>
-      <div class="kundali-item"><label>Address</label><span id="kAddress">-</span></div>
-      <div class="kundali-item"><label>Reference Name</label><span id="kRef">-</span></div>
+    <div class="details-grid">
+      <div class="details-item"><label>Customer Name</label><span id="kName">-</span></div>
+      <div class="details-item"><label>Father's Name</label><span id="kFather">-</span></div>
+      <div class="details-item"><label>Mobile Number</label><span id="kMobile">-</span></div>
+      <div class="details-item"><label>Date of Birth</label><span id="kDob">-</span></div>
+      <div class="details-item"><label>Address</label><span id="kAddress">-</span></div>
+      <div class="details-item"><label>Reference Name</label><span id="kRef">-</span></div>
       
-      <div class="kundali-item"><label>Vehicle Types</label><span id="kVehicles">-</span></div>
-      <div class="kundali-item"><label>LL Issued Outside</label><span id="kLlOutside">-</span></div>
-      <div class="kundali-item"><label>LL Application No.</label><span id="kLlAppNo">-</span></div>
-      <div class="kundali-item"><label>LL Number</label><span id="kLlNo">-</span></div>
-      <div class="kundali-item"><label>DL Application No.</label><span id="kDlAppNo">-</span></div>
+      <div class="details-item"><label>Vehicle Types</label><span id="kVehicles">-</span></div>
+      <div class="details-item"><label>LL Issued Elsewhere</label><span id="kLlOutside">-</span></div>
+      <div class="details-item"><label>LL Application No.</label><span id="kLlAppNo">-</span></div>
+      <div class="details-item"><label>LL Number</label><span id="kLlNo">-</span></div>
+      <div class="details-item"><label>DL Application No.</label><span id="kDlAppNo">-</span></div>
       
-      <div class="kundali-item"><label>Total Fee</label><span id="kTotal">₹0</span></div>
-      <div class="kundali-item"><label>Discount Amount</label><span id="kDiscount">₹0</span></div>
-      <div class="kundali-item"><label>Discount Note</label><span id="kDiscountNote">-</span></div>
-      <div class="kundali-item"><label>Paid Amount</label><span id="kPaid">₹0</span></div>
-      <div class="kundali-item"><label>Balance Amount</label><span id="kBalance" style="color:red;">₹0</span></div>
-      <div class="kundali-item"><label>First Payment Date</label><span id="kPayDate">-</span></div>
-      <div class="kundali-item"><label>Next Payment Date</label><span id="kNextPayDate">-</span></div>
-      <div class="kundali-item"><label>Added / Updated By</label><span id="kOperator">-</span></div>
+      <div class="details-item"><label>Total Fee</label><span id="kTotal">₹0</span></div>
+      <div class="details-item"><label>Discount Amount</label><span id="kDiscount">₹0</span></div>
+      <div class="details-item"><label>Discount Note</label><span id="kDiscountNote">-</span></div>
+      <div class="details-item"><label>Paid Amount</label><span id="kPaid">₹0</span></div>
+      <div class="details-item"><label>Balance Amount</label><span id="kBalance" style="color:red;">₹0</span></div>
+      <div class="details-item"><label>Payment Date</label><span id="kPayDate">-</span></div>
+      <div class="details-item"><label>Next Payment Date</label><span id="kNextPayDate">-</span></div>
+      <div class="details-item"><label>Added / Updated By</label><span id="kOperator">-</span></div>
       
-      <div class="kundali-item full-width" style="grid-column: 1 / -1;">
+      <div class="details-item full-width" style="grid-column: 1 / -1;">
         <label>Internal Remarks / Installment Logs</label>
         <span id="kRemarks" style="white-space: pre-wrap; font-family: monospace;">-</span>
       </div>
@@ -415,7 +415,7 @@
       <h2>📜 Portal Activity & Change Logs</h2>
       <button class="close-modal" onclick="closeAuditLogModal()">X</button>
     </div>
-    <p style="font-size: 13px; color: #555; margin-top: 0;">Har chote-bade change, edit, payment aur deletion ka complete history record yahan hai:</p>
+    <p style="font-size: 13px; color: #555; margin-top: 0;">Complete history record of all entries, edits, payments, and deletions:</p>
     <div class="table-container" style="max-height: 450px; overflow-y: auto;">
       <table>
         <thead>
@@ -504,7 +504,7 @@
     if (user) {
       user.sendEmailVerification()
         .then(() => {
-          document.getElementById('verifyMsg').innerText = "Check ypur Email for Verification!";
+          document.getElementById('verifyMsg').innerText = "Verification link sent to your email!";
         })
         .catch(err => {
           document.getElementById('verifyMsg').innerText = "Error: " + err.message;
@@ -519,7 +519,7 @@
         if (user.emailVerified) {
           auth.onAuthStateChanged();
         } else {
-          alert("Your Email is not Veriy.");
+          alert("Your email is not verified yet.");
         }
       });
     }
@@ -530,7 +530,7 @@
     const errorEl = document.getElementById('setupError');
 
     if (!nameInput) {
-      errorEl.innerText = "Enter your Name!";
+      errorEl.innerText = "Please enter your name!";
       return;
     }
 
@@ -552,7 +552,7 @@
       formattedTime: new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }),
       performedBy: activeStaffName || 'Staff',
       staffEmail: activeStaffEmail || 'N/A',
-      action: actionType, // 'ENTRY_CREATED', 'ENTRY_EDITED', 'INSTALLMENT_PAID', 'ENTRY_DELETED'
+      action: actionType,
       customerName: customerName || '-',
       details: details || '-'
     }).catch(err => console.error("Audit log failed:", err));
@@ -609,7 +609,7 @@
     
     const selectedVehicles = getSelectedVehicles();
     if (!selectedVehicles) {
-      alert("Kripya kam se kam ek Vehicle Type zaroor chunein!");
+      alert("Please select at least one vehicle type!");
       return;
     }
 
@@ -632,7 +632,7 @@
       advancePayment: parseFloat(document.getElementById('advancePayment').value) || 0,
       balanceAmount: parseFloat(document.getElementById('balanceAmount').value) || 0,
       paymentDate: document.getElementById('paymentDate').value,
-      dueDate: '-', // Set dynamically when +Pay installment is recorded
+      dueDate: '-',
       addedBy: activeStaffName || 'Staff',
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     };
@@ -644,7 +644,7 @@
           logActivity(
             'ENTRY_EDITED', 
             recordData.customerName, 
-            `Edited Customer record. Fee: ₹${oldRec?.totalFee} ➔ ₹${recordData.totalFee}, Mobile: ${recordData.mobile}`
+            `Updated record. Fee: ₹${oldRec?.totalFee} ➔ ₹${recordData.totalFee}, Mobile: ${recordData.mobile}`
           );
           alert("Entry Updated Successfully!");
           resetForm();
@@ -657,7 +657,7 @@
           logActivity(
             'ENTRY_CREATED', 
             recordData.customerName, 
-            `Created new admission entry. Fee: ₹${recordData.totalFee}, Paid: ₹${recordData.advancePayment}`
+            `Created admission entry. Fee: ₹${recordData.totalFee}, Paid: ₹${recordData.advancePayment}`
           );
           alert("New Entry Saved Successfully!");
           resetForm();
@@ -666,7 +666,7 @@
     }
   }
 
-  // REALTIME LOADER (DATE-SORTED BY RECENT ENTRIES)
+  // REALTIME LOADER
   function loadLiveEntries() {
     db.collection("dl_records").orderBy("paymentDate", "desc").onSnapshot(snapshot => {
       globalRecords = [];
@@ -760,15 +760,15 @@
     const rec = globalRecords.find(r => r.id === id);
     if (!rec) return;
 
-    if (confirm(`Kya aap sach me "${rec.customerName}" ")) {
+    if (confirm(`Are you sure you want to delete entry for "${rec.customerName}"?`)) {
       db.collection("dl_records").doc(id).delete()
         .then(() => {
           logActivity(
             'ENTRY_DELETED', 
             rec.customerName, 
-            `Deleted Customer Entry. Mobile: ${rec.mobile}, Total Fee was: ₹${rec.totalFee}`
+            `Deleted entry. Mobile: ${rec.mobile}, Total Fee was: ₹${rec.totalFee}`
           );
-          alert("Entry Deleted!");
+          alert("Entry Deleted Successfully!");
         })
         .catch(err => alert("Delete Error: " + err.message));
     }
@@ -804,7 +804,7 @@
     const chosenNextDueDate = document.getElementById('payNextDueDateInput').value || '-';
 
     if (paidNow <= 0) {
-      alert("Enter Correct Amount!");
+      alert("Please enter a valid amount!");
       return;
     }
 
@@ -828,14 +828,14 @@
       logActivity(
         'INSTALLMENT_PAID', 
         rec.customerName, 
-        `Collected ₹${paidNow} installment on ${formattedDate}. Remaining Balance: ₹${updatedBalance}`
+        `Collected installment of ₹${paidNow} on ${formattedDate}. New Balance: ₹${updatedBalance}`
       );
-      alert(`Payment Saved!: ₹${updatedBalance}`);
+      alert(`Payment Saved! New Balance: ₹${updatedBalance}`);
       closePayModal();
     }).catch(err => alert("Payment Update Error: " + err.message));
   }
 
-  // DETAILS
+  // DETAILS MODAL
   function openDetailsModal(id) {
     const rec = globalRecords.find(r => r.id === id);
     if (!rec) return;
@@ -859,7 +859,7 @@
     document.getElementById('kPayDate').innerText = formatDateToDMY(rec.paymentDate);
     document.getElementById('kNextPayDate').innerText = formatDateToDMY(rec.dueDate);
     document.getElementById('kOperator').innerText = rec.addedBy || 'Staff';
-    document.getElementById('kRemarks').innerText = rec.remarks || 'No comments';
+    document.getElementById('kRemarks').innerText = rec.remarks || 'No remarks';
 
     document.getElementById('detailsModal').style.display = 'flex';
   }
@@ -877,7 +877,7 @@
         tbody.innerHTML = "";
         
         if (snapshot.empty) {
-          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;"> No Activity.</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No activity logs recorded yet.</td></tr>`;
           return;
         }
 
@@ -897,7 +897,7 @@
           </tr>`;
           tbody.innerHTML += row;
         });
-      }).catch(err => alert("Logs fetch error: " + err.message));
+      }).catch(err => alert("Error fetching logs: " + err.message));
   }
 
   function closeAuditLogModal() {
@@ -969,7 +969,7 @@
     const recordsToExport = getFilteredRecords();
 
     if (recordsToExport.length === 0) {
-      alert("No record for Export!");
+      alert("No records found to export!");
       return;
     }
 
@@ -1010,7 +1010,7 @@
   }
 
   function backupData() {
-    if (globalRecords.length === 0) return alert("No data to backup!");
+    if (globalRecords.length === 0) return alert("No data available to backup!");
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(globalRecords, null, 2));
     const dlAnchor = document.createElement('a');
     dlAnchor.setAttribute("href", dataStr);
@@ -1037,7 +1037,7 @@
             rec.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
             batch.set(docRef, rec);
           });
-          batch.commit().then(() => alert("Backup restored to cloud!"));
+          batch.commit().then(() => alert("Backup successfully restored to cloud!"));
         }
       } catch (err) { alert("Restore Error: " + err.message); }
     };
