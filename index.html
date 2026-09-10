@@ -61,7 +61,6 @@
     .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-top: 10px; }
     .filter-grid input, .filter-grid select { padding: 9px; border: 1px solid #1d70b8; border-radius: 4px; font-size: 13px; width: 100%; }
     .clear-btn { background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
-    .notice-bar { background-color: #fff3cd; color: #856404; padding: 8px 12px; border-radius: 4px; font-size: 12px; margin-bottom: 10px; border: 1px solid #ffeeba; }
     
     .table-container { overflow-x: auto; margin-top: 20px; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
@@ -244,11 +243,8 @@
       </div>
     </form>
 
-    <!-- FILTER SECTION WITH MULTI-SELECT VEHICLE (INCLUDING LDRX) & TODAY/YESTERDAY OPTIMIZATION -->
+    <!-- FILTER SECTION WITH MULTI-SELECT VEHICLE & DATE FILTERS -->
     <div class="filter-box">
-      <div class="notice-bar">
-        ⚡ <b>Optimization Note:</b> Server par load kam rakhne ke liye default me sirf <b>Aaj (Today)</b> aur <b>Pichle Din (Yesterday)</b> ki entries dikhai de rahi hain. Purani entries dekhne ke liye From/To date choose karein.
-      </div>
       <label style="color: #0b3c5d;"><strong>🔍 Advanced Register Search & Filters:</strong></label>
       <div class="filter-grid">
         <input type="text" id="searchInput" onkeyup="applyFilters()" placeholder="Search Name, Mobile, App No...">
@@ -705,7 +701,7 @@
     printArea.style.display = 'none';
   }
 
-  // ADVANCED MULTI-FILTER FUNCTION WITH TODAY / YESTERDAY OPTIMIZATION
+  // ADVANCED MULTI-FILTER FUNCTION (SHOWS ALL RECORDS BY DEFAULT)
   function getFilteredRecords() {
     let searchText = document.getElementById("searchInput").value.toLowerCase();
     
@@ -717,12 +713,6 @@
     let refVal = document.getElementById("filterReference").value.toLowerCase();
     let fromDateVal = document.getElementById("fromDate").value;
     let toDateVal = document.getElementById("toDate").value;
-
-    // Default Date Range Calculation: Today & Yesterday
-    const today = new Date().toISOString().slice(0, 10);
-    const yesterdayDate = new Date();
-    yesterdayDate.setDate(yesterdayDate.getDate() - 1);
-    const yesterday = yesterdayDate.toISOString().slice(0, 10);
 
     return globalRecords.filter(r => {
       let textMatch = !searchText || 
@@ -745,15 +735,10 @@
 
       let refMatch = !refVal || (r.reference && r.reference.toLowerCase().includes(refVal));
 
-      // Date Range Match Logic (Default: Today + Yesterday)
+      // Date Range Match Logic (Applies only if user selects dates)
       let dateMatch = true;
-      if (fromDateVal || toDateVal) {
-        if (fromDateVal && r.paymentDate < fromDateVal) dateMatch = false;
-        if (toDateVal && r.paymentDate > toDateVal) dateMatch = false;
-      } else {
-        // Default behavior: Show only Today and Yesterday
-        dateMatch = (r.paymentDate === today || r.paymentDate === yesterday);
-      }
+      if (fromDateVal && r.paymentDate < fromDateVal) dateMatch = false;
+      if (toDateVal && r.paymentDate > toDateVal) dateMatch = false;
 
       return textMatch && vehicleMatch && payMatch && refMatch && dateMatch;
     });
@@ -779,7 +764,7 @@
     applyFilters();
   }
 
-  // EXCEL EXPORT (EXPORTS FILTERED / DATE RANGE DATA ONLY)
+  // EXCEL EXPORT (EXPORTS FILTERED / ALL DATA)
   function exportToExcel() {
     const recordsToExport = getFilteredRecords();
 
