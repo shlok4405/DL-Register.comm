@@ -33,7 +33,6 @@
     .form-group { display: flex; flex-direction: column; }
     .form-group label { font-size: 13px; font-weight: bold; margin-bottom: 5px; color: #333; }
     .form-group input, .form-group select, .form-group textarea { padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
-    .form-group select[multiple] { height: 110px; }
     .form-group input[readonly] { background-color: #e9ecef; }
     .full-width { grid-column: 1 / -1; }
     
@@ -89,6 +88,11 @@
     .details-item { background: #f8f9fa; padding: 10px; border-radius: 5px; border-left: 3px solid #1d70b8; }
     .details-item label { display: block; font-size: 11px; color: #666; font-weight: bold; text-transform: uppercase; }
     .details-item span { font-size: 14px; font-weight: 600; color: #222; }
+
+    /* Installment Table in Details Modal */
+    .installment-table { width: 100%; margin-top: 5px; border-collapse: collapse; font-size: 13px; }
+    .installment-table th { background: #1d70b8; color: white; padding: 6px; }
+    .installment-table td { padding: 6px; border: 1px solid #ccc; }
 
     @media print {
       body * { visibility: hidden; }
@@ -390,8 +394,10 @@
       <div class="details-item"><label>Added / Updated By</label><span id="kOperator">-</span></div>
       
       <div class="details-item full-width" style="grid-column: 1 / -1;">
-        <label>Payment History & Installment Dates</label>
-        <span id="kInstallmentHistory" style="white-space: pre-wrap; font-family: monospace; color: #0b3c5d;">-</span>
+        <label>Detailed Payment & Installment History</label>
+        <div id="kInstallmentHistoryContainer" style="margin-top: 5px;">
+          <!-- Populated dynamically with table and delete buttons -->
+        </div>
       </div>
 
       <div class="details-item full-width" style="grid-column: 1 / -1;">
@@ -647,7 +653,12 @@
 
     if (editId) {
       const oldRec = globalRecords.find(r => r.id === editId);
-      recordData.installmentsHistory = oldRec.installmentsHistory || [];
+      recordData.installmentsList = oldRec.installmentsList || [{
+        type: 'Initial Admission Payment',
+        amount: recordData.advancePayment,
+        date: recordData.paymentDate,
+        operator: activeStaffName
+      }];
       
       db.collection("dl_records").doc(editId).update(recordData)
         .then(() => {
@@ -661,7 +672,12 @@
         })
         .catch(err => alert("Update Error: " + err.message));
     } else {
-      recordData.installmentsHistory = [`Initial Payment: ₹${recordData.advancePayment} paid on ${formatDateToDMY(recordData.paymentDate)}`];
+      recordData.installmentsList = [{
+        type: 'Initial Admission Payment',
+        amount: recordData.advancePayment,
+        date: recordData.paymentDate,
+        operator: activeStaffName
+      }];
       recordData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
       
       db.collection("dl_records").add(recordData)
@@ -686,6 +702,16 @@
         let d = doc.data();
         d.id = doc.id;
         d.vehicleType = normalizeVehicleType(d.vehicleType);
+        
+        // Backward compatibility fallback if installmentsList is missing
+        if (!d.installmentsList) {
+          d.installmentsList = [{
+            type: 'Initial Admission Payment',
+            amount: d.advancePayment || 0,
+            date: d.paymentDate || '-',
+            operator: d.addedBy || 'Staff'
+          }];
+        }
         globalRecords.push(d);
       });
       applyFilters();
@@ -850,12 +876,39 @@
     document.getElementById('kOperator').innerText = d.addedBy || '-';
     document.getElementById('kRemarks').innerText = d.remarks || '-';
 
-    // Format Installment History list nicely
-    let historyText = "No additional installments recorded yet.";
-    if (d.installmentsHistory && d.installmentsHistory.length > 0) {
-      historyText = d.installmentsHistory.map((item, index) => `${index + 1}. ${item}`).join('\n');
+    // Build structured Table for Installment History with Delete option
+    let historyContainer = document.getElementById('kInstallmentHistoryContainer');
+    if (!d.installmentsList || d.installmentsList.length === 0) {
+      historyContainer.innerHTML = `<span style="color:#666;">No payment history recorded.</span>`;
+    } else {
+      let tableHtml = `<table class="installment-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Payment Type / Note</th>
+            <th>Date</th>
+            <th>Amount</th>
+            <th>Staff / Added By</th>
+            <th class="no-print">Action</th>
+          </tr>
+        </thead>
+        <tbody>`;
+      
+      d.installmentsList.forEach((inst, index) => {
+        tableHtml += `<tr>
+          <td>${index + 1}</td>
+          <td><b>${inst.type || 'Installment Payment'}</b></td>
+          <td>${formatDateToDMY(inst.date)}</td>
+          <td style="color: green; font-weight: bold;">₹${inst.amount}</td>
+          <td>${inst.operator || 'Staff'}</td>
+          <td class="no-print">
+            <button class="btn-sm btn-del" onclick="deleteInstallment('${d.id}', ${index})">Delete</button>
+          </td>
+        </tr>`;
+      });
+      tableHtml += `</tbody></table>`;
+      historyContainer.innerHTML = tableHtml;
     }
-    document.getElementById('kInstallmentHistory').innerText = historyText;
 
     document.getElementById('detailsModal').style.display = 'flex';
   }
@@ -890,19 +943,64 @@
     const newBalance = (d.balanceAmount || 0) - payAmt;
     const finalBalance = newBalance >= 0 ? newBalance : 0;
 
-    let historyArr = d.installmentsHistory || [];
-    historyArr.push(`Paid ₹${payAmt} on ${formatDateToDMY(payDate)} (By: ${activeStaffName}, Remaining Bal: ₹${finalBalance})`);
+    let installments = d.installmentsList || [];
+    let installmentNum = installments.length + 1;
+
+    installments.push({
+      type: `Installment #${installmentNum}`,
+      amount: payAmt,
+      date: payDate,
+      operator: activeStaffName
+    });
 
     db.collection("dl_records").doc(id).update({
       advancePayment: newPaid,
       balanceAmount: finalBalance,
-      installmentsHistory: historyArr,
+      installmentsList: installments,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     }).then(() => {
-      logActivity('PAYMENT_ADDED', d.customerName, `Added installment of ₹${payAmt} on ${formatDateToDMY(payDate)} by ${activeStaffName}. New balance: ₹${finalBalance}`);
+      logActivity('PAYMENT_ADDED', d.customerName, `Added installment #${installmentNum} of ₹${payAmt} on ${formatDateToDMY(payDate)} by ${activeStaffName}. New balance: ₹${finalBalance}`);
       alert("Installment payment successfully saved!");
       closePayModal();
     }).catch(err => alert("Payment Error: " + err.message));
+  }
+
+  // DELETE SPECIFIC INSTALLMENT
+  function deleteInstallment(recordId, index) {
+    const d = globalRecords.find(r => r.id === recordId);
+    if (!d || !d.installmentsList || !d.installmentsList[index]) return;
+
+    if (d.installmentsList.length === 1) {
+      alert("You cannot delete the only initial admission payment entry! Instead, you can edit the admission details or delete the entire customer record.");
+      return;
+    }
+
+    let removedInst = d.installmentsList[index];
+    if (confirm(`Are you sure you want to delete this payment of ₹${removedInst.amount} (${removedInst.type}) dated ${formatDateToDMY(removedInst.date)}?`)) {
+      
+      d.installmentsList.splice(index, 1);
+
+      // Recalculate total paid and balance
+      let recalculatedPaid = 0;
+      d.installmentsList.forEach(inst => {
+        recalculatedPaid += parseFloat(inst.amount) || 0;
+      });
+
+      const netFee = (parseFloat(d.totalFee) || 0) - (parseFloat(d.discountAmount) || 0);
+      let recalculatedBalance = netFee - recalculatedPaid;
+      if (recalculatedBalance < 0) recalculatedBalance = 0;
+
+      db.collection("dl_records").doc(recordId).update({
+        advancePayment: recalculatedPaid,
+        balanceAmount: recalculatedBalance,
+        installmentsList: d.installmentsList,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(() => {
+        logActivity('INSTALLMENT_DELETED', d.customerName, `Deleted payment entry of ₹${removedInst.amount} (${removedInst.type}) by ${activeStaffName}`);
+        alert("Installment deleted and balance successfully recalculated!");
+        openDetailsModal(recordId); // Refresh modal view
+      }).catch(err => alert("Error deleting installment: " + err.message));
+    }
   }
 
   function openAuditLogModal() {
@@ -921,7 +1019,7 @@
         let badgeClass = 'badge-edit';
         if (log.action === 'ENTRY_CREATED') badgeClass = 'badge-create';
         if (log.action === 'PAYMENT_ADDED') badgeClass = 'badge-pay';
-        if (log.action === 'ENTRY_DELETED') badgeClass = 'badge-delete';
+        if (log.action === 'ENTRY_DELETED' || log.action === 'INSTALLMENT_DELETED') badgeClass = 'badge-delete';
 
         tbody.innerHTML += `
           <tr>
