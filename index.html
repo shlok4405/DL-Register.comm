@@ -54,7 +54,7 @@
     .btn-edit { background-color: #ff9800; }
     .btn-del { background-color: #dc3545; }
     .btn-pay { background-color: #28a745; }
-    .btn-print { background-color: #17a2b8; }
+    .btn-details { background-color: #17a2b8; }
 
     /* Filter Box */
     .filter-box { background: #eef5fc; padding: 15px; border-radius: 6px; margin-top: 25px; border: 1px solid #1d70b8; }
@@ -68,19 +68,23 @@
     td { padding: 8px; border: 1px solid #ddd; white-space: nowrap; }
     tr:nth-child(even) { background-color: #f9f9f9; }
 
-    /* Printable Receipt */
+    /* Modal Popup Styling for Full Details (Kundali) */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; }
+    .modal-content { background: white; width: 90%; max-width: 750px; max-height: 90vh; overflow-y: auto; border-radius: 8px; padding: 25px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); position: relative; }
+    .modal-header { border-bottom: 2px solid #0b3c5d; padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+    .modal-header h2 { margin: 0; color: #0b3c5d; font-size: 20px; }
+    .close-modal { background: #dc3545; color: white; border: none; padding: 5px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    .kundali-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; font-size: 14px; }
+    .kundali-item { background: #f8f9fa; padding: 10px; border-radius: 5px; border-left: 3px solid #1d70b8; }
+    .kundali-item label { display: block; font-size: 11px; color: #666; font-weight: bold; text-transform: uppercase; }
+    .kundali-item span { font-size: 14px; font-weight: 600; color: #222; }
+
     @media print {
       body * { visibility: hidden; }
-      #printableReceipt, #printableReceipt * { visibility: visible; }
-      #printableReceipt { position: absolute; left: 0; top: 0; width: 100%; color: black !important; background: white !important; font-family: 'Times New Roman', serif; }
+      #modalKundaliContent, #modalKundaliContent * { visibility: visible; }
+      #modalKundaliContent { position: absolute; left: 0; top: 0; width: 100%; }
+      .close-modal, .no-print { display: none !important; }
     }
-    
-    #printableReceipt { display: none; padding: 30px; border: 2px solid #000; width: 650px; margin: 0 auto; color: #000; background: #fff; }
-    #printableReceipt h2 { text-align: center; margin: 0; font-size: 22px; text-transform: uppercase; text-decoration: underline; }
-    #printableReceipt p { text-align: center; margin: 5px 0 20px 0; font-size: 14px; }
-    .receipt-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-    .receipt-table td { border: 1px solid #000; padding: 8px; font-size: 14px; color: #000; }
-    .receipt-footer { margin-top: 50px; display: flex; justify-content: space-between; font-size: 14px; }
   </style>
 </head>
 <body>
@@ -225,8 +229,9 @@
           <label>Payment Date *</label>
           <input type="date" id="paymentDate" required>
         </div>
+        <!-- CHANGED: Next Due Date -> Next Payment Date -->
         <div class="form-group">
-          <label>Next Due Date:</label>
+          <label>Next Payment Date:</label>
           <input type="date" id="dueDate">
         </div>
       </div>
@@ -243,7 +248,7 @@
       </div>
     </form>
 
-    <!-- FILTER SECTION WITH MULTI-SELECT VEHICLE & DATE FILTERS -->
+    <!-- FILTER SECTION -->
     <div class="filter-box">
       <label style="color: #0b3c5d;"><strong>🔍 Advanced Register Search & Filters:</strong></label>
       <div class="filter-grid">
@@ -303,7 +308,7 @@
             <th>Discount</th>
             <th>Paid</th>
             <th>Balance</th>
-            <th>Due Date</th>
+            <th>Next Payment Date</th>
             <th>Added By</th>
             <th>Actions</th>
           </tr>
@@ -317,32 +322,45 @@
   </div>
 </div>
 
-<!-- PRINTABLE RECEIPT TEMPLATE -->
-<div id="printableReceipt">
-  <h2>Tej Singh Motor Training School</h2>
-  <p>Payment & Admission Receipt</p>
-  <hr style="border: 1px solid #000;">
-  <table class="receipt-table">
-    <tr>
-      <td><strong>Customer Name:</strong> <span id="rName"></span></td>
-      <td><strong>Father's Name:</strong> <span id="rFather"></span></td>
-    </tr>
-    <tr>
-      <td><strong>Address:</strong> <span id="rAddress"></span></td>
-      <td><strong>Receipt Date:</strong> <span id="rDate"></span></td>
-    </tr>
-    <tr>
-      <td><strong>Total Fee:</strong> ₹<span id="rTotal"></span></td>
-      <td><strong>Discount:</strong> ₹<span id="rDiscount"></span></td>
-    </tr>
-    <tr>
-      <td><strong>Paid Amount:</strong> ₹<span id="rPaid"></span></td>
-      <td><strong>Balance Amount:</strong> ₹<span id="rBalance"></span></td>
-    </tr>
-  </table>
-  <div class="receipt-footer">
-    <div><strong>Prepared By:</strong> <span id="rOperator"></span></div>
-    <div><strong>Authorized Signature:</strong> _______________</div>
+<!-- DETAILS MODAL (CUSTOMER PURI KUNDALI) -->
+<div id="detailsModal" class="modal-overlay">
+  <div class="modal-content" id="modalKundaliContent">
+    <div class="modal-header">
+      <h2>📜 Customer Full Details (Kundali)</h2>
+      <button class="close-modal" onclick="closeDetailsModal()">X</button>
+    </div>
+    <div class="kundali-grid">
+      <div class="kundali-item"><label>Customer Name</label><span id="kName">-</span></div>
+      <div class="kundali-item"><label>Father's Name</label><span id="kFather">-</span></div>
+      <div class="kundali-item"><label>Mobile Number</label><span id="kMobile">-</span></div>
+      <div class="kundali-item"><label>Date of Birth</label><span id="kDob">-</span></div>
+      <div class="kundali-item"><label>Address</label><span id="kAddress">-</span></div>
+      <div class="kundali-item"><label>Reference Name</label><span id="kRef">-</span></div>
+      
+      <div class="kundali-item"><label>Vehicle Types</label><span id="kVehicles">-</span></div>
+      <div class="kundali-item"><label>LL Issued Outside</label><span id="kLlOutside">-</span></div>
+      <div class="kundali-item"><label>LL Application No.</label><span id="kLlAppNo">-</span></div>
+      <div class="kundali-item"><label>LL Number</label><span id="kLlNo">-</span></div>
+      <div class="kundali-item"><label>DL Application No.</label><span id="kDlAppNo">-</span></div>
+      
+      <div class="kundali-item"><label>Total Fee</label><span id="kTotal">₹0</span></div>
+      <div class="kundali-item"><label>Discount Amount</label><span id="kDiscount">₹0</span></div>
+      <div class="kundali-item"><label>Discount Note</label><span id="kDiscountNote">-</span></div>
+      <div class="kundali-item"><label>Paid Amount</label><span id="kPaid">₹0</span></div>
+      <div class="kundali-item"><label>Balance Amount</label><span id="kBalance" style="color:red;">₹0</span></div>
+      <div class="kundali-item"><label>Payment Date</label><span id="kPayDate">-</span></div>
+      <div class="kundali-item"><label>Next Payment Date</label><span id="kNextPayDate">-</span></div>
+      <div class="kundali-item"><label>Added / Updated By</label><span id="kOperator">-</span></div>
+      
+      <div class="kundali-item full-width" style="grid-column: 1 / -1;">
+        <label>Internal Remarks / Installment Logs</label>
+        <span id="kRemarks" style="white-space: pre-wrap; font-family: monospace;">-</span>
+      </div>
+    </div>
+    <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;" class="no-print">
+      <button onclick="window.print()" class="btn btn-details" style="min-width: 100px; padding: 8px;">Print Details 🖨️</button>
+      <button onclick="closeDetailsModal()" class="close-modal" style="padding: 8px 15px;">Close</button>
+    </div>
   </div>
 </div>
 
@@ -472,7 +490,6 @@
     return parts.length === 3 ? `${parts[2]}-${parts[1]}-${parts[0]}` : dateString;
   }
 
-  // HELPER TO GET SELECTED VEHICLE CHECKBOX VALUES
   function getSelectedVehicles() {
     const checkboxes = document.querySelectorAll('#vehicleCheckboxGroup input[type="checkbox"]:checked');
     let selected = [];
@@ -480,7 +497,6 @@
     return selected.join(", ");
   }
 
-  // HELPER TO SET VEHICLE CHECKBOXES ON EDIT
   function setSelectedVehicles(vehicleString) {
     const checkboxes = document.querySelectorAll('#vehicleCheckboxGroup input[type="checkbox"]');
     checkboxes.forEach(cb => {
@@ -488,7 +504,6 @@
     });
   }
 
-  // MIGRATION HELPER: Convert old combined terms into individual comma-separated strings
   function normalizeVehicleType(vehicleStr) {
     if (!vehicleStr) return "";
     let normalized = vehicleStr;
@@ -554,14 +569,13 @@
     }
   }
 
-  // REALTIME LOADER
+  // REALTIME LOADER (DATE-SORTED BY RECENT ENTRIES)
   function loadLiveEntries() {
-    db.collection("dl_records").orderBy("createdAt", "desc").onSnapshot(snapshot => {
+    db.collection("dl_records").orderBy("paymentDate", "desc").onSnapshot(snapshot => {
       globalRecords = [];
       snapshot.forEach(doc => {
         let d = doc.data();
         d.id = doc.id;
-        // Migration for old combined vehicle tags
         d.vehicleType = normalizeVehicleType(d.vehicleType);
         globalRecords.push(d);
       });
@@ -594,7 +608,7 @@
         <td>
           <button class="btn-sm btn-edit" onclick="editRecord('${d.id}')">Edit</button>
           <button class="btn-sm btn-pay" onclick="addInstallment('${d.id}')">+ Pay</button>
-          <button class="btn-sm btn-print" onclick="printReceipt('${d.id}')">Receipt</button>
+          <button class="btn-sm btn-details" onclick="openDetailsModal('${d.id}')">Details 📜</button>
           <button class="btn-sm btn-del" onclick="deleteRecord('${d.id}')">Del</button>
         </td>
       </tr>`;
@@ -669,7 +683,7 @@
     let updatedBalance = netFee - updatedPaid;
     if (updatedBalance < 0) updatedBalance = 0;
 
-    let updatedRemarks = `${rec.remarks || ''} | [Installment Paid: ₹${paidNow} on ${new Date().toLocaleDateString()}]`;
+    let updatedRemarks = `${rec.remarks || ''}\n[Installment Paid: ₹${paidNow} on ${new Date().toLocaleDateString()}]`;
 
     db.collection("dl_records").doc(id).update({
       advancePayment: updatedPaid,
@@ -681,31 +695,43 @@
     });
   }
 
-  function printReceipt(id) {
+  // DETAILS MODAL (PURI KUNDALI DISPLAY)
+  function openDetailsModal(id) {
     const rec = globalRecords.find(r => r.id === id);
     if (!rec) return;
 
-    document.getElementById('rDate').innerText = formatDateToDMY(rec.paymentDate);
-    document.getElementById('rName').innerText = rec.customerName;
-    document.getElementById('rFather').innerText = rec.fatherName;
-    document.getElementById('rAddress').innerText = rec.address || '-';
-    document.getElementById('rTotal').innerText = rec.totalFee;
-    document.getElementById('rDiscount').innerText = rec.discountAmount || 0;
-    document.getElementById('rPaid').innerText = rec.advancePayment;
-    document.getElementById('rBalance').innerText = rec.balanceAmount;
-    document.getElementById('rOperator').innerText = rec.addedBy || activeStaffName || 'Staff';
+    document.getElementById('kName').innerText = rec.customerName || '-';
+    document.getElementById('kFather').innerText = rec.fatherName || '-';
+    document.getElementById('kMobile').innerText = rec.mobile || '-';
+    document.getElementById('kDob').innerText = formatDateToDMY(rec.dob);
+    document.getElementById('kAddress').innerText = rec.address || '-';
+    document.getElementById('kRef').innerText = rec.reference || '-';
+    document.getElementById('kVehicles').innerText = rec.vehicleType || '-';
+    document.getElementById('kLlOutside').innerText = rec.llOutside || '-';
+    document.getElementById('kLlAppNo').innerText = rec.llAppNo || '-';
+    document.getElementById('kLlNo').innerText = rec.llNo || '-';
+    document.getElementById('kDlAppNo').innerText = rec.dlAppNo || '-';
+    document.getElementById('kTotal').innerText = `₹${rec.totalFee}`;
+    document.getElementById('kDiscount').innerText = `₹${rec.discountAmount || 0}`;
+    document.getElementById('kDiscountNote').innerText = rec.discountNote || '-';
+    document.getElementById('kPaid').innerText = `₹${rec.advancePayment}`;
+    document.getElementById('kBalance').innerText = `₹${rec.balanceAmount}`;
+    document.getElementById('kPayDate').innerText = formatDateToDMY(rec.paymentDate);
+    document.getElementById('kNextPayDate').innerText = formatDateToDMY(rec.dueDate);
+    document.getElementById('kOperator').innerText = rec.addedBy || 'Staff';
+    document.getElementById('kRemarks').innerText = rec.remarks || 'No comments';
 
-    let printArea = document.getElementById('printableReceipt');
-    printArea.style.display = 'block';
-    window.print();
-    printArea.style.display = 'none';
+    document.getElementById('detailsModal').style.display = 'flex';
   }
 
-  // ADVANCED MULTI-FILTER FUNCTION (SHOWS ALL RECORDS BY DEFAULT)
+  function closeDetailsModal() {
+    document.getElementById('detailsModal').style.display = 'none';
+  }
+
+  // ADVANCED MULTI-FILTER FUNCTION (NO DATE RESTRICTION DEFAULT)
   function getFilteredRecords() {
     let searchText = document.getElementById("searchInput").value.toLowerCase();
     
-    // Get Selected Multi-Vehicles
     let vehicleSelect = document.getElementById("filterVehicle");
     let selectedVehicles = Array.from(vehicleSelect.selectedOptions).map(opt => opt.value);
 
@@ -723,7 +749,6 @@
         (r.llNo && r.llNo.toLowerCase().includes(searchText)) ||
         (r.dlAppNo && r.dlAppNo.toLowerCase().includes(searchText));
       
-      // Multi-Vehicle Selection Match Logic
       let vehicleMatch = true;
       if (selectedVehicles.length > 0) {
         vehicleMatch = selectedVehicles.some(v => r.vehicleType && r.vehicleType.includes(v));
@@ -735,7 +760,6 @@
 
       let refMatch = !refVal || (r.reference && r.reference.toLowerCase().includes(refVal));
 
-      // Date Range Match Logic (Applies only if user selects dates)
       let dateMatch = true;
       if (fromDateVal && r.paymentDate < fromDateVal) dateMatch = false;
       if (toDateVal && r.paymentDate > toDateVal) dateMatch = false;
@@ -764,12 +788,12 @@
     applyFilters();
   }
 
-  // EXCEL EXPORT (EXPORTS FILTERED / ALL DATA)
+  // EXCEL EXPORT (EXPORTS FILTERED OR ALL DATA)
   function exportToExcel() {
     const recordsToExport = getFilteredRecords();
 
     if (recordsToExport.length === 0) {
-      alert("Selected Filters ya Date Range me koi record nahi mila!");
+      alert("Export ke liye koi record nahi mila!");
       return;
     }
 
@@ -791,7 +815,7 @@
       "Discount (₹)": r.discountAmount || 0,
       "Paid Amount (₹)": r.advancePayment,
       "Balance (₹)": r.balanceAmount,
-      "Due Date": formatDateToDMY(r.dueDate),
+      "Next Payment Date": formatDateToDMY(r.dueDate),
       "Entry Operator": r.addedBy || 'Staff'
     }));
 
