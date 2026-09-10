@@ -23,7 +23,6 @@
     .header p { margin: 5px 0 0; font-size: 15px; font-weight: 500; }
     .header-btns { position: absolute; right: 20px; top: 20px; display: flex; gap: 10px; }
     .log-btn { background: #ff9800; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; display: none; }
-    .undo-btn { background: #673ab7; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
     .logout-btn { background: #d9534f; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
 
     /* Form Design */
@@ -140,7 +139,6 @@
     <h1>Tej Singh Motor Training School</h1>
     <p>Customer Admission & Payment Register | Welcome, <span id="userGreeting" style="text-decoration: underline;">Staff</span></p>
     <div class="header-btns">
-      <button class="undo-btn" id="undoBtn" onclick="performUndo()" title="Undo last delete or change (Ctrl+Z)">↩️ Undo (Ctrl+Z)</button>
       <button class="log-btn" id="auditLogBtn" onclick="openAuditLogModal()">📜 Activity Logs</button>
       <button class="logout-btn" onclick="logoutUser()">Logout 🔒</button>
     </div>
@@ -477,10 +475,8 @@
   // Listen to Keyboard shortcut for Ctrl + Z
   document.addEventListener('keydown', function(e) {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
-      // Prevent default browser undo behavior inside inputs if needed, or trigger portal undo
       const activeEl = document.activeElement;
       if (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA') {
-        // Allow normal input undo if inside text fields, else do portal record undo
         return; 
       }
       e.preventDefault();
@@ -601,7 +597,6 @@
       data: previousData,
       time: new Date()
     });
-    // Keep stack size reasonable (last 15 actions)
     if (undoStack.length > 15) undoStack.shift();
   }
 
@@ -616,25 +611,22 @@
     if (confirm(`Do you want to Undo the last action (${lastAction.actionType}) for customer: ${lastAction.data.customerName || 'Record'}?`)) {
       
       if (lastAction.actionType === 'DELETE_RECORD') {
-        // Restore deleted record with its exact original ID
         db.collection("dl_records").doc(lastAction.recordId).set(lastAction.data)
           .then(() => {
-            logActivity('UNDO_ACTION', lastAction.data.customerName, `Restored deleted record via Undo by ${activeStaffName}`);
+            logActivity('UNDO_ACTION', lastAction.data.customerName, `Restored deleted record via Ctrl+Z by ${activeStaffName}`);
             alert("Undo Successful! Record has been restored.");
           })
           .catch(err => alert("Undo Error: " + err.message));
       } 
       else if (lastAction.actionType === 'EDIT_RECORD' || lastAction.actionType === 'PAYMENT_UPDATE') {
-        // Revert to previous state data
         db.collection("dl_records").doc(lastAction.recordId).set(lastAction.data)
           .then(() => {
-            logActivity('UNDO_ACTION', lastAction.data.customerName, `Reverted recent changes via Undo by ${activeStaffName}`);
+            logActivity('UNDO_ACTION', lastAction.data.customerName, `Reverted recent changes via Ctrl+Z by ${activeStaffName}`);
             alert("Undo Successful! Record reverted to previous state.");
           })
           .catch(err => alert("Undo Error: " + err.message));
       }
     } else {
-      // Put back if cancelled
       undoStack.push(lastAction);
     }
   }
@@ -726,7 +718,6 @@
         operator: activeStaffName
       }];
 
-      // Push old state to Undo stack before updating
       pushToUndoStack('EDIT_RECORD', editId, oldRec);
       
       db.collection("dl_records").doc(editId).update(recordData)
@@ -867,7 +858,6 @@
   function deleteRecord(id, customerName) {
     const recToDelete = globalRecords.find(r => r.id === id);
     if (confirm(`Are you sure you want to delete the record for ${customerName}?`)) {
-      // Save to undo stack before deleting
       if (recToDelete) {
         pushToUndoStack('DELETE_RECORD', id, recToDelete);
       }
@@ -963,7 +953,6 @@
     document.getElementById('kOperator').innerText = d.addedBy || '-';
     document.getElementById('kRemarks').innerText = d.remarks || '-';
 
-    // Build structured Table for Installment History with Delete option
     let historyContainer = document.getElementById('kInstallmentHistoryContainer');
     if (!d.installmentsList || d.installmentsList.length === 0) {
       historyContainer.innerHTML = `<span style="color:#666;">No payment history recorded.</span>`;
@@ -1026,7 +1015,6 @@
     const d = globalRecords.find(r => r.id === id);
     if (!d) return;
 
-    // Push previous state before payment update to undo stack
     pushToUndoStack('PAYMENT_UPDATE', id, JSON.parse(JSON.stringify(d)));
 
     const newPaid = (d.advancePayment || 0) + payAmt;
@@ -1055,24 +1043,22 @@
     }).catch(err => alert("Payment Error: " + err.message));
   }
 
-  // DELETE SPECIFIC INSTALLMENT
   function deleteInstallment(recordId, index) {
     const d = globalRecords.find(r => r.id === recordId);
     if (!d || !d.installmentsList || !d.installmentsList[index]) return;
 
     if (d.installmentsList.length === 1) {
-      alert("You cannot delete the only initial admission payment entry! Instead, you can edit the admission details or delete the entire customer record.");
+      alert("You cannot delete the only initial admission payment entry!");
       return;
     }
 
     let removedInst = d.installmentsList[index];
-    if (confirm(`Are you sure you want to delete this payment of ₹${removedInst.amount} (${removedInst.type}) dated ${formatDateToDMY(removedInst.date)}?`)) {
+    if (confirm(`Are you sure you want to delete this payment of ₹${removedInst.amount} (${removedInst.type})?`)) {
       
       pushToUndoStack('PAYMENT_UPDATE', recordId, JSON.parse(JSON.stringify(d)));
 
       d.installmentsList.splice(index, 1);
 
-      // Recalculate total paid and balance
       let recalculatedPaid = 0;
       d.installmentsList.forEach(inst => {
         recalculatedPaid += parseFloat(inst.amount) || 0;
@@ -1088,9 +1074,9 @@
         installmentsList: d.installmentsList,
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       }).then(() => {
-        logActivity('INSTALLMENT_DELETED', d.customerName, `Deleted payment entry of ₹${removedInst.amount} (${removedInst.type}) by ${activeStaffName}`);
+        logActivity('INSTALLMENT_DELETED', d.customerName, `Deleted payment entry of ₹${removedInst.amount} by ${activeStaffName}`);
         alert("Installment deleted and balance successfully recalculated!");
-        openDetailsModal(recordId); // Refresh modal view
+        openDetailsModal(recordId);
       }).catch(err => alert("Error deleting installment: " + err.message));
     }
   }
