@@ -1,295 +1,1190 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tej Singh Motor Training School - Portal</title>
-    <style>
-        :root {
-            --primary-color: #1a73e8;
-            --secondary-color: #f8f9fa;
-            --border-color: #dadce0;
-            --text-color: #202124;
-            --danger-color: #d93025;
-            --success-color: #188038;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TEJ SINGH MOTOR TRAINING SCHOOL - Secure Portal</title>
+  <!-- SheetJS for Excel Export -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <style>
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: #f0f4f8; margin: 0; padding: 20px; }
+    .container { max-width: 1250px; margin: 0 auto; background: white; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
+    
+    /* Auth Cards */
+    .auth-card { max-width: 420px; margin: 60px auto; padding: 30px; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); text-align: center; }
+    .auth-card input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px; }
+    .auth-card button { width: 100%; padding: 12px; background: #0b3c5d; color: white; border: none; font-size: 15px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 8px; }
+    .auth-card button.secondary-btn { background: #6c757d; }
 
-        body {
-            font-family: Arial, sans-serif;
-            background-color: var(--secondary-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 20px;
-            line-height: 1.25;
-        }
+    /* Header */
+    .header { background-color: #0b3c5d; color: white; text-align: center; padding: 20px; position: relative; }
+    .header h1 { margin: 0; color: #ff3b30; font-size: 26px; text-transform: uppercase; font-weight: 800; }
+    .header p { margin: 5px 0 0; font-size: 15px; font-weight: 500; }
+    .header-btns { position: absolute; right: 20px; top: 20px; display: flex; gap: 10px; }
+    .log-btn { background: #ff9800; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; display: none; }
+    .logout-btn { background: #d9534f; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
 
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background: #ffffff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
+    /* Form Design */
+    .form-container { padding: 25px; }
+    .section-title { color: #1d70b8; border-bottom: 2px solid #1d70b8; padding-bottom: 5px; margin-top: 20px; font-size: 18px; }
+    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-top: 15px; }
+    
+    .form-group { display: flex; flex-direction: column; }
+    .form-group label { font-size: 13px; font-weight: bold; margin-bottom: 5px; color: #333; }
+    .form-group input, .form-group select, .form-group textarea { padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+    .form-group input[readonly] { background-color: #e9ecef; }
+    .full-width { grid-column: 1 / -1; }
+    
+    /* Multi-select Vehicle Checkbox Box */
+    .checkbox-group { display: flex; flex-wrap: wrap; gap: 10px; background: #f8f9fa; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
+    .checkbox-group label { font-size: 13px; font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 4px; }
 
-        h1 {
-            color: var(--primary-color);
-            font-size: 24px;
-            margin-bottom: 20px;
-            text-align: center;
-        }
+    /* Action Buttons */
+    .button-group { display: flex; gap: 10px; margin-top: 25px; flex-wrap: wrap; }
+    .btn { flex: 1; min-width: 140px; padding: 12px; border: none; border-radius: 5px; font-weight: bold; color: white; cursor: pointer; font-size: 14px; text-align: center; }
+    .btn-save { background-color: #28a745; }
+    .btn-update { background-color: #ff9800; display: none; }
+    .btn-cancel { background-color: #6c757d; display: none; }
+    .btn-export { background-color: #004085; }
+    .btn-backup { background-color: #d9534f; }
+    .btn-restore { background-color: #17a2b8; }
 
-        .btn-group {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            justify-content: flex-end;
-        }
+    /* Table Buttons */
+    .btn-sm { padding: 4px 8px; font-size: 11px; border-radius: 3px; border: none; cursor: pointer; font-weight: bold; color: white; margin-right: 2px; }
+    .btn-edit { background-color: #ff9800; }
+    .btn-del { background-color: #dc3545; }
+    .btn-pay { background-color: #28a745; }
+    .btn-details { background-color: #17a2b8; }
 
-        button {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 10px 16px;
-            font-size: 14px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
+    /* Filter Box */
+    .filter-box { background: #eef5fc; padding: 15px; border-radius: 6px; margin-top: 25px; border: 1px solid #1d70b8; }
+    .filter-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-top: 10px; }
+    .filter-grid input, .filter-grid select { padding: 9px; border: 1px solid #1d70b8; border-radius: 4px; font-size: 13px; width: 100%; }
+    .clear-btn { background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    
+    .table-container { overflow-x: auto; margin-top: 20px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
+    th { background-color: #0b3c5d; color: white; padding: 10px; white-space: nowrap; }
+    td { padding: 8px; border: 1px solid #ddd; white-space: nowrap; }
+    tr:nth-child(even) { background-color: #f9f9f9; }
 
-        button:hover {
-            opacity: 0.9;
-        }
+    /* Modal Popup Styling */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; }
+    .modal-content { background: white; width: 90%; max-width: 750px; max-height: 90vh; overflow-y: auto; border-radius: 8px; padding: 25px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); position: relative; }
+    .modal-header { border-bottom: 2px solid #0b3c5d; padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+    .modal-header h2 { margin: 0; color: #0b3c5d; font-size: 20px; }
+    .close-modal { background: #dc3545; color: white; border: none; padding: 5px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    
+    /* Audit Log Badges */
+    .badge { padding: 3px 7px; border-radius: 3px; font-size: 10px; font-weight: bold; color: white; display: inline-block; }
+    .badge-create { background-color: #28a745; }
+    .badge-edit { background-color: #ff9800; }
+    .badge-pay { background-color: #17a2b8; }
+    .badge-delete { background-color: #dc3545; }
 
-        .btn-danger {
-            background-color: var(--danger-color);
-        }
+    /* Profile Details Layout */
+    .details-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; font-size: 14px; }
+    .details-item { background: #f8f9fa; padding: 10px; border-radius: 5px; border-left: 3px solid #1d70b8; }
+    .details-item label { display: block; font-size: 11px; color: #666; font-weight: bold; text-transform: uppercase; }
+    .details-item span { font-size: 14px; font-weight: 600; color: #222; }
 
-        .btn-success {
-            background-color: var(--success-color);
-        }
+    /* Installment Table in Details Modal */
+    .installment-table { width: 100%; margin-top: 5px; border-collapse: collapse; font-size: 13px; }
+    .installment-table th { background: #1d70b8; color: white; padding: 6px; }
+    .installment-table td { padding: 6px; border: 1px solid #ccc; }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-        }
-
-        th, td {
-            padding: 12px;
-            border: 1px solid var(--border-color);
-            text-align: left;
-            font-size: 14px;
-        }
-
-        th {
-            background-color: #f1f3f4;
-            font-weight: bold;
-        }
-
-        /* Modal Popup Styling */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content {
-            background-color: #ffffff;
-            padding: 25px;
-            border-radius: 8px;
-            width: 80%;
-            max-width: 700px;
-            max-height: 80vh;
-            overflow-y: auto;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-
-        .close-btn {
-            float: right;
-            font-size: 22px;
-            font-weight: bold;
-            cursor: pointer;
-            color: #5f6368;
-        }
-
-        .close-btn:hover {
-            color: var(--danger-color);
-        }
-
-        .summary-cards {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .card {
-            flex: 1;
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 6px;
-            border: 1px solid var(--border-color);
-            text-align: center;
-        }
-
-        .card h3 {
-            margin: 0 0 8px 0;
-            font-size: 14px;
-            color: #5f6368;
-        }
-
-        .card p {
-            margin: 0;
-            font-size: 18px;
-            font-weight: bold;
-            color: var(--primary-color);
-        }
-    </style>
+    @media print {
+      body * { visibility: hidden; }
+      #modalDetailsContent, #modalDetailsContent * { visibility: visible; }
+      #modalDetailsContent { position: absolute; left: 0; top: 0; width: 100%; }
+      .close-modal, .no-print { display: none !important; }
+    }
+  </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>Tej Singh Motor Training School</h1>
+<!-- LOGIN SECTION -->
+<div id="loginSection" class="auth-card">
+  <h2 style="color: #0b3c5d; margin-top: 0;">Tej Singh Portal</h2>
+  <p style="color: #666; font-size: 14px;">Login to Access Portal</p>
+  <input type="email" id="loginEmail" placeholder="Enter Staff Email" required>
+  <input type="password" id="loginPassword" placeholder="Enter Password" required>
+  <button onclick="loginUser()">Login to Portal</button>
+  <p id="loginError" style="color: red; font-size: 13px; margin-top: 10px;"></p>
+</div>
+
+<!-- EMAIL VERIFICATION SECTION -->
+<div id="verifySection" class="auth-card" style="display: none;">
+  <h2 style="color: #0b3c5d; margin-top: 0;">Email Verification Required ✉️</h2>
+  <p style="color: #666; font-size: 14px;">Your email is not verified. Please check your inbox and verify your email.</p>
+  <button onclick="sendVerificationEmail()">Resend Verification Link</button>
+  <button onclick="checkVerificationStatus()" style="background: #28a745;">I Have Verified (Check Status)</button>
+  <button onclick="logoutUser()" class="secondary-btn">Logout</button>
+  <p id="verifyMsg" style="color: green; font-size: 13px; margin-top: 10px;"></p>
+</div>
+
+<!-- PROFILE SETUP SECTION -->
+<div id="profileSetupSection" class="auth-card" style="display: none;">
+  <h2 style="color: #0b3c5d; margin-top: 0;">Profile Setup 👤</h2>
+  <p style="color: #666; font-size: 14px;">Email verification complete. Please enter your name.</p>
+  <input type="text" id="staffDisplayName" placeholder="Enter Your Name" required>
+  <button onclick="saveProfileName()">Save & Enter Portal 🚀</button>
+  <p id="setupError" style="color: red; font-size: 13px; margin-top: 10px;"></p>
+</div>
+
+<!-- MAIN DASHBOARD -->
+<div class="container" id="mainDashboard" style="display: none;">
+  <div class="header">
+    <h1>Tej Singh Motor Training School</h1>
+    <p>Customer Admission & Payment Register | Welcome, <span id="userGreeting" style="text-decoration: underline;">Staff</span></p>
+    <div class="header-btns">
+      <button class="log-btn" id="auditLogBtn" onclick="openAuditLogModal()">📜 Activity Logs</button>
+      <button class="logout-btn" onclick="logoutUser()">Logout 🔒</button>
+    </div>
+  </div>
+
+  <div class="form-container">
+    <form id="admissionForm" onsubmit="handleFormSubmit(event)">
+      <input type="hidden" id="editRecordId" value="">
+      
+      <!-- Section 1 -->
+      <h3 class="section-title">1. Customer & Application Details</h3>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Customer Name *</label>
+          <input type="text" id="customerName" placeholder="Enter customer name" required>
+        </div>
+        <div class="form-group">
+          <label>Father's Name *</label>
+          <input type="text" id="fatherName" placeholder="Enter father's name" required>
+        </div>
+        <div class="form-group">
+          <label>Mobile Number *</label>
+          <input type="tel" id="mobile" placeholder="xxxxxxxxxx" required>
+        </div>
+        <div class="form-group">
+          <label>Date of Birth (DOB) *</label>
+          <input type="date" id="dob" required>
+        </div>
         
-        <!-- Action Buttons including the new Payment Report button -->
-        <div class="btn-group">
-            <button onclick="alert('Active Log feature coming soon!')">Active Log</button>
-            <button class="btn-danger" onclick="alert('Logged out successfully.')">Logout</button>
-            <button class="btn-success" onclick="openPaymentModal()">Payment Report</button>
+        <!-- Multi-Select Vehicle Types -->
+        <div class="form-group full-width">
+          <label>Vehicle Type (Select Multiple) *</label>
+          <div class="checkbox-group" id="vehicleCheckboxGroup">
+            <label><input type="checkbox" value="Two Wheeler"> Two Wheeler</label>
+            <label><input type="checkbox" value="Four Wheeler"> Four Wheeler</label>
+            <label><input type="checkbox" value="AD"> AD</label>
+            <label><input type="checkbox" value="LDRX"> LDRX</label>
+            <label><input type="checkbox" value="Commercial / Heavy"> Commercial / Heavy</label>
+            <label><input type="checkbox" value="Crane"> Crane</label>
+            <label><input type="checkbox" value="Forklift"> Forklift</label>
+            <label><input type="checkbox" value="Renewal"> Renewal</label>
+          </div>
         </div>
 
-        <div style="margin-top: 20px;">
-            <h3>Recent System Records</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Entry Date</th>
-                        <th>Vehicle Type</th>
-                        <th>Paid Today</th>
-                        <th>Previous/Past Paid</th>
-                        <th>Pending</th>
-                    </tr>
-                </thead>
-                <tbody id="recordTableBody">
-                    <!-- Dynamic rows will load here -->
-                </tbody>
-            </table>
+        <div class="form-group">
+          <label>Referred By / Reference Name:</label>
+          <input type="text" id="reference" placeholder="e.g. Self, Friend Name, Other">
         </div>
+        <div class="form-group">
+          <label>LL Issued Elsewhere</label>
+          <select id="llOutside">
+            <option value="No (Made Here)">No</option>
+            <option value="Yes">Yes</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Address</label>
+          <input type="text" id="address" placeholder="Enter address">
+        </div>
+
+        <div class="form-group">
+          <label>LL Application No.:</label>
+          <input type="text" id="llAppNo" placeholder="Enter LL Application No.">
+        </div>
+        <div class="form-group">
+          <label>LL Number:</label>
+          <input type="text" id="llNo" placeholder="Enter LL Number">
+        </div>
+        <div class="form-group">
+          <label>DL Application No.:</label>
+          <input type="text" id="dlAppNo" placeholder="Enter DL Application No.">
+        </div>
+        
+        <div class="form-group full-width">
+          <label>Internal Comments / Remarks (Private - Web Only):</label>
+          <textarea id="remarks" rows="2" placeholder="Any internal notes..."></textarea>
+        </div>
+      </div>
+
+      <!-- Section 2 -->
+      <h3 class="section-title">2. Payment Details</h3>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Discount Reference Note:</label>
+          <input type="text" id="discountNote" placeholder="e.g. Offered by Sir">
+        </div>
+        <div class="form-group">
+          <label>Discount Amount (₹):</label>
+          <input type="number" id="discountAmount" value="0" oninput="calculateBalance()">
+        </div>
+        
+        <div class="form-group">
+          <label>Total Fee / Amount (₹) *</label>
+          <input type="number" id="totalFee" placeholder="Enter total fee" required oninput="calculateBalance()">
+        </div>
+        <div class="form-group">
+          <label>Advance / Initial Payment (₹) *</label>
+          <input type="number" id="advancePayment" placeholder="Enter paid amount" required oninput="calculateBalance()">
+        </div>
+        <div class="form-group">
+          <label>Balance Amount (₹)</label>
+          <input type="number" id="balanceAmount" readonly placeholder="0">
+        </div>
+        
+        <div class="form-group">
+          <label>Payment Date *</label>
+          <input type="date" id="paymentDate" required>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="button-group">
+        <button type="submit" class="btn btn-save" id="saveBtn">Save Entry ☁️</button>
+        <button type="submit" class="btn btn-update" id="updateBtn">Update Entry ✏️</button>
+        <button type="button" class="btn btn-cancel" id="cancelBtn" onclick="resetForm()">Cancel</button>
+        <button type="button" class="btn btn-export" onclick="exportToExcel()">Export Excel 📊</button>
+        <button type="button" class="btn btn-backup" onclick="backupData()">Backup Data 💾</button>
+        <button type="button" class="btn btn-restore" onclick="triggerRestore()">Restore Data 📑</button>
+        <input type="file" id="restoreFileInput" accept=".json" style="display:none;" onchange="restoreData(event)">
+      </div>
+    </form>
+
+    <!-- FILTER SECTION -->
+    <div class="filter-box">
+      <label style="color: #0b3c5d;"><strong>🔍 Advanced Register Search & Filters:</strong></label>
+      <div class="filter-grid">
+        <input type="text" id="searchInput" onkeyup="applyFilters()" placeholder="Search Name, Mobile, App No...">
+        
+        <div style="display:flex; flex-direction:column;">
+          <small style="font-weight:bold; color:#555;">Filter Vehicles (Hold Ctrl/Cmd):</small>
+          <select id="filterVehicle" multiple onchange="applyFilters()">
+            <option value="Two Wheeler">Two Wheeler</option>
+            <option value="Four Wheeler">Four Wheeler</option>
+            <option value="AD">AD</option>
+            <option value="LDRX">LDRX</option>
+            <option value="Commercial / Heavy">Commercial / Heavy</option>
+            <option value="Crane">Crane</option>
+            <option value="Forklift">Forklift</option>
+            <option value="Renewal">Renewal</option>
+          </select>
+        </div>
+
+        <select id="filterPaymentStatus" onchange="applyFilters()">
+          <option value="">-- Payment Status --</option>
+          <option value="due">Pending Balance (Due)</option>
+          <option value="paid">Fully Paid</option>
+        </select>
+
+        <input type="text" id="filterReference" onkeyup="applyFilters()" placeholder="Filter by Reference...">
+        
+        <div style="display:flex; flex-direction:column;">
+          <small style="font-weight:bold; color:#555;">From Date:</small>
+          <input type="date" id="fromDate" onchange="applyFilters()">
+        </div>
+        <div style="display:flex; flex-direction:column;">
+          <small style="font-weight:bold; color:#555;">To Date:</small>
+          <input type="date" id="toDate" onchange="applyFilters()">
+        </div>
+        <button type="button" class="clear-btn" onclick="clearFilters()" style="margin-top: auto; padding: 9px;">Clear Filters 🔄</button>
+      </div>
     </div>
 
-    <!-- Payment Report Modal Popup -->
-    <div id="paymentModal" class="modal">
-        <div class="modal-content">
-            <span class="close-btn" onclick="closePaymentModal()">&times;</span>
-            <h2 style="margin-top: 0; color: var(--primary-color);">Detailed Payment & Vehicle Breakdown</h2>
-            
-            <div class="summary-cards">
-                <div class="card">
-                    <h3>Total Received</h3>
-                    <p id="totalReceived">₹0</p>
-                </div>
-                <div class="card">
-                    <h3>Total Pending</h3>
-                    <p id="totalPending">₹0</p>
-                </div>
-            </div>
-
-            <table>
-                <thead>
-                    <tr>
-                        <th>Entry Date</th>
-                        <th>Vehicle Type</th>
-                        <th>Initial Paid</th>
-                        <th>Today's Paid</th>
-                        <th>Total Paid</th>
-                        <th>Pending</th>
-                    </tr>
-                </thead>
-                <tbody id="modalTableBody">
-                    <!-- Data injected via script -->
-                </tbody>
-            </table>
-        </div>
+    <!-- Table List -->
+    <h3 style="margin-top: 25px; color: #0b3c5d;">Saved Customer Register</h3>
+    <div class="table-container">
+      <table id="customerTable">
+        <thead>
+          <tr>
+            <th>Entry Date</th>
+            <th>Name</th>
+            <th>Father's Name</th>
+            <th>Mobile</th>
+            <th>DOB</th>
+            <th>Reference</th>
+            <th>LL App No.</th>
+            <th>LL Number</th>
+            <th>DL App No.</th>
+            <th>Vehicle</th>
+            <th>Total Fee</th>
+            <th>Discount</th>
+            <th>Paid</th>
+            <th>Balance</th>
+            <th>Added By</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <!-- Dynamically populated from Firestore -->
+        </tbody>
+      </table>
     </div>
 
-    <script>
-        // Sample data reflecting past entries, split payments (past vs today), vehicle types, and pending amounts
-        const transactionData = [
-            { entryDate: "2026-09-01", vehicleType: "Commercial Bus (Blue Line)", initialPaid: 2000, todayPaid: 1500, pending: 500 },
-            { entryDate: "2026-09-10", vehicleType: "Heavy Motor Vehicle (HMV)", initialPaid: 1000, todayPaid: 2500, pending: 0 },
-            { entryDate: "2026-09-11", vehicleType: "Light Motor Vehicle (LMV)", initialPaid: 500, todayPaid: 1000, pending: 1500 },
-            { entryDate: "2026-09-12", vehicleType: "Commercial Truck", initialPaid: 3000, todayPaid: 0, pending: 1000 }
-        ];
+  </div>
+</div>
 
-        function loadTableData() {
-            const tbody = document.getElementById('recordTableBody');
-            tbody.innerHTML = '';
-            
-            transactionData.forEach(item => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${item.entryDate}</td>
-                    <td>${item.vehicleType}</td>
-                    <td>₹${item.todayPaid}</td>
-                    <td>₹${item.initialPaid}</td>
-                    <td>₹${item.pending}</td>
-                `;
-                tbody.appendChild(tr);
-            });
+<!-- INSTALLMENT PAY MODAL POPUP -->
+<div id="payModal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 500px;">
+    <div class="modal-header">
+      <h2>💳 Add Installment Payment</h2>
+      <button class="close-modal" onclick="closePayModal()">X</button>
+    </div>
+    <form onsubmit="saveInstallment(event)">
+      <input type="hidden" id="payRecordId" value="">
+      <p style="margin-top:0;"><strong>Customer:</strong> <span id="payCustomerName">-</span></p>
+      <p><strong>Current Pending Balance:</strong> <span id="payCurrentBalance" style="color:red; font-weight:bold;">₹0</span></p>
+      
+      <div class="form-group" style="margin-bottom:12px;">
+        <label>Amount Being Paid (₹) *</label>
+        <input type="number" id="payAmountInput" placeholder="Enter amount" required min="1">
+      </div>
+
+      <div class="form-group" style="margin-bottom:15px;">
+        <label>Payment Date *</label>
+        <input type="date" id="payDateInput" required>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button type="button" onclick="closePayModal()" class="btn btn-cancel" style="display:inline-block;">Cancel</button>
+        <button type="submit" class="btn btn-save">Save Payment 💰</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- DETAILS MODAL -->
+<div id="detailsModal" class="modal-overlay">
+  <div class="modal-content" id="modalDetailsContent">
+    <div class="modal-header">
+      <h2>📜 Customer Profile Details</h2>
+      <button class="close-modal" onclick="closeDetailsModal()">X</button>
+    </div>
+    <div class="details-grid">
+      <div class="details-item"><label>Customer Name</label><span id="kName">-</span></div>
+      <div class="details-item"><label>Father's Name</label><span id="kFather">-</span></div>
+      <div class="details-item"><label>Mobile Number</label><span id="kMobile">-</span></div>
+      <div class="details-item"><label>Date of Birth</label><span id="kDob">-</span></div>
+      <div class="details-item"><label>Address</label><span id="kAddress">-</span></div>
+      <div class="details-item"><label>Reference Name</label><span id="kRef">-</span></div>
+      
+      <div class="details-item"><label>Vehicle Types</label><span id="kVehicles">-</span></div>
+      <div class="details-item"><label>LL Issued Elsewhere</label><span id="kLlOutside">-</span></div>
+      <div class="details-item"><label>LL Application No.</label><span id="kLlAppNo">-</span></div>
+      <div class="details-item"><label>LL Number</label><span id="kLlNo">-</span></div>
+      <div class="details-item"><label>DL Application No.</label><span id="kDlAppNo">-</span></div>
+      
+      <div class="details-item"><label>Total Fee</label><span id="kTotal">₹0</span></div>
+      <div class="details-item"><label>Discount Amount</label><span id="kDiscount">₹0</span></div>
+      <div class="details-item"><label>Discount Note</label><span id="kDiscountNote">-</span></div>
+      <div class="details-item"><label>Paid Amount</label><span id="kPaid">₹0</span></div>
+      <div class="details-item"><label>Balance Amount</label><span id="kBalance" style="color:red;">₹0</span></div>
+      <div class="details-item"><label>Initial Payment Date</label><span id="kPayDate">-</span></div>
+      <div class="details-item"><label>Added / Updated By</label><span id="kOperator">-</span></div>
+      
+      <div class="details-item full-width" style="grid-column: 1 / -1;">
+        <label>Detailed Payment & Installment History</label>
+        <div id="kInstallmentHistoryContainer" style="margin-top: 5px;">
+          <!-- Populated dynamically with table and delete buttons -->
+        </div>
+      </div>
+
+      <div class="details-item full-width" style="grid-column: 1 / -1;">
+        <label>Internal Remarks / Notes</label>
+        <span id="kRemarks" style="white-space: pre-wrap; font-family: monospace;">-</span>
+      </div>
+    </div>
+    <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;" class="no-print">
+      <button onclick="window.print()" class="btn btn-details" style="min-width: 100px; padding: 8px;">Print Details 🖨️</button>
+      <button onclick="closeDetailsModal()" class="close-modal" style="padding: 8px 15px;">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- AUDIT / ACTIVITY LOG MODAL -->
+<div id="auditLogModal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 900px;">
+    <div class="modal-header">
+      <h2>📜 Portal Activity & Change Logs</h2>
+      <button class="close-modal" onclick="closeAuditLogModal()">X</button>
+    </div>
+    <p style="font-size: 13px; color: #555; margin-top: 0;">Complete history record of all entries, edits, payments, and deletions performed by staff:</p>
+    <div class="table-container" style="max-height: 450px; overflow-y: auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>Time & Date</th>
+            <th>Staff / Operator</th>
+            <th>Action</th>
+            <th>Customer</th>
+            <th>Change Details</th>
+          </tr>
+        </thead>
+        <tbody id="auditLogTableBody">
+          <!-- Dynamically populated from Firestore audit_logs -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+<script>
+  // FIREBASE CONFIGURATION
+  const firebaseConfig = {
+    apiKey: "AIzaSyCp1lsu9hOQKUic1jRQvXVRYIm5MkdI1AI",
+    authDomain: "dl-register.firebaseapp.com",
+    projectId: "dl-register",
+    storageBucket: "dl-register.firebasestorage.app",
+    messagingSenderId: "497510713850",
+    appId: "1:497510713850:web:cd5b9707fe85e0871f7c43",
+    measurementId: "G-F8LQE3C5LN"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  let globalRecords = [];
+  let activeStaffName = "";
+  let activeStaffEmail = "";
+
+  // Undo Stack for Ctrl+Z
+  let undoStack = [];
+
+  // Authorized Admin Emails who can view Activity Logs
+  const ADMIN_EMAILS = ["singharvind1082@gmail.com", "shlok44066@gmail.com"];
+
+  document.getElementById('paymentDate').valueAsDate = new Date();
+
+  // Listen to Keyboard shortcut for Ctrl + Z
+  document.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+      const activeEl = document.activeElement;
+      if (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA') {
+        return; 
+      }
+      e.preventDefault();
+      performUndo();
+    }
+  });
+
+  // AUTHENTICATION FLOW
+  auth.onAuthStateChanged(user => {
+    hideAllSections();
+    if (user) {
+      activeStaffEmail = user.email || "";
+      activeStaffName = user.displayName || user.email.split('@')[0];
+      
+      if (!user.emailVerified) {
+        document.getElementById('verifySection').style.display = 'block';
+      } else if (!user.displayName) {
+        document.getElementById('profileSetupSection').style.display = 'block';
+      } else {
+        document.getElementById('userGreeting').innerText = activeStaffName;
+        
+        // Show Activity Logs button ONLY for authorized admin emails
+        if (ADMIN_EMAILS.includes(activeStaffEmail.toLowerCase())) {
+          document.getElementById('auditLogBtn').style.display = 'block';
+        } else {
+          document.getElementById('auditLogBtn').style.display = 'none';
         }
 
-        function openPaymentModal() {
-            const modalBody = document.getElementById('modalTableBody');
-            modalBody.innerHTML = '';
-            
-            let sumReceived = 0;
-            let sumPending = 0;
+        document.getElementById('mainDashboard').style.display = 'block';
+        loadLiveEntries();
+      }
+    } else {
+      document.getElementById('loginSection').style.display = 'block';
+    }
+  });
 
-            transactionData.forEach(item => {
-                let totalPaid = item.initialPaid + item.todayPaid;
-                sumReceived += totalPaid;
-                sumPending += item.pending;
+  function hideAllSections() {
+    document.getElementById('loginSection').style.display = 'none';
+    document.getElementById('verifySection').style.display = 'none';
+    document.getElementById('profileSetupSection').style.display = 'none';
+    document.getElementById('mainDashboard').style.display = 'none';
+  }
 
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td>${item.entryDate}</td>
-                    <td>${item.vehicleType}</td>
-                    <td>₹${item.initialPaid}</td>
-                    <td>₹${item.todayPaid}</td>
-                    <td><strong>₹${totalPaid}</strong></td>
-                    <td style="color: ${item.pending > 0 ? 'var(--danger-color)' : 'var(--success-color)'};">₹${item.pending}</td>
-                `;
-                modalBody.appendChild(tr);
-            });
+  function loginUser() {
+    const email = document.getElementById('loginEmail').value;
+    const pass = document.getElementById('loginPassword').value;
+    const errorEl = document.getElementById('loginError');
 
-            document.getElementById('totalReceived').innerText = `₹${sumReceived}`;
-            document.getElementById('totalPending').innerText = `₹${sumPending}`;
+    auth.signInWithEmailAndPassword(email, pass)
+      .then(() => { errorEl.innerText = ""; })
+      .catch(err => { errorEl.innerText = "Login Failed: " + err.message; });
+  }
 
-            document.getElementById('paymentModal').style.display = 'flex';
+  function sendVerificationEmail() {
+    const user = auth.currentUser;
+    if (user) {
+      user.sendEmailVerification()
+        .then(() => {
+          document.getElementById('verifyMsg').innerText = "Verification link sent to your email!";
+        })
+        .catch(err => {
+          document.getElementById('verifyMsg').innerText = "Error: " + err.message;
+        });
+    }
+  }
+
+  function checkVerificationStatus() {
+    const user = auth.currentUser;
+    if (user) {
+      user.reload().then(() => {
+        if (user.emailVerified) {
+          auth.onAuthStateChanged(user);
+        } else {
+          alert("Your email is not verified yet.");
         }
+      });
+    }
+  }
 
-        function closePaymentModal() {
-            document.getElementById('paymentModal').style.display = 'none';
+  function saveProfileName() {
+    const nameInput = document.getElementById('staffDisplayName').value.trim();
+    const errorEl = document.getElementById('setupError');
+
+    if (!nameInput) {
+      errorEl.innerText = "Please enter your name!";
+      return;
+    }
+
+    const user = auth.currentUser;
+    user.updateProfile({ displayName: nameInput })
+      .then(() => {
+        activeStaffName = nameInput;
+        location.reload();
+      })
+      .catch(err => { errorEl.innerText = "Error: " + err.message; });
+  }
+
+  function logoutUser() { auth.signOut(); }
+
+  // CENTRAL AUDIT LOGGING HELPER FUNCTION
+  function logActivity(actionType, customerName, details) {
+    db.collection("audit_logs").add({
+      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+      formattedTime: new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }),
+      performedBy: activeStaffName || 'Staff',
+      staffEmail: activeStaffEmail || 'N/A',
+      action: actionType,
+      customerName: customerName || '-',
+      details: details || '-'
+    }).catch(err => console.error("Audit log failed:", err));
+  }
+
+  // PUSH ACTION TO UNDO STACK
+  function pushToUndoStack(actionType, recordId, previousData) {
+    undoStack.push({
+      actionType: actionType,
+      recordId: recordId,
+      data: previousData,
+      time: new Date()
+    });
+    if (undoStack.length > 15) undoStack.shift();
+  }
+
+  // PERFORM UNDO (CTRL + Z)
+  function performUndo() {
+    if (undoStack.length === 0) {
+      alert("No recent actions to Undo!");
+      return;
+    }
+
+    let lastAction = undoStack.pop();
+    if (confirm(`Do you want to Undo the last action (${lastAction.actionType}) for customer: ${lastAction.data.customerName || 'Record'}?`)) {
+      
+      if (lastAction.actionType === 'DELETE_RECORD') {
+        db.collection("dl_records").doc(lastAction.recordId).set(lastAction.data)
+          .then(() => {
+            logActivity('UNDO_ACTION', lastAction.data.customerName, `Restored deleted record via Ctrl+Z by ${activeStaffName}`);
+            alert("Undo Successful! Record has been restored.");
+          })
+          .catch(err => alert("Undo Error: " + err.message));
+      } 
+      else if (lastAction.actionType === 'EDIT_RECORD' || lastAction.actionType === 'PAYMENT_UPDATE') {
+        db.collection("dl_records").doc(lastAction.recordId).set(lastAction.data)
+          .then(() => {
+            logActivity('UNDO_ACTION', lastAction.data.customerName, `Reverted recent changes via Ctrl+Z by ${activeStaffName}`);
+            alert("Undo Successful! Record reverted to previous state.");
+          })
+          .catch(err => alert("Undo Error: " + err.message));
+      }
+    } else {
+      undoStack.push(lastAction);
+    }
+  }
+
+  // BALANCE CALCULATION LOGIC
+  function calculateBalance() {
+    const total = parseFloat(document.getElementById('totalFee').value) || 0;
+    const discount = parseFloat(document.getElementById('discountAmount').value) || 0;
+    const advance = parseFloat(document.getElementById('advancePayment').value) || 0;
+
+    const netFee = total - discount;
+    const balance = netFee - advance;
+
+    document.getElementById('balanceAmount').value = balance >= 0 ? balance : 0;
+  }
+
+  function formatDateToDMY(dateString) {
+    if (!dateString || dateString === '-') return '-';
+    const parts = dateString.split('-');
+    return parts.length === 3 ? `${parts[2]}-${parts[1]}-${parts[0]}` : dateString;
+  }
+
+  function getSelectedVehicles() {
+    const checkboxes = document.querySelectorAll('#vehicleCheckboxGroup input[type="checkbox"]:checked');
+    let selected = [];
+    checkboxes.forEach(cb => selected.push(cb.value));
+    return selected.join(", ");
+  }
+
+  function setSelectedVehicles(vehicleString) {
+    const checkboxes = document.querySelectorAll('#vehicleCheckboxGroup input[type="checkbox"]');
+    checkboxes.forEach(cb => {
+      cb.checked = vehicleString && vehicleString.includes(cb.value);
+    });
+  }
+
+  function normalizeVehicleType(vehicleStr) {
+    if (!vehicleStr) return "";
+    let normalized = vehicleStr;
+    if (normalized.includes("Both (2W + 4W)")) {
+      normalized = normalized.replace("Both (2W + 4W)", "Two Wheeler, Four Wheeler");
+    }
+    if (normalized.includes("2+4 DL + AD")) {
+      normalized = normalized.replace("2+4 DL + AD", "Two Wheeler, Four Wheeler, AD");
+    }
+    return normalized;
+  }
+
+  // Save OR Update Entry Handler
+  function handleFormSubmit(e) {
+    e.preventDefault();
+    const editId = document.getElementById('editRecordId').value;
+    
+    const selectedVehicles = getSelectedVehicles();
+    if (!selectedVehicles) {
+      alert("Please select at least one vehicle type!");
+      return;
+    }
+
+    const recordData = {
+      customerName: document.getElementById('customerName').value,
+      fatherName: document.getElementById('fatherName').value,
+      mobile: document.getElementById('mobile').value,
+      dob: document.getElementById('dob').value,
+      vehicleType: selectedVehicles,
+      reference: document.getElementById('reference').value || '-',
+      llOutside: document.getElementById('llOutside').value,
+      address: document.getElementById('address').value || '-',
+      llAppNo: document.getElementById('llAppNo').value || '-',
+      llNo: document.getElementById('llNo').value || '-',
+      dlAppNo: document.getElementById('dlAppNo').value || '-',
+      remarks: document.getElementById('remarks').value || '-',
+      discountNote: document.getElementById('discountNote').value || '-',
+      discountAmount: parseFloat(document.getElementById('discountAmount').value) || 0,
+      totalFee: parseFloat(document.getElementById('totalFee').value) || 0,
+      advancePayment: parseFloat(document.getElementById('advancePayment').value) || 0,
+      balanceAmount: parseFloat(document.getElementById('balanceAmount').value) || 0,
+      paymentDate: document.getElementById('paymentDate').value,
+      addedBy: activeStaffName || 'Staff',
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    if (editId) {
+      const oldRec = globalRecords.find(r => r.id === editId);
+      recordData.installmentsList = oldRec.installmentsList || [{
+        type: 'Initial Admission Payment',
+        amount: recordData.advancePayment,
+        date: recordData.paymentDate,
+        operator: activeStaffName
+      }];
+
+      pushToUndoStack('EDIT_RECORD', editId, oldRec);
+      
+      db.collection("dl_records").doc(editId).update(recordData)
+        .then(() => {
+          logActivity(
+            'ENTRY_EDITED', 
+            recordData.customerName, 
+            `Updated record details by ${activeStaffName}. Fee changed from ₹${oldRec?.totalFee} to ₹${recordData.totalFee}`
+          );
+          alert("Entry Updated Successfully! (Press Ctrl+Z if you need to undo)");
+          resetForm();
+        })
+        .catch(err => alert("Update Error: " + err.message));
+    } else {
+      recordData.installmentsList = [{
+        type: 'Initial Admission Payment',
+        amount: recordData.advancePayment,
+        date: recordData.paymentDate,
+        operator: activeStaffName
+      }];
+      recordData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+      
+      db.collection("dl_records").add(recordData)
+        .then(() => {
+          logActivity(
+            'ENTRY_CREATED', 
+            recordData.customerName, 
+            `Created new admission entry. Total Fee: ₹${recordData.totalFee}, Paid: ₹${recordData.advancePayment}`
+          );
+          alert("New Entry Saved Successfully!");
+          resetForm();
+        })
+        .catch(err => alert("Save Error: " + err.message));
+    }
+  }
+
+  // REALTIME LOADER & AUTH SYNC
+  function loadLiveEntries() {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      activeStaffEmail = currentUser.email || "";
+      activeStaffName = currentUser.displayName || currentUser.email.split('@')[0];
+      document.getElementById('userGreeting').innerText = activeStaffName;
+      
+      if (ADMIN_EMAILS.includes(activeStaffEmail.toLowerCase())) {
+        document.getElementById('auditLogBtn').style.display = 'block';
+      } else {
+        document.getElementById('auditLogBtn').style.display = 'none';
+      }
+    }
+
+    db.collection("dl_records").orderBy("paymentDate", "desc").onSnapshot(snapshot => {
+      globalRecords = [];
+      snapshot.forEach(doc => {
+        let d = doc.data();
+        d.id = doc.id;
+        d.vehicleType = normalizeVehicleType(d.vehicleType);
+        
+        if (!d.installmentsList) {
+          d.installmentsList = [{
+            type: 'Initial Admission Payment',
+            amount: d.advancePayment || 0,
+            date: d.paymentDate || '-',
+            operator: d.addedBy || 'Staff'
+          }];
         }
+        globalRecords.push(d);
+      });
+      applyFilters();
+    });
+  }
 
-        // Close modal when clicking outside the content area
-        window.onclick = function(event) {
-            const modal = document.getElementById('paymentModal');
-            if (event.target === modal) {
-                modal.style.display = 'none';
-            }
-        }
+  function renderTable(records) {
+    let tbody = document.getElementById('tableBody');
+    tbody.innerHTML = "";
 
-        // Initialize table on load
-        window.onload = loadTableData;
-    </script>
+    records.forEach(d => {
+      let row = `<tr>
+        <td>${formatDateToDMY(d.paymentDate)}</td>
+        <td><b>${d.customerName}</b></td>
+        <td>${d.fatherName || '-'}</td>
+        <td>${d.mobile}</td>
+        <td>${d.dob}</td>
+        <td>${d.reference}</td>
+        <td>${d.llAppNo}</td>
+        <td>${d.llNo}</td>
+        <td>${d.dlAppNo}</td>
+        <td>${d.vehicleType}</td>
+        <td>₹${d.totalFee}</td>
+        <td>₹${d.discountAmount}</td>
+        <td>₹${d.advancePayment}</td>
+        <td style="color: ${d.balanceAmount > 0 ? 'red' : 'green'}; font-weight:bold;">₹${d.balanceAmount}</td>
+        <td>${d.addedBy}</td>
+        <td>
+          <button class="btn-sm btn-details" onclick="openDetailsModal('${d.id}')">View</button>
+          <button class="btn-sm btn-pay" onclick="openPayModal('${d.id}', '${d.customerName}', ${d.balanceAmount})">Pay</button>
+          <button class="btn-sm btn-edit" onclick="editRecord('${d.id}')">Edit</button>
+          <button class="btn-sm btn-del" onclick="deleteRecord('${d.id}', '${d.customerName}')">Del</button>
+        </td>
+      </tr>`;
+      tbody.innerHTML += row;
+    });
+  }
+
+  // EDIT RECORD
+  function editRecord(id) {
+    const rec = globalRecords.find(r => r.id === id);
+    if (!rec) return;
+
+    document.getElementById('editRecordId').value = rec.id;
+    document.getElementById('customerName').value = rec.customerName;
+    document.getElementById('fatherName').value = rec.fatherName;
+    document.getElementById('mobile').value = rec.mobile;
+    document.getElementById('dob').value = rec.dob;
+    setSelectedVehicles(rec.vehicleType);
+    document.getElementById('reference').value = rec.reference;
+    document.getElementById('llOutside').value = rec.llOutside;
+    document.getElementById('address').value = rec.address;
+    document.getElementById('llAppNo').value = rec.llAppNo;
+    document.getElementById('llNo').value = rec.llNo;
+    document.getElementById('dlAppNo').value = rec.dlAppNo;
+    document.getElementById('remarks').value = rec.remarks;
+    document.getElementById('discountNote').value = rec.discountNote;
+    document.getElementById('discountAmount').value = rec.discountAmount;
+    document.getElementById('totalFee').value = rec.totalFee;
+    document.getElementById('advancePayment').value = rec.advancePayment;
+    document.getElementById('balanceAmount').value = rec.balanceAmount;
+    document.getElementById('paymentDate').value = rec.paymentDate;
+
+    document.getElementById('saveBtn').style.display = 'none';
+    document.getElementById('updateBtn').style.display = 'inline-block';
+    document.getElementById('cancelBtn').style.display = 'inline-block';
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // DELETE RECORD
+  function deleteRecord(id, customerName) {
+    const recToDelete = globalRecords.find(r => r.id === id);
+    if (confirm(`Are you sure you want to delete the record for ${customerName}?`)) {
+      if (recToDelete) {
+        pushToUndoStack('DELETE_RECORD', id, recToDelete);
+      }
+
+      db.collection("dl_records").doc(id).delete()
+        .then(() => {
+          logActivity('ENTRY_DELETED', customerName, `Deleted record for ${customerName} by ${activeStaffName}`);
+          alert("Record successfully deleted! (Press Ctrl+Z if you want to restore it)");
+        })
+        .catch(err => alert("Delete Error: " + err.message));
+    }
+  }
+
+  // RESET FORM
+  function resetForm() {
+    document.getElementById('admissionForm').reset();
+    document.getElementById('editRecordId').value = '';
+    document.getElementById('paymentDate').valueAsDate = new Date();
+    document.getElementById('saveBtn').style.display = 'inline-block';
+    document.getElementById('updateBtn').style.display = 'none';
+    document.getElementById('cancelBtn').style.display = 'none';
+  }
+
+  // FILTERS
+  function applyFilters() {
+    const searchVal = document.getElementById('searchInput').value.toLowerCase();
+    const vehicleSelect = document.getElementById('filterVehicle');
+    const selectedVehicles = Array.from(vehicleSelect.selectedOptions).map(opt => opt.value);
+    const payStatus = document.getElementById('filterPaymentStatus').value;
+    const refVal = document.getElementById('filterReference').value.toLowerCase();
+    const fromDate = document.getElementById('fromDate').value;
+    const toDate = document.getElementById('toDate').value;
+
+    let filtered = globalRecords.filter(d => {
+      const matchSearch = (d.customerName && d.customerName.toLowerCase().includes(searchVal)) ||
+                          (d.mobile && d.mobile.includes(searchVal)) ||
+                          (d.llAppNo && d.llAppNo.toLowerCase().includes(searchVal)) ||
+                          (d.dlAppNo && d.dlAppNo.toLowerCase().includes(searchVal));
+
+      let matchVehicle = true;
+      if (selectedVehicles.length > 0) {
+        matchVehicle = selectedVehicles.some(v => d.vehicleType && d.vehicleType.includes(v));
+      }
+
+      let matchPay = true;
+      if (payStatus === 'due') matchPay = d.balanceAmount > 0;
+      if (payStatus === 'paid') matchPay = d.balanceAmount <= 0;
+
+      const matchRef = !refVal || (d.reference && d.reference.toLowerCase().includes(refVal));
+
+      let matchDate = true;
+      if (fromDate && d.paymentDate < fromDate) matchDate = false;
+      if (toDate && d.paymentDate > toDate) matchDate = false;
+
+      return matchSearch && matchVehicle && matchPay && matchRef && matchDate;
+    });
+
+    renderTable(filtered);
+  }
+
+  function clearFilters() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('filterVehicle').selectedIndex = -1;
+    document.getElementById('filterPaymentStatus').value = '';
+    document.getElementById('filterReference').value = '';
+    document.getElementById('fromDate').value = '';
+    document.getElementById('toDate').value = '';
+    renderTable(globalRecords);
+  }
+
+  // MODALS & EXCEL EXPORT
+  function openDetailsModal(id) {
+    const d = globalRecords.find(r => r.id === id);
+    if (!d) return;
+
+    document.getElementById('kName').innerText = d.customerName || '-';
+    document.getElementById('kFather').innerText = d.fatherName || '-';
+    document.getElementById('kMobile').innerText = d.mobile || '-';
+    document.getElementById('kDob').innerText = formatDateToDMY(d.dob) || '-';
+    document.getElementById('kAddress').innerText = d.address || '-';
+    document.getElementById('kRef').innerText = d.reference || '-';
+    document.getElementById('kVehicles').innerText = d.vehicleType || '-';
+    document.getElementById('kLlOutside').innerText = d.llOutside || '-';
+    document.getElementById('kLlAppNo').innerText = d.llAppNo || '-';
+    document.getElementById('kLlNo').innerText = d.llNo || '-';
+    document.getElementById('kDlAppNo').innerText = d.dlAppNo || '-';
+    document.getElementById('kTotal').innerText = '₹' + (d.totalFee || 0);
+    document.getElementById('kDiscount').innerText = '₹' + (d.discountAmount || 0);
+    document.getElementById('kDiscountNote').innerText = d.discountNote || '-';
+    document.getElementById('kPaid').innerText = '₹' + (d.advancePayment || 0);
+    document.getElementById('kBalance').innerText = '₹' + (d.balanceAmount || 0);
+    document.getElementById('kPayDate').innerText = formatDateToDMY(d.paymentDate) || '-';
+    document.getElementById('kOperator').innerText = d.addedBy || '-';
+    document.getElementById('kRemarks').innerText = d.remarks || '-';
+
+    let historyContainer = document.getElementById('kInstallmentHistoryContainer');
+    if (!d.installmentsList || d.installmentsList.length === 0) {
+      historyContainer.innerHTML = `<span style="color:#666;">No payment history recorded.</span>`;
+    } else {
+      let tableHtml = `<table class="installment-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Payment Type / Note</th>
+            <th>Date</th>
+            <th>Amount</th>
+            <th>Staff / Added By</th>
+            <th class="no-print">Action</th>
+          </tr>
+        </thead>
+        <tbody>`;
+      
+      d.installmentsList.forEach((inst, index) => {
+        tableHtml += `<tr>
+          <td>${index + 1}</td>
+          <td><b>${inst.type || 'Installment Payment'}</b></td>
+          <td>${formatDateToDMY(inst.date)}</td>
+          <td style="color: green; font-weight: bold;">₹${inst.amount}</td>
+          <td>${inst.operator || 'Staff'}</td>
+          <td class="no-print">
+            <button class="btn-sm btn-del" onclick="deleteInstallment('${d.id}', ${index})">Delete</button>
+          </td>
+        </tr>`;
+      });
+      tableHtml += `</tbody></table>`;
+      historyContainer.innerHTML = tableHtml;
+    }
+
+    document.getElementById('detailsModal').style.display = 'flex';
+  }
+
+  function closeDetailsModal() {
+    document.getElementById('detailsModal').style.display = 'none';
+  }
+
+  function openPayModal(id, name, balance) {
+    document.getElementById('payRecordId').value = id;
+    document.getElementById('payCustomerName').innerText = name;
+    document.getElementById('payCurrentBalance').innerText = '₹' + balance;
+    document.getElementById('payAmountInput').value = '';
+    document.getElementById('payDateInput').valueAsDate = new Date();
+    document.getElementById('payModal').style.display = 'flex';
+  }
+
+  function closePayModal() {
+    document.getElementById('payModal').style.display = 'none';
+  }
+
+  function saveInstallment(e) {
+    e.preventDefault();
+    const id = document.getElementById('payRecordId').value;
+    const payAmt = parseFloat(document.getElementById('payAmountInput').value) || 0;
+    const payDate = document.getElementById('payDateInput').value;
+
+    const d = globalRecords.find(r => r.id === id);
+    if (!d) return;
+
+    pushToUndoStack('PAYMENT_UPDATE', id, JSON.parse(JSON.stringify(d)));
+
+    const newPaid = (d.advancePayment || 0) + payAmt;
+    const newBalance = (d.balanceAmount || 0) - payAmt;
+    const finalBalance = newBalance >= 0 ? newBalance : 0;
+
+    let installments = d.installmentsList || [];
+    let installmentNum = installments.length + 1;
+
+    installments.push({
+      type: `Installment #${installmentNum}`,
+      amount: payAmt,
+      date: payDate,
+      operator: activeStaffName
+    });
+
+    db.collection("dl_records").doc(id).update({
+      advancePayment: newPaid,
+      balanceAmount: finalBalance,
+      installmentsList: installments,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(() => {
+      logActivity('PAYMENT_ADDED', d.customerName, `Added installment #${installmentNum} of ₹${payAmt} on ${formatDateToDMY(payDate)} by ${activeStaffName}. New balance: ₹${finalBalance}`);
+      alert("Installment payment successfully saved!");
+      closePayModal();
+    }).catch(err => alert("Payment Error: " + err.message));
+  }
+
+  function deleteInstallment(recordId, index) {
+    const d = globalRecords.find(r => r.id === recordId);
+    if (!d || !d.installmentsList || !d.installmentsList[index]) return;
+
+    if (d.installmentsList.length === 1) {
+      alert("You cannot delete the only initial admission payment entry!");
+      return;
+    }
+
+    let removedInst = d.installmentsList[index];
+    if (confirm(`Are you sure you want to delete this payment of ₹${removedInst.amount} (${removedInst.type})?`)) {
+      
+      pushToUndoStack('PAYMENT_UPDATE', recordId, JSON.parse(JSON.stringify(d)));
+
+      d.installmentsList.splice(index, 1);
+
+      let recalculatedPaid = 0;
+      d.installmentsList.forEach(inst => {
+        recalculatedPaid += parseFloat(inst.amount) || 0;
+      });
+
+      const netFee = (parseFloat(d.totalFee) || 0) - (parseFloat(d.discountAmount) || 0);
+      let recalculatedBalance = netFee - recalculatedPaid;
+      if (recalculatedBalance < 0) recalculatedBalance = 0;
+
+      db.collection("dl_records").doc(recordId).update({
+        advancePayment: recalculatedPaid,
+        balanceAmount: recalculatedBalance,
+        installmentsList: d.installmentsList,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(() => {
+        logActivity('INSTALLMENT_DELETED', d.customerName, `Deleted payment entry of ₹${removedInst.amount} by ${activeStaffName}`);
+        alert("Installment deleted and balance successfully recalculated!");
+        openDetailsModal(recordId);
+      }).catch(err => alert("Error deleting installment: " + err.message));
+    }
+  }
+
+  function openAuditLogModal() {
+    const tbody = document.getElementById('auditLogTableBody');
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Loading logs...</td></tr>`;
+    document.getElementById('auditLogModal').style.display = 'flex';
+
+    db.collection("audit_logs").limit(150).get().then(snapshot => {
+      tbody.innerHTML = "";
+      if (snapshot.empty) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No activity logs found.</td></tr>`;
+        return;
+      }
+      
+      let logsArray = [];
+      snapshot.forEach(doc => {
+        logsArray.push(doc.data());
+      });
+
+      logsArray.sort((a, b) => {
+        let t1 = a.timestamp ? a.timestamp.toMillis() : 0;
+        let t2 = b.timestamp ? b.timestamp.toMillis() : 0;
+        return t2 - t1;
+      });
+
+      logsArray.forEach(log => {
+        let badgeClass = 'badge-edit';
+        if (log.action === 'ENTRY_CREATED') badgeClass = 'badge-create';
+        if (log.action === 'PAYMENT_ADDED') badgeClass = 'badge-pay';
+        if (log.action === 'ENTRY_DELETED' || log.action === 'INSTALLMENT_DELETED') badgeClass = 'badge-delete';
+
+        tbody.innerHTML += `
+          <tr>
+            <td>${log.formattedTime || 'N/A'}</td>
+            <td><b>${log.performedBy || 'Staff'}</b><br><small>${log.staffEmail || ''}</small></td>
+            <td><span class="badge ${badgeClass}">${log.action}</span></td>
+            <td><b>${log.customerName || '-'}</b></td>
+            <td>${log.details || '-'}</td>
+          </tr>
+        `;
+      });
+    }).catch(err => {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Error loading logs: ${err.message}</td></tr>`;
+    });
+  }
+
+  function closeAuditLogModal() {
+    document.getElementById('auditLogModal').style.display = 'none';
+  }
+
+  function exportToExcel() {
+    let table = document.getElementById("customerTable");
+    let wb = XLSX.utils.table_to_book(table, {sheet: "Customer Register"});
+    XLSX.writeFile(wb, "TejSingh_Customer_Register.xlsx");
+  }
+
+  function backupData() {
+    db.collection("dl_records").get().then(snapshot => {
+      let data = [];
+      snapshot.forEach(doc => {
+        let obj = doc.data();
+        obj.firebaseId = doc.id;
+        data.push(obj);
+      });
+      let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
+      let dlAnchor = document.createElement('a');
+      dlAnchor.setAttribute("href", dataStr);
+      dlAnchor.setAttribute("download", "TejSingh_Backup_" + new Date().toISOString().slice(0,10) + ".json");
+      document.body.appendChild(dlAnchor);
+      dlAnchor.click();
+      dlAnchor.remove();
+    }).catch(err => alert("Backup error: " + err.message));
+  }
+
+  function triggerRestore() {
+    if (confirm("Restoring may overwrite existing data. Do you want to continue?")) {
+      document.getElementById('restoreFileInput').click();
+    }
+  }
+
+  function restoreData(event) {
+    let file = event.target.files[0];
+    if (!file) return;
+    let reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        let records = JSON.parse(e.target.result);
+        let batchCount = 0;
+        records.forEach(rec => {
+          let id = rec.firebaseId;
+          delete rec.firebaseId;
+          if (id) {
+            db.collection("dl_records").doc(id).set(rec, { merge: true });
+          } else {
+            db.collection("dl_records").add(rec);
+          }
+          batchCount++;
+        });
+        alert(`Successfully restored ${batchCount} records!`);
+        location.reload();
+      } catch (err) {
+        alert("Invalid JSON file format!");
+      }
+    };
+    reader.readAsText(file);
+  }
+</script>
 </body>
 </html>
