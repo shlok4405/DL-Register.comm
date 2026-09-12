@@ -21,9 +21,10 @@
     .header { background-color: #0b3c5d; color: white; text-align: center; padding: 20px; position: relative; }
     .header h1 { margin: 0; color: #ff3b30; font-size: 26px; text-transform: uppercase; font-weight: 800; }
     .header p { margin: 5px 0 0; font-size: 15px; font-weight: 500; }
-    .header-btns { position: absolute; right: 20px; top: 20px; display: flex; gap: 10px; }
-    .log-btn { background: #ff9800; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; display: none; }
-    .logout-btn { background: #d9534f; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    .header-btns { position: absolute; right: 20px; top: 15px; display: flex; flex-direction: column; gap: 5px; align-items: flex-end; }
+    .log-btn, .collection-btn { background: #ff9800; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; display: none; width: 130px; text-align: center; }
+    .collection-btn { background: #28a745; display: block; }
+    .logout-btn { background: #d9534f; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; width: 130px; text-align: center; }
 
     /* Form Design */
     .form-container { padding: 25px; }
@@ -71,7 +72,7 @@
 
     /* Modal Popup Styling */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; }
-    .modal-content { background: white; width: 90%; max-width: 750px; max-height: 90vh; overflow-y: auto; border-radius: 8px; padding: 25px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); position: relative; }
+    .modal-content { background: white; width: 90%; max-width: 800px; max-height: 90vh; overflow-y: auto; border-radius: 8px; padding: 25px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); position: relative; }
     .modal-header { border-bottom: 2px solid #0b3c5d; padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
     .modal-header h2 { margin: 0; color: #0b3c5d; font-size: 20px; }
     .close-modal { background: #dc3545; color: white; border: none; padding: 5px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
@@ -93,6 +94,12 @@
     .installment-table { width: 100%; margin-top: 5px; border-collapse: collapse; font-size: 13px; }
     .installment-table th { background: #1d70b8; color: white; padding: 6px; }
     .installment-table td { padding: 6px; border: 1px solid #ccc; }
+
+    /* Collection Summary Cards */
+    .summary-cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 20px; }
+    .summary-card { background: #f8f9fa; border: 1px solid #ccc; border-radius: 6px; padding: 15px; text-align: center; }
+    .summary-card h4 { margin: 0 0 5px 0; font-size: 13px; color: #555; text-transform: uppercase; }
+    .summary-card p { margin: 0; font-size: 22px; font-weight: bold; color: #0b3c5d; }
 
     @media print {
       body * { visibility: hidden; }
@@ -140,6 +147,7 @@
     <p>Customer Admission & Payment Register | Welcome, <span id="userGreeting" style="text-decoration: underline;">Staff</span></p>
     <div class="header-btns">
       <button class="log-btn" id="auditLogBtn" onclick="openAuditLogModal()">📜 Activity Logs</button>
+      <button class="collection-btn" onclick="openCollectionModal()">💰 Collections</button>
       <button class="logout-btn" onclick="logoutUser()">Logout 🔒</button>
     </div>
   </div>
@@ -331,6 +339,67 @@
       </table>
     </div>
 
+  </div>
+</div>
+
+<!-- COLLECTION SUMMARY MODAL -->
+<div id="collectionModal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 900px;">
+    <div class="modal-header">
+      <h2>💰 Financial Collections & Installments Summary</h2>
+      <button class="close-modal" onclick="closeCollectionModal()">X</button>
+    </div>
+    
+    <div class="summary-cards-grid">
+      <div class="summary-card">
+        <h4>Total Fees Booked</h4>
+        <p id="sumTotalFees" style="color: #004085;">₹0</p>
+      </div>
+      <div class="summary-card">
+        <h4>Total Amount Received</h4>
+        <p id="sumTotalReceived" style="color: #28a745;">₹0</p>
+      </div>
+      <div class="summary-card">
+        <h4>Total Pending Balance</h4>
+        <p id="sumTotalPending" style="color: #dc3545;">₹0</p>
+      </div>
+    </div>
+
+    <h3 style="color: #0b3c5d; font-size: 15px; margin-bottom: 8px;">Vehicle Type Wise Breakdown:</h3>
+    <div class="table-container" style="margin-top: 0; margin-bottom: 20px;">
+      <table id="vehicleCollectionTable">
+        <thead>
+          <tr>
+            <th>Vehicle Type</th>
+            <th>Total Customers</th>
+            <th>Total Fee (₹)</th>
+            <th>Received (₹)</th>
+            <th>Pending (₹)</th>
+          </tr>
+        </thead>
+        <tbody id="vehicleCollectionBody">
+          <!-- Populated dynamically -->
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="color: #0b3c5d; font-size: 15px; margin-bottom: 8px;">All Installment Transactions History (Date Wise):</h3>
+    <div class="table-container" style="margin-top: 0; max-height: 250px; overflow-y: auto;">
+      <table class="installment-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Customer Name</th>
+            <th>Payment Type / Note</th>
+            <th>Amount Paid (₹)</th>
+            <th>Staff</th>
+          </tr>
+        </thead>
+        <tbody id="allInstallmentsBody">
+          <!-- Populated dynamically -->
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 
@@ -926,6 +995,97 @@
     document.getElementById('fromDate').value = '';
     document.getElementById('toDate').value = '';
     renderTable(globalRecords);
+  }
+
+  // COLLECTIONS SUMMARY MODAL LOGIC
+  function openCollectionModal() {
+    let totalFeesSum = 0;
+    let totalReceivedSum = 0;
+    let totalPendingSum = 0;
+
+    let vehicleStats = {};
+    let allInstallmentsArr = [];
+
+    globalRecords.forEach(d => {
+      let netFee = (parseFloat(d.totalFee) || 0) - (parseFloat(d.discountAmount) || 0);
+      let received = parseFloat(d.advancePayment) || 0;
+      let pending = parseFloat(d.balanceAmount) || 0;
+
+      totalFeesSum += netFee;
+      totalReceivedSum += received;
+      totalPendingSum += pending;
+
+      // Vehicle wise split
+      let vTypes = d.vehicleType ? d.vehicleType.split(', ') : ['Other'];
+      vTypes.forEach(v => {
+        let vClean = v.trim();
+        if (!vClean) return;
+        if (!vehicleStats[vClean]) {
+          vehicleStats[vClean] = { count: 0, totalFee: 0, received: 0, pending: 0 };
+        }
+        vehicleStats[vClean].count += 1;
+        // Proportionate or direct assignment
+        vehicleStats[vClean].totalFee += (netFee / vTypes.length);
+        vehicleStats[vClean].received += (received / vTypes.length);
+        vehicleStats[vClean].pending += (pending / vTypes.length);
+      });
+
+      // Gather all installment transactions
+      if (d.installmentsList && d.installmentsList.length > 0) {
+        d.installmentsList.forEach(inst => {
+          allInstallmentsArr.push({
+            date: inst.date || d.paymentDate || '-',
+            customerName: d.customerName,
+            type: inst.type || 'Installment',
+            amount: parseFloat(inst.amount) || 0,
+            operator: inst.operator || d.addedBy || 'Staff'
+          });
+        });
+      }
+    });
+
+    document.getElementById('sumTotalFees').innerText = '₹' + totalFeesSum.toFixed(0);
+    document.getElementById('sumTotalReceived').innerText = '₹' + totalReceivedSum.toFixed(0);
+    document.getElementById('sumTotalPending').innerText = '₹' + totalPendingSum.toFixed(0);
+
+    // Render Vehicle stats table
+    let vBody = document.getElementById('vehicleCollectionBody');
+    vBody.innerHTML = "";
+    for (let v in vehicleStats) {
+      let st = vehicleStats[v];
+      vBody.innerHTML += `<tr>
+        <td><b>${v}</b></td>
+        <td>${st.count}</td>
+        <td>₹${st.totalFee.toFixed(0)}</td>
+        <td style="color:green; font-weight:bold;">₹${st.received.toFixed(0)}</td>
+        <td style="color:red; font-weight:bold;">₹${st.pending.toFixed(0)}</td>
+      </tr>`;
+    }
+
+    // Sort installments by date descending
+    allInstallmentsArr.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    let instBody = document.getElementById('allInstallmentsBody');
+    instBody.innerHTML = "";
+    if (allInstallmentsArr.length === 0) {
+      instBody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No installment records found.</td></tr>`;
+    } else {
+      allInstallmentsArr.forEach(item => {
+        instBody.innerHTML += `<tr>
+          <td>${formatDateToDMY(item.date)}</td>
+          <td><b>${item.customerName}</b></td>
+          <td>${item.type}</td>
+          <td style="color:green; font-weight:bold;">₹${item.amount}</td>
+          <td>${item.operator}</td>
+        </tr>`;
+      });
+    }
+
+    document.getElementById('collectionModal').style.display = 'flex';
+  }
+
+  function closeCollectionModal() {
+    document.getElementById('collectionModal').style.display = 'none';
   }
 
   // MODALS & EXCEL EXPORT
