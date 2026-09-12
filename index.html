@@ -163,7 +163,8 @@
         </div>
         <div class="form-group">
           <label>Mobile Number *</label>
-          <input type="tel" id="mobile" placeholder="xxxxxxxxxx" required>
+          <input type="tel" id="mobile" placeholder="xxxxxxxxxx" required onblur="checkDuplicateMobile()">
+          <small id="duplicateWarning" style="color: #d9534f; font-weight: bold; display: none; margin-top: 3px;">⚠️ Warning: This mobile number already exists in records!</small>
         </div>
         <div class="form-group">
           <label>Date of Birth (DOB) *</label>
@@ -706,7 +707,27 @@
     }
   }
 
-  // FIXED BALANCE & DISCOUNT CALCULATION LOGIC (Total Fee = Paid + Pending + Discount)
+  // DUPLICATE MOBILE CHECKING WARNING
+  function checkDuplicateMobile() {
+    const mobileInput = document.getElementById('mobile').value.trim();
+    const editId = document.getElementById('editRecordId').value;
+    const warningEl = document.getElementById('duplicateWarning');
+
+    if (!mobileInput || mobileInput.length < 10) {
+      warningEl.style.display = 'none';
+      return;
+    }
+
+    const existingMatch = globalRecords.find(r => r.mobile === mobileInput && r.id !== editId);
+    if (existingMatch) {
+      warningEl.style.display = 'block';
+      warningEl.innerText = `⚠️ Warning: Mobile number already registered for customer "${existingMatch.customerName}"!`;
+    } else {
+      warningEl.style.display = 'none';
+    }
+  }
+
+  // FIXED BALANCE & DISCOUNT CALCULATION LOGIC
   function calculateBalance() {
     const total = parseFloat(document.getElementById('totalFee').value) || 0;
     const discount = parseFloat(document.getElementById('discountAmount').value) || 0;
@@ -754,6 +775,14 @@
   function handleFormSubmit(e) {
     e.preventDefault();
     const editId = document.getElementById('editRecordId').value;
+    const mobileInput = document.getElementById('mobile').value.trim();
+
+    // Double Entry Check Warning Alert
+    const duplicateCheck = globalRecords.find(r => r.mobile === mobileInput && r.id !== editId);
+    if (duplicateCheck) {
+      let proceed = confirm(`⚠️ WARNING: Mobile number ${mobileInput} is already registered under customer "${duplicateCheck.customerName}". Do you still want to save this duplicate entry?`);
+      if (!proceed) return;
+    }
     
     const selectedVehicles = getSelectedVehicles();
     if (!selectedVehicles) {
@@ -764,7 +793,7 @@
     const recordData = {
       customerName: document.getElementById('customerName').value,
       fatherName: document.getElementById('fatherName').value,
-      mobile: document.getElementById('mobile').value,
+      mobile: mobileInput,
       dob: document.getElementById('dob').value,
       vehicleType: selectedVehicles,
       reference: document.getElementById('reference').value || '-',
@@ -938,6 +967,7 @@
   function resetForm() {
     document.getElementById('admissionForm').reset();
     document.getElementById('editRecordId').value = '';
+    document.getElementById('duplicateWarning').style.display = 'none';
     document.getElementById('paymentDate').valueAsDate = new Date();
     document.getElementById('saveBtn').style.display = 'inline-block';
     document.getElementById('updateBtn').style.display = 'none';
@@ -990,7 +1020,7 @@
     renderTable(globalRecords);
   }
 
-  // COLLECTIONS SUMMARY & DATE-WISE HISAB MODAL LOGIC
+  // COLLECTIONS SUMMARY & DATE-WISE HISAB MODAL LOGIC (FIXED FOR DISCOUNT & PENDING MATCHING)
   function openCollectionModal() {
     document.getElementById('collectionFilterDate').valueAsDate = new Date();
     calculateCollectionData();
@@ -1021,7 +1051,7 @@
       let pending = parseFloat(d.balanceAmount) || 0;
       let discount = parseFloat(d.discountAmount) || 0;
 
-      // Vehicle wise split
+      // Vehicle wise split for overall summary
       let vTypes = d.vehicleType ? d.vehicleType.split(' + ') : ['Other'];
       vTypes.forEach(v => {
         let vClean = v.trim();
@@ -1036,26 +1066,28 @@
         vehicleStats[vClean].pending += (pending / vTypes.length);
       });
 
+      // Track Date-wise initial admission entries & discounts
       if (selectedDate && d.paymentDate === selectedDate) {
-        dateWisePendingSum += pending;
         dateWiseDiscountSum += discount;
       }
 
+      // Check installments/payments made on selected date
       if (d.installmentsList && d.installmentsList.length > 0) {
-        d.installmentsList.forEach(inst => {
+        d.installmentsList.forEach((inst, idx) => {
           let instDate = inst.date || d.paymentDate || '-';
-          let instObj = {
-            date: instDate,
-            customerName: d.customerName,
-            vehicleType: d.vehicleType || '-',
-            type: inst.type || 'Installment',
-            amount: parseFloat(inst.amount) || 0,
-            discount: discount,
-            currentBalance: d.balanceAmount || 0,
-            operator: inst.operator || d.addedBy || 'Staff'
-          };
-
+          
           if (selectedDate && instDate === selectedDate) {
+            let instObj = {
+              date: instDate,
+              customerName: d.customerName,
+              vehicleType: d.vehicleType || '-',
+              type: inst.type || (idx === 0 ? 'Initial Admission Payment' : 'Installment'),
+              amount: parseFloat(inst.amount) || 0,
+              // Show discount and pending balance properly associated with this record entry on the chosen date
+              discount: idx === 0 ? discount : 0, 
+              currentBalance: d.balanceAmount || 0,
+              operator: inst.operator || d.addedBy || 'Staff'
+            };
             dateWiseTransactions.push(instObj);
             dateWiseReceivedSum += instObj.amount;
           }
@@ -1063,7 +1095,14 @@
       }
     });
 
-    // Populate Date Wise Cards (Paid, Pending, Discount on selected date)
+    // Calculate total pending balance for records associated/created or active on that selected date
+    globalRecords.forEach(d => {
+      if (selectedDate && (d.paymentDate === selectedDate || (d.installmentsList && d.installmentsList.some(i => i.date === selectedDate)))) {
+        dateWisePendingSum += (parseFloat(d.balanceAmount) || 0);
+      }
+    });
+
+    // Populate Date Wise Cards Header
     document.getElementById('dateWiseReceived').innerText = '₹' + dateWiseReceivedSum.toFixed(0);
     document.getElementById('dateWisePending').innerText = '₹' + dateWisePendingSum.toFixed(0);
     document.getElementById('dateWiseDiscount').innerText = '₹' + dateWiseDiscountSum.toFixed(0);
@@ -1073,7 +1112,7 @@
     let dateBody = document.getElementById('dateWiseTransactionsBody');
     dateBody.innerHTML = "";
     if (dateWiseTransactions.length === 0) {
-      dateBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#666;">No payment collections found on ${formatDateToDMY(selectedDate)}.</td></tr>`;
+      dateBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#666;">No payment transactions found on ${formatDateToDMY(selectedDate)}.</td></tr>`;
     } else {
       dateWiseTransactions.forEach(item => {
         dateBody.innerHTML += `<tr>
