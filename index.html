@@ -95,12 +95,6 @@
     .installment-table th { background: #1d70b8; color: white; padding: 6px; }
     .installment-table td { padding: 6px; border: 1px solid #ccc; }
 
-    /* Collection Summary Cards */
-    .summary-cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 20px; }
-    .summary-card { background: #f8f9fa; border: 1px solid #ccc; border-radius: 6px; padding: 15px; text-align: center; }
-    .summary-card h4 { margin: 0 0 5px 0; font-size: 13px; color: #555; text-transform: uppercase; }
-    .summary-card p { margin: 0; font-size: 22px; font-weight: bold; color: #0b3c5d; }
-
     @media print {
       body * { visibility: hidden; }
       #modalDetailsContent, #modalDetailsContent * { visibility: visible; }
@@ -350,22 +344,6 @@
       <button class="close-modal" onclick="closeCollectionModal()">X</button>
     </div>
     
-    <!-- Overall Summary Cards -->
-    <div class="summary-cards-grid">
-      <div class="summary-card">
-        <h4>Total Fees Booked</h4>
-        <p id="sumTotalFees" style="color: #004085;">₹0</p>
-      </div>
-      <div class="summary-card">
-        <h4>Total Amount Received</h4>
-        <p id="sumTotalReceived" style="color: #28a745;">₹0</p>
-      </div>
-      <div class="summary-card">
-        <h4>Total Pending Balance</h4>
-        <p id="sumTotalPending" style="color: #dc3545;">₹0</p>
-      </div>
-    </div>
-
     <!-- Date-Specific Lookup Filter Box inside Collections Modal -->
     <div style="background: #eef5fc; padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #1d70b8;">
       <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
@@ -432,24 +410,6 @@
           </tr>
         </thead>
         <tbody id="vehicleCollectionBody">
-          <!-- Populated dynamically -->
-        </tbody>
-      </table>
-    </div>
-
-    <h3 style="color: #0b3c5d; font-size: 15px; margin-bottom: 8px;">All Installment Transactions History (Date Wise):</h3>
-    <div class="table-container" style="margin-top: 0; max-height: 220px; overflow-y: auto;">
-      <table class="installment-table">
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Customer Name</th>
-            <th>Payment Type / Note</th>
-            <th>Amount Paid (₹)</th>
-            <th>Staff</th>
-          </tr>
-        </thead>
-        <tbody id="allInstallmentsBody">
           <!-- Populated dynamically -->
         </tbody>
       </table>
@@ -746,7 +706,7 @@
     }
   }
 
-  // BALANCE & DISCOUNT CALCULATION LOGIC (Total Fee = Paid + Pending + Discount)
+  // FIXED BALANCE & DISCOUNT CALCULATION LOGIC (Total Fee = Paid + Pending + Discount)
   function calculateBalance() {
     const total = parseFloat(document.getElementById('totalFee').value) || 0;
     const discount = parseFloat(document.getElementById('discountAmount').value) || 0;
@@ -770,7 +730,6 @@
     let selected = [];
     checkboxes.forEach(cb => selected.push(cb.value));
 
-    // Custom formatting logic as requested
     if (selected.includes("Two Wheeler") && selected.includes("Four Wheeler") && selected.length === 2) {
       return "Both (2W + 4W)";
     }
@@ -1050,12 +1009,7 @@
   function calculateCollectionData() {
     let selectedDate = document.getElementById('collectionFilterDate').value;
 
-    let totalFeesSum = 0;
-    let totalReceivedSum = 0;
-    let totalPendingSum = 0;
-
     let vehicleStats = {};
-    let allInstallmentsArr = [];
     let dateWiseTransactions = [];
     let dateWiseReceivedSum = 0;
     let dateWisePendingSum = 0;
@@ -1066,10 +1020,6 @@
       let received = parseFloat(d.advancePayment) || 0;
       let pending = parseFloat(d.balanceAmount) || 0;
       let discount = parseFloat(d.discountAmount) || 0;
-
-      totalFeesSum += netFee;
-      totalReceivedSum += received;
-      totalPendingSum += pending;
 
       // Vehicle wise split
       let vTypes = d.vehicleType ? d.vehicleType.split(' + ') : ['Other'];
@@ -1086,13 +1036,11 @@
         vehicleStats[vClean].pending += (pending / vTypes.length);
       });
 
-      // If entry date matches selected filter date, include in date-wise summary
       if (selectedDate && d.paymentDate === selectedDate) {
         dateWisePendingSum += pending;
         dateWiseDiscountSum += discount;
       }
 
-      // Gather all installment/payment transactions
       if (d.installmentsList && d.installmentsList.length > 0) {
         d.installmentsList.forEach(inst => {
           let instDate = inst.date || d.paymentDate || '-';
@@ -1106,8 +1054,6 @@
             currentBalance: d.balanceAmount || 0,
             operator: inst.operator || d.addedBy || 'Staff'
           };
-          
-          allInstallmentsArr.push(instObj);
 
           if (selectedDate && instDate === selectedDate) {
             dateWiseTransactions.push(instObj);
@@ -1116,11 +1062,6 @@
         });
       }
     });
-
-    // Populate Overall Cards
-    document.getElementById('sumTotalFees').innerText = '₹' + totalFeesSum.toFixed(0);
-    document.getElementById('sumTotalReceived').innerText = '₹' + totalReceivedSum.toFixed(0);
-    document.getElementById('sumTotalPending').innerText = '₹' + totalPendingSum.toFixed(0);
 
     // Populate Date Wise Cards (Paid, Pending, Discount on selected date)
     document.getElementById('dateWiseReceived').innerText = '₹' + dateWiseReceivedSum.toFixed(0);
@@ -1160,25 +1101,6 @@
         <td style="color:green; font-weight:bold;">₹${st.received.toFixed(0)}</td>
         <td style="color:red; font-weight:bold;">₹${st.pending.toFixed(0)}</td>
       </tr>`;
-    }
-
-    // Sort installments by date descending
-    allInstallmentsArr.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-    let instBody = document.getElementById('allInstallmentsBody');
-    instBody.innerHTML = "";
-    if (allInstallmentsArr.length === 0) {
-      instBody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No installment records found.</td></tr>`;
-    } else {
-      allInstallmentsArr.forEach(item => {
-        instBody.innerHTML += `<tr>
-          <td>${formatDateToDMY(item.date)}</td>
-          <td><b>${item.customerName}</b></td>
-          <td>${item.type}</td>
-          <td style="color:green; font-weight:bold;">₹${item.amount}</td>
-          <td>${item.operator}</td>
-        </tr>`;
-      });
     }
   }
 
