@@ -21,9 +21,9 @@
     .header { background-color: #0b3c5d; color: white; text-align: center; padding: 20px; position: relative; }
     .header h1 { margin: 0; color: #ff3b30; font-size: 26px; text-transform: uppercase; font-weight: 800; }
     .header p { margin: 5px 0 0; font-size: 15px; font-weight: 500; }
-    .header-btns { position: absolute; right: 20px; top: 20px; display: flex; gap: 10px; }
-    .log-btn { background: #ff9800; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; display: none; }
-    .logout-btn { background: #d9534f; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    .header-btns { position: absolute; right: 20px; top: 15px; display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+    .log-btn { background: #ff9800; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
+    .logout-btn { background: #d9534f; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; }
 
     /* Form Design */
     .form-container { padding: 25px; }
@@ -36,7 +36,7 @@
     .form-group input[readonly] { background-color: #e9ecef; }
     .full-width { grid-column: 1 / -1; }
     
-    /* Multi-select Vehicle Checkbox Box */
+    /* Vehicle Checkbox Group */
     .checkbox-group { display: flex; flex-wrap: wrap; gap: 10px; background: #f8f9fa; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
     .checkbox-group label { font-size: 13px; font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 4px; }
 
@@ -50,7 +50,7 @@
     .btn-backup { background-color: #d9534f; }
     .btn-restore { background-color: #17a2b8; }
 
-    /* Table Buttons */
+    /* Table Action Buttons */
     .btn-sm { padding: 4px 8px; font-size: 11px; border-radius: 3px; border: none; cursor: pointer; font-weight: bold; color: white; margin-right: 2px; }
     .btn-edit { background-color: #ff9800; }
     .btn-del { background-color: #dc3545; }
@@ -89,7 +89,7 @@
     .details-item label { display: block; font-size: 11px; color: #666; font-weight: bold; text-transform: uppercase; }
     .details-item span { font-size: 14px; font-weight: 600; color: #222; }
 
-    /* Installment Table in Details Modal */
+    /* Installment Table Inside Details Modal */
     .installment-table { width: 100%; margin-top: 5px; border-collapse: collapse; font-size: 13px; }
     .installment-table th { background: #1d70b8; color: white; padding: 6px; }
     .installment-table td { padding: 6px; border: 1px solid #ccc; }
@@ -139,8 +139,8 @@
     <h1>Tej Singh Motor Training School</h1>
     <p>Customer Admission & Payment Register | Welcome, <span id="userGreeting" style="text-decoration: underline;">Staff</span></p>
     <div class="header-btns">
-      <button class="log-btn" id="auditLogBtn" onclick="openAuditLogModal()">📜 Activity Logs</button>
       <button class="logout-btn" onclick="logoutUser()">Logout 🔒</button>
+      <button class="log-btn" id="auditLogBtn" onclick="openAuditLogModal()" style="display:none;">📜 Activity Logs</button>
     </div>
   </div>
 
@@ -368,7 +368,7 @@
 <div id="detailsModal" class="modal-overlay">
   <div class="modal-content" id="modalDetailsContent">
     <div class="modal-header">
-      <h2>📜 Customer Profile Details</h2>
+      <h2>📜 Customer Profile Details & Payment Breakdown</h2>
       <button class="close-modal" onclick="closeDetailsModal()">X</button>
     </div>
     <div class="details-grid">
@@ -390,13 +390,13 @@
       <div class="details-item"><label>Discount Note</label><span id="kDiscountNote">-</span></div>
       <div class="details-item"><label>Paid Amount</label><span id="kPaid">₹0</span></div>
       <div class="details-item"><label>Balance Amount</label><span id="kBalance" style="color:red;">₹0</span></div>
-      <div class="details-item"><label>Initial Payment Date</label><span id="kPayDate">-</span></div>
+      <div class="details-item"><label>Initial Admission Date</label><span id="kPayDate">-</span></div>
       <div class="details-item"><label>Added / Updated By</label><span id="kOperator">-</span></div>
       
       <div class="details-item full-width" style="grid-column: 1 / -1;">
-        <label>Detailed Payment & Installment History</label>
+        <label>Detailed Payment & Installment History (With Dates)</label>
         <div id="kInstallmentHistoryContainer" style="margin-top: 5px;">
-          <!-- Populated dynamically with table and delete buttons -->
+          <!-- Populated dynamically -->
         </div>
       </div>
 
@@ -463,8 +463,6 @@
   let globalRecords = [];
   let activeStaffName = "";
   let activeStaffEmail = "";
-
-  // Undo Stack for Ctrl+Z
   let undoStack = [];
 
   // Authorized Admin Emails who can view Activity Logs
@@ -472,13 +470,11 @@
 
   document.getElementById('paymentDate').valueAsDate = new Date();
 
-  // Listen to Keyboard shortcut for Ctrl + Z
+  // Ctrl + Z keyboard shortcut handler for undo
   document.addEventListener('keydown', function(e) {
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
       const activeEl = document.activeElement;
-      if (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA') {
-        return; 
-      }
+      if (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA') return;
       e.preventDefault();
       performUndo();
     }
@@ -498,7 +494,6 @@
       } else {
         document.getElementById('userGreeting').innerText = activeStaffName;
         
-        // Show Activity Logs button ONLY for authorized admin emails
         if (ADMIN_EMAILS.includes(activeStaffEmail.toLowerCase())) {
           document.getElementById('auditLogBtn').style.display = 'block';
         } else {
@@ -534,12 +529,8 @@
     const user = auth.currentUser;
     if (user) {
       user.sendEmailVerification()
-        .then(() => {
-          document.getElementById('verifyMsg').innerText = "Verification link sent to your email!";
-        })
-        .catch(err => {
-          document.getElementById('verifyMsg').innerText = "Error: " + err.message;
-        });
+        .then(() => { document.getElementById('verifyMsg').innerText = "Verification link sent to your email!"; })
+        .catch(err => { document.getElementById('verifyMsg').innerText = "Error: " + err.message; });
     }
   }
 
@@ -547,11 +538,8 @@
     const user = auth.currentUser;
     if (user) {
       user.reload().then(() => {
-        if (user.emailVerified) {
-          auth.onAuthStateChanged(user);
-        } else {
-          alert("Your email is not verified yet.");
-        }
+        if (user.emailVerified) { auth.onAuthStateChanged(user); }
+        else { alert("Your email is not verified yet."); }
       });
     }
   }
@@ -559,24 +547,16 @@
   function saveProfileName() {
     const nameInput = document.getElementById('staffDisplayName').value.trim();
     const errorEl = document.getElementById('setupError');
+    if (!nameInput) { errorEl.innerText = "Please enter your name!"; return; }
 
-    if (!nameInput) {
-      errorEl.innerText = "Please enter your name!";
-      return;
-    }
-
-    const user = auth.currentUser;
-    user.updateProfile({ displayName: nameInput })
-      .then(() => {
-        activeStaffName = nameInput;
-        location.reload();
-      })
+    auth.currentUser.updateProfile({ displayName: nameInput })
+      .then(() => { activeStaffName = nameInput; location.reload(); })
       .catch(err => { errorEl.innerText = "Error: " + err.message; });
   }
 
   function logoutUser() { auth.signOut(); }
 
-  // CENTRAL AUDIT LOGGING HELPER FUNCTION
+  // AUDIT LOGGING
   function logActivity(actionType, customerName, details) {
     db.collection("audit_logs").add({
       timestamp: firebase.firestore.FieldValue.serverTimestamp(),
@@ -589,57 +569,31 @@
     }).catch(err => console.error("Audit log failed:", err));
   }
 
-  // PUSH ACTION TO UNDO STACK
   function pushToUndoStack(actionType, recordId, previousData) {
-    undoStack.push({
-      actionType: actionType,
-      recordId: recordId,
-      data: previousData,
-      time: new Date()
-    });
+    undoStack.push({ actionType, recordId, data: previousData, time: new Date() });
     if (undoStack.length > 15) undoStack.shift();
   }
 
-  // PERFORM UNDO (CTRL + Z)
   function performUndo() {
-    if (undoStack.length === 0) {
-      alert("No recent actions to Undo!");
-      return;
-    }
-
+    if (undoStack.length === 0) { alert("No recent actions to Undo!"); return; }
     let lastAction = undoStack.pop();
     if (confirm(`Do you want to Undo the last action (${lastAction.actionType}) for customer: ${lastAction.data.customerName || 'Record'}?`)) {
-      
-      if (lastAction.actionType === 'DELETE_RECORD') {
-        db.collection("dl_records").doc(lastAction.recordId).set(lastAction.data)
-          .then(() => {
-            logActivity('UNDO_ACTION', lastAction.data.customerName, `Restored deleted record via Ctrl+Z by ${activeStaffName}`);
-            alert("Undo Successful! Record has been restored.");
-          })
-          .catch(err => alert("Undo Error: " + err.message));
-      } 
-      else if (lastAction.actionType === 'EDIT_RECORD' || lastAction.actionType === 'PAYMENT_UPDATE') {
-        db.collection("dl_records").doc(lastAction.recordId).set(lastAction.data)
-          .then(() => {
-            logActivity('UNDO_ACTION', lastAction.data.customerName, `Reverted recent changes via Ctrl+Z by ${activeStaffName}`);
-            alert("Undo Successful! Record reverted to previous state.");
-          })
-          .catch(err => alert("Undo Error: " + err.message));
-      }
+      db.collection("dl_records").doc(lastAction.recordId).set(lastAction.data)
+        .then(() => {
+          logActivity('UNDO_ACTION', lastAction.data.customerName, `Reverted action via Ctrl+Z by ${activeStaffName}`);
+          alert("Undo Successful!");
+        })
+        .catch(err => alert("Undo Error: " + err.message));
     } else {
       undoStack.push(lastAction);
     }
   }
 
-  // BALANCE CALCULATION LOGIC
   function calculateBalance() {
     const total = parseFloat(document.getElementById('totalFee').value) || 0;
     const discount = parseFloat(document.getElementById('discountAmount').value) || 0;
     const advance = parseFloat(document.getElementById('advancePayment').value) || 0;
-
-    const netFee = total - discount;
-    const balance = netFee - advance;
-
+    const balance = (total - discount) - advance;
     document.getElementById('balanceAmount').value = balance >= 0 ? balance : 0;
   }
 
@@ -658,33 +612,14 @@
 
   function setSelectedVehicles(vehicleString) {
     const checkboxes = document.querySelectorAll('#vehicleCheckboxGroup input[type="checkbox"]');
-    checkboxes.forEach(cb => {
-      cb.checked = vehicleString && vehicleString.includes(cb.value);
-    });
+    checkboxes.forEach(cb => { cb.checked = vehicleString && vehicleString.includes(cb.value); });
   }
 
-  function normalizeVehicleType(vehicleStr) {
-    if (!vehicleStr) return "";
-    let normalized = vehicleStr;
-    if (normalized.includes("Both (2W + 4W)")) {
-      normalized = normalized.replace("Both (2W + 4W)", "Two Wheeler, Four Wheeler");
-    }
-    if (normalized.includes("2+4 DL + AD")) {
-      normalized = normalized.replace("2+4 DL + AD", "Two Wheeler, Four Wheeler, AD");
-    }
-    return normalized;
-  }
-
-  // Save OR Update Entry Handler
   function handleFormSubmit(e) {
     e.preventDefault();
     const editId = document.getElementById('editRecordId').value;
-    
     const selectedVehicles = getSelectedVehicles();
-    if (!selectedVehicles) {
-      alert("Please select at least one vehicle type!");
-      return;
-    }
+    if (!selectedVehicles) { alert("Please select at least one vehicle type!"); return; }
 
     const recordData = {
       customerName: document.getElementById('customerName').value,
@@ -719,15 +654,10 @@
       }];
 
       pushToUndoStack('EDIT_RECORD', editId, oldRec);
-      
       db.collection("dl_records").doc(editId).update(recordData)
         .then(() => {
-          logActivity(
-            'ENTRY_EDITED', 
-            recordData.customerName, 
-            `Updated record details by ${activeStaffName}. Fee changed from ₹${oldRec?.totalFee} to ₹${recordData.totalFee}`
-          );
-          alert("Entry Updated Successfully! (Press Ctrl+Z if you need to undo)");
+          logActivity('ENTRY_EDITED', recordData.customerName, `Updated record details by ${activeStaffName}`);
+          alert("Entry Updated Successfully!");
           resetForm();
         })
         .catch(err => alert("Update Error: " + err.message));
@@ -742,11 +672,7 @@
       
       db.collection("dl_records").add(recordData)
         .then(() => {
-          logActivity(
-            'ENTRY_CREATED', 
-            recordData.customerName, 
-            `Created new admission entry. Total Fee: ₹${recordData.totalFee}, Paid: ₹${recordData.advancePayment}`
-          );
+          logActivity('ENTRY_CREATED', recordData.customerName, `Created new admission entry. Fee: ₹${recordData.totalFee}, Paid: ₹${recordData.advancePayment}`);
           alert("New Entry Saved Successfully!");
           resetForm();
         })
@@ -754,7 +680,6 @@
     }
   }
 
-  // REALTIME LOADER & AUTH SYNC
   function loadLiveEntries() {
     const currentUser = auth.currentUser;
     if (currentUser) {
@@ -774,8 +699,6 @@
       snapshot.forEach(doc => {
         let d = doc.data();
         d.id = doc.id;
-        d.vehicleType = normalizeVehicleType(d.vehicleType);
-        
         if (!d.installmentsList) {
           d.installmentsList = [{
             type: 'Initial Admission Payment',
@@ -822,7 +745,6 @@
     });
   }
 
-  // EDIT RECORD
   function editRecord(id) {
     const rec = globalRecords.find(r => r.id === id);
     if (!rec) return;
@@ -854,24 +776,19 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  // DELETE RECORD
   function deleteRecord(id, customerName) {
     const recToDelete = globalRecords.find(r => r.id === id);
     if (confirm(`Are you sure you want to delete the record for ${customerName}?`)) {
-      if (recToDelete) {
-        pushToUndoStack('DELETE_RECORD', id, recToDelete);
-      }
-
+      if (recToDelete) pushToUndoStack('DELETE_RECORD', id, recToDelete);
       db.collection("dl_records").doc(id).delete()
         .then(() => {
           logActivity('ENTRY_DELETED', customerName, `Deleted record for ${customerName} by ${activeStaffName}`);
-          alert("Record successfully deleted! (Press Ctrl+Z if you want to restore it)");
+          alert("Record successfully deleted!");
         })
         .catch(err => alert("Delete Error: " + err.message));
     }
   }
 
-  // RESET FORM
   function resetForm() {
     document.getElementById('admissionForm').reset();
     document.getElementById('editRecordId').value = '';
@@ -881,7 +798,6 @@
     document.getElementById('cancelBtn').style.display = 'none';
   }
 
-  // FILTERS
   function applyFilters() {
     const searchVal = document.getElementById('searchInput').value.toLowerCase();
     const vehicleSelect = document.getElementById('filterVehicle');
@@ -928,7 +844,7 @@
     renderTable(globalRecords);
   }
 
-  // MODALS & EXCEL EXPORT
+  // DETAILS MODAL & INSTALLMENT HISTORY DISPLAY
   function openDetailsModal(id) {
     const d = globalRecords.find(r => r.id === id);
     if (!d) return;
@@ -961,10 +877,10 @@
         <thead>
           <tr>
             <th>#</th>
-            <th>Payment Type / Note</th>
-            <th>Date</th>
-            <th>Amount</th>
-            <th>Staff / Added By</th>
+            <th>Payment Description / Installment</th>
+            <th>Payment Date</th>
+            <th>Amount Paid</th>
+            <th>Staff Name</th>
             <th class="no-print">Action</th>
           </tr>
         </thead>
@@ -993,6 +909,7 @@
     document.getElementById('detailsModal').style.display = 'none';
   }
 
+  // INSTALLMENT PAYMENT POPUP
   function openPayModal(id, name, balance) {
     document.getElementById('payRecordId').value = id;
     document.getElementById('payCustomerName').innerText = name;
@@ -1048,21 +965,17 @@
     if (!d || !d.installmentsList || !d.installmentsList[index]) return;
 
     if (d.installmentsList.length === 1) {
-      alert("You cannot delete the only initial admission payment entry!");
+      alert("You cannot delete the initial admission payment entry!");
       return;
     }
 
     let removedInst = d.installmentsList[index];
     if (confirm(`Are you sure you want to delete this payment of ₹${removedInst.amount} (${removedInst.type})?`)) {
-      
       pushToUndoStack('PAYMENT_UPDATE', recordId, JSON.parse(JSON.stringify(d)));
-
       d.installmentsList.splice(index, 1);
 
       let recalculatedPaid = 0;
-      d.installmentsList.forEach(inst => {
-        recalculatedPaid += parseFloat(inst.amount) || 0;
-      });
+      d.installmentsList.forEach(inst => { recalculatedPaid += parseFloat(inst.amount) || 0; });
 
       const netFee = (parseFloat(d.totalFee) || 0) - (parseFloat(d.discountAmount) || 0);
       let recalculatedBalance = netFee - recalculatedPaid;
@@ -1075,7 +988,7 @@
         updatedAt: firebase.firestore.FieldValue.serverTimestamp()
       }).then(() => {
         logActivity('INSTALLMENT_DELETED', d.customerName, `Deleted payment entry of ₹${removedInst.amount} by ${activeStaffName}`);
-        alert("Installment deleted and balance successfully recalculated!");
+        alert("Installment deleted and balance recalculated!");
         openDetailsModal(recordId);
       }).catch(err => alert("Error deleting installment: " + err.message));
     }
@@ -1094,10 +1007,7 @@
       }
       
       let logsArray = [];
-      snapshot.forEach(doc => {
-        logsArray.push(doc.data());
-      });
-
+      snapshot.forEach(doc => { logsArray.push(doc.data()); });
       logsArray.sort((a, b) => {
         let t1 = a.timestamp ? a.timestamp.toMillis() : 0;
         let t2 = b.timestamp ? b.timestamp.toMillis() : 0;
@@ -1154,7 +1064,7 @@
   }
 
   function triggerRestore() {
-    if (confirm("Restoring may overwrite existing data. Do you want to continue?")) {
+    if (confirm("Restoring may overwrite existing data. Continue?")) {
       document.getElementById('restoreFileInput').click();
     }
   }
@@ -1166,22 +1076,15 @@
     reader.onload = function(e) {
       try {
         let records = JSON.parse(e.target.result);
-        let batchCount = 0;
         records.forEach(rec => {
           let id = rec.firebaseId;
           delete rec.firebaseId;
-          if (id) {
-            db.collection("dl_records").doc(id).set(rec, { merge: true });
-          } else {
-            db.collection("dl_records").add(rec);
-          }
-          batchCount++;
+          if (id) { db.collection("dl_records").doc(id).set(rec, { merge: true }); }
+          else { db.collection("dl_records").add(rec); }
         });
-        alert(`Successfully restored ${batchCount} records!`);
+        alert(`Successfully restored records!`);
         location.reload();
-      } catch (err) {
-        alert("Invalid JSON file format!");
-      }
+      } catch (err) { alert("Invalid JSON file format!"); }
     };
     reader.readAsText(file);
   }
