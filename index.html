@@ -72,7 +72,7 @@
 
     /* Modal Popup Styling */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; }
-    .modal-content { background: white; width: 90%; max-width: 800px; max-height: 90vh; overflow-y: auto; border-radius: 8px; padding: 25px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); position: relative; }
+    .modal-content { background: white; width: 90%; max-width: 900px; max-height: 90vh; overflow-y: auto; border-radius: 8px; padding: 25px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); position: relative; }
     .modal-header { border-bottom: 2px solid #0b3c5d; padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
     .modal-header h2 { margin: 0; color: #0b3c5d; font-size: 20px; }
     .close-modal { background: #dc3545; color: white; border: none; padding: 5px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
@@ -344,12 +344,13 @@
 
 <!-- COLLECTION SUMMARY MODAL -->
 <div id="collectionModal" class="modal-overlay">
-  <div class="modal-content" style="max-width: 900px;">
+  <div class="modal-content" style="max-width: 950px;">
     <div class="modal-header">
-      <h2>💰 Financial Collections & Installments Summary</h2>
+      <h2>💰 Financial Collections & Date-wise Summary</h2>
       <button class="close-modal" onclick="closeCollectionModal()">X</button>
     </div>
     
+    <!-- Overall Summary Cards -->
     <div class="summary-cards-grid">
       <div class="summary-card">
         <h4>Total Fees Booked</h4>
@@ -365,7 +366,50 @@
       </div>
     </div>
 
-    <h3 style="color: #0b3c5d; font-size: 15px; margin-bottom: 8px;">Vehicle Type Wise Breakdown:</h3>
+    <!-- Date-Specific Lookup Filter Box inside Collections Modal -->
+    <div style="background: #eef5fc; padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #1d70b8;">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+        <div>
+          <label style="color: #0b3c5d; font-weight: bold; font-size: 14px;">📅 Select Date to View Collection Hisab:</label>
+          <input type="date" id="collectionFilterDate" onchange="updateCollectionDateFilter()" style="padding: 8px; border: 1px solid #1d70b8; border-radius: 4px; margin-left: 10px; font-size: 14px;">
+        </div>
+        <button type="button" class="btn-sm btn-edit" onclick="setTodayCollectionDate()" style="padding: 8px 12px; font-size: 13px;">View Today's Collection 🎯</button>
+      </div>
+      
+      <!-- Date Specific Cards -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 15px;">
+        <div style="background: white; padding: 10px; border-radius: 5px; border: 1px solid #ccc; text-align: center;">
+          <small style="color: #555; font-weight: bold;">Amount Received on Date:</small>
+          <p id="dateWiseReceived" style="margin: 5px 0 0 0; font-size: 18px; color: #28a745; font-weight: bold;">₹0</p>
+        </div>
+        <div style="background: white; padding: 10px; border-radius: 5px; border: 1px solid #ccc; text-align: center;">
+          <small style="color: #555; font-weight: bold;">Entries / Payments Count:</small>
+          <p id="dateWiseTransactionsCount" style="margin: 5px 0 0 0; font-size: 18px; color: #0b3c5d; font-weight: bold;">0</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Date-Specific Transactions Table -->
+    <h3 style="color: #0b3c5d; font-size: 15px; margin-bottom: 8px;">Transactions on Selected Date (New Payments & Initial Dues):</h3>
+    <div class="table-container" style="margin-top: 0; margin-bottom: 20px; max-height: 220px; overflow-y: auto;">
+      <table class="installment-table">
+        <thead>
+          <tr>
+            <th>Customer Name</th>
+            <th>Vehicle Type</th>
+            <th>Payment Note / Type</th>
+            <th>Amount Paid (₹)</th>
+            <th>Current Pending Balance</th>
+            <th>Staff</th>
+          </tr>
+        </thead>
+        <tbody id="dateWiseTransactionsBody">
+          <!-- Populated dynamically -->
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="color: #0b3c5d; font-size: 15px; margin-bottom: 8px;">Overall Vehicle Type Wise Breakdown:</h3>
     <div class="table-container" style="margin-top: 0; margin-bottom: 20px;">
       <table id="vehicleCollectionTable">
         <thead>
@@ -384,7 +428,7 @@
     </div>
 
     <h3 style="color: #0b3c5d; font-size: 15px; margin-bottom: 8px;">All Installment Transactions History (Date Wise):</h3>
-    <div class="table-container" style="margin-top: 0; max-height: 250px; overflow-y: auto;">
+    <div class="table-container" style="margin-top: 0; max-height: 220px; overflow-y: auto;">
       <table class="installment-table">
         <thead>
           <tr>
@@ -999,12 +1043,32 @@
 
   // COLLECTIONS SUMMARY MODAL LOGIC
   function openCollectionModal() {
+    // Set default filter date to today
+    document.getElementById('collectionFilterDate').valueAsDate = new Date();
+    calculateCollectionData();
+    document.getElementById('collectionModal').style.display = 'flex';
+  }
+
+  function setTodayCollectionDate() {
+    document.getElementById('collectionFilterDate').valueAsDate = new Date();
+    calculateCollectionData();
+  }
+
+  function updateCollectionDateFilter() {
+    calculateCollectionData();
+  }
+
+  function calculateCollectionData() {
+    let selectedDate = document.getElementById('collectionFilterDate').value;
+
     let totalFeesSum = 0;
     let totalReceivedSum = 0;
     let totalPendingSum = 0;
 
     let vehicleStats = {};
     let allInstallmentsArr = [];
+    let dateWiseTransactions = [];
+    let dateWiseReceivedSum = 0;
 
     globalRecords.forEach(d => {
       let netFee = (parseFloat(d.totalFee) || 0) - (parseFloat(d.discountAmount) || 0);
@@ -1024,29 +1088,62 @@
           vehicleStats[vClean] = { count: 0, totalFee: 0, received: 0, pending: 0 };
         }
         vehicleStats[vClean].count += 1;
-        // Proportionate or direct assignment
         vehicleStats[vClean].totalFee += (netFee / vTypes.length);
         vehicleStats[vClean].received += (received / vTypes.length);
         vehicleStats[vClean].pending += (pending / vTypes.length);
       });
 
-      // Gather all installment transactions
+      // Gather all installment/payment transactions
       if (d.installmentsList && d.installmentsList.length > 0) {
         d.installmentsList.forEach(inst => {
-          allInstallmentsArr.push({
-            date: inst.date || d.paymentDate || '-',
+          let instDate = inst.date || d.paymentDate || '-';
+          let instObj = {
+            date: instDate,
             customerName: d.customerName,
+            vehicleType: d.vehicleType || '-',
             type: inst.type || 'Installment',
             amount: parseFloat(inst.amount) || 0,
+            currentBalance: d.balanceAmount || 0,
             operator: inst.operator || d.addedBy || 'Staff'
-          });
+          };
+          
+          allInstallmentsArr.push(instObj);
+
+          // Check if this transaction matches the selected filter date
+          if (selectedDate && instDate === selectedDate) {
+            dateWiseTransactions.push(instObj);
+            dateWiseReceivedSum += instObj.amount;
+          }
         });
       }
     });
 
+    // Populate Overall Cards
     document.getElementById('sumTotalFees').innerText = '₹' + totalFeesSum.toFixed(0);
     document.getElementById('sumTotalReceived').innerText = '₹' + totalReceivedSum.toFixed(0);
     document.getElementById('sumTotalPending').innerText = '₹' + totalPendingSum.toFixed(0);
+
+    // Populate Date Wise Cards
+    document.getElementById('dateWiseReceived').innerText = '₹' + dateWiseReceivedSum.toFixed(0);
+    document.getElementById('dateWiseTransactionsCount').innerText = dateWiseTransactions.length;
+
+    // Render Date-Specific Transactions Table
+    let dateBody = document.getElementById('dateWiseTransactionsBody');
+    dateBody.innerHTML = "";
+    if (dateWiseTransactions.length === 0) {
+      dateBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#666;">No payment collections found on ${formatDateToDMY(selectedDate)}.</td></tr>`;
+    } else {
+      dateWiseTransactions.forEach(item => {
+        dateBody.innerHTML += `<tr>
+          <td><b>${item.customerName}</b></td>
+          <td>${item.vehicleType}</td>
+          <td>${item.type}</td>
+          <td style="color:green; font-weight:bold;">₹${item.amount}</td>
+          <td style="color:red; font-weight:bold;">₹${item.currentBalance}</td>
+          <td>${item.operator}</td>
+        </tr>`;
+      });
+    }
 
     // Render Vehicle stats table
     let vBody = document.getElementById('vehicleCollectionBody');
@@ -1080,8 +1177,6 @@
         </tr>`;
       });
     }
-
-    document.getElementById('collectionModal').style.display = 'flex';
   }
 
   function closeCollectionModal() {
