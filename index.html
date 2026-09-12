@@ -324,11 +324,11 @@
             <th>LL App No.</th>
             <th>LL Number</th>
             <th>DL App No.</th>
-            <th>Vehicle</th>
+            <th>Vehicle Type</th>
             <th>Total Fee</th>
             <th>Discount</th>
-            <th>Paid</th>
-            <th>Balance</th>
+            <th>Paid Amount</th>
+            <th>Balance Amount</th>
             <th>Added By</th>
             <th>Actions</th>
           </tr>
@@ -370,17 +370,25 @@
     <div style="background: #eef5fc; padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #1d70b8;">
       <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
         <div>
-          <label style="color: #0b3c5d; font-weight: bold; font-size: 14px;">📅 Select Date to View Collection Hisab:</label>
+          <label style="color: #0b3c5d; font-weight: bold; font-size: 14px;">📅 Select Date to View Hisab:</label>
           <input type="date" id="collectionFilterDate" onchange="updateCollectionDateFilter()" style="padding: 8px; border: 1px solid #1d70b8; border-radius: 4px; margin-left: 10px; font-size: 14px;">
         </div>
         <button type="button" class="btn-sm btn-edit" onclick="setTodayCollectionDate()" style="padding: 8px 12px; font-size: 13px;">View Today's Collection 🎯</button>
       </div>
       
-      <!-- Date Specific Cards -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin-top: 15px;">
+      <!-- Date Specific Cards (Showing Paid, Pending, Discount on selected date) -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-top: 15px;">
         <div style="background: white; padding: 10px; border-radius: 5px; border: 1px solid #ccc; text-align: center;">
-          <small style="color: #555; font-weight: bold;">Amount Received on Date:</small>
+          <small style="color: #555; font-weight: bold;">Paid Amount on Date:</small>
           <p id="dateWiseReceived" style="margin: 5px 0 0 0; font-size: 18px; color: #28a745; font-weight: bold;">₹0</p>
+        </div>
+        <div style="background: white; padding: 10px; border-radius: 5px; border: 1px solid #ccc; text-align: center;">
+          <small style="color: #555; font-weight: bold;">Pending Balance on Date:</small>
+          <p id="dateWisePending" style="margin: 5px 0 0 0; font-size: 18px; color: #dc3545; font-weight: bold;">₹0</p>
+        </div>
+        <div style="background: white; padding: 10px; border-radius: 5px; border: 1px solid #ccc; text-align: center;">
+          <small style="color: #555; font-weight: bold;">Discount Given on Date:</small>
+          <p id="dateWiseDiscount" style="margin: 5px 0 0 0; font-size: 18px; color: #ff9800; font-weight: bold;">₹0</p>
         </div>
         <div style="background: white; padding: 10px; border-radius: 5px; border: 1px solid #ccc; text-align: center;">
           <small style="color: #555; font-weight: bold;">Entries / Payments Count:</small>
@@ -399,7 +407,8 @@
             <th>Vehicle Type</th>
             <th>Payment Note / Type</th>
             <th>Amount Paid (₹)</th>
-            <th>Current Pending Balance</th>
+            <th>Discount (₹)</th>
+            <th>Current Pending Balance (₹)</th>
             <th>Staff</th>
           </tr>
         </thead>
@@ -417,6 +426,7 @@
             <th>Vehicle Type</th>
             <th>Total Customers</th>
             <th>Total Fee (₹)</th>
+            <th>Discount (₹)</th>
             <th>Received (₹)</th>
             <th>Pending (₹)</th>
           </tr>
@@ -611,7 +621,6 @@
       } else {
         document.getElementById('userGreeting').innerText = activeStaffName;
         
-        // Show Activity Logs button ONLY for authorized admin emails
         if (ADMIN_EMAILS.includes(activeStaffEmail.toLowerCase())) {
           document.getElementById('auditLogBtn').style.display = 'block';
         } else {
@@ -647,12 +656,8 @@
     const user = auth.currentUser;
     if (user) {
       user.sendEmailVerification()
-        .then(() => {
-          document.getElementById('verifyMsg').innerText = "Verification link sent to your email!";
-        })
-        .catch(err => {
-          document.getElementById('verifyMsg').innerText = "Error: " + err.message;
-        });
+        .then(() => { document.getElementById('verifyMsg').innerText = "Verification link sent to your email!"; })
+        .catch(err => { document.getElementById('verifyMsg').innerText = "Error: " + err.message; });
     }
   }
 
@@ -689,7 +694,6 @@
 
   function logoutUser() { auth.signOut(); }
 
-  // CENTRAL AUDIT LOGGING HELPER FUNCTION
   function logActivity(actionType, customerName, details) {
     db.collection("audit_logs").add({
       timestamp: firebase.firestore.FieldValue.serverTimestamp(),
@@ -702,7 +706,6 @@
     }).catch(err => console.error("Audit log failed:", err));
   }
 
-  // PUSH ACTION TO UNDO STACK
   function pushToUndoStack(actionType, recordId, previousData) {
     undoStack.push({
       actionType: actionType,
@@ -713,7 +716,6 @@
     if (undoStack.length > 15) undoStack.shift();
   }
 
-  // PERFORM UNDO (CTRL + Z)
   function performUndo() {
     if (undoStack.length === 0) {
       alert("No recent actions to Undo!");
@@ -744,7 +746,7 @@
     }
   }
 
-  // BALANCE CALCULATION LOGIC
+  // BALANCE & DISCOUNT CALCULATION LOGIC (Total Fee = Paid + Pending + Discount)
   function calculateBalance() {
     const total = parseFloat(document.getElementById('totalFee').value) || 0;
     const discount = parseFloat(document.getElementById('discountAmount').value) || 0;
@@ -762,11 +764,20 @@
     return parts.length === 3 ? `${parts[2]}-${parts[1]}-${parts[0]}` : dateString;
   }
 
+  // VEHICLE SELECTION FORMATTING LOGIC
   function getSelectedVehicles() {
     const checkboxes = document.querySelectorAll('#vehicleCheckboxGroup input[type="checkbox"]:checked');
     let selected = [];
     checkboxes.forEach(cb => selected.push(cb.value));
-    return selected.join(", ");
+
+    // Custom formatting logic as requested
+    if (selected.includes("Two Wheeler") && selected.includes("Four Wheeler") && selected.length === 2) {
+      return "Both (2W + 4W)";
+    }
+    if (selected.includes("Two Wheeler") && selected.includes("Four Wheeler") && selected.includes("AD")) {
+      return "AD+TWO+FOUR";
+    }
+    return selected.join(" + ");
   }
 
   function setSelectedVehicles(vehicleString) {
@@ -777,15 +788,7 @@
   }
 
   function normalizeVehicleType(vehicleStr) {
-    if (!vehicleStr) return "";
-    let normalized = vehicleStr;
-    if (normalized.includes("Both (2W + 4W)")) {
-      normalized = normalized.replace("Both (2W + 4W)", "Two Wheeler, Four Wheeler");
-    }
-    if (normalized.includes("2+4 DL + AD")) {
-      normalized = normalized.replace("2+4 DL + AD", "Two Wheeler, Four Wheeler, AD");
-    }
-    return normalized;
+    return vehicleStr || "";
   }
 
   // Save OR Update Entry Handler
@@ -835,11 +838,7 @@
       
       db.collection("dl_records").doc(editId).update(recordData)
         .then(() => {
-          logActivity(
-            'ENTRY_EDITED', 
-            recordData.customerName, 
-            `Updated record details by ${activeStaffName}. Fee changed from ₹${oldRec?.totalFee} to ₹${recordData.totalFee}`
-          );
+          logActivity('ENTRY_EDITED', recordData.customerName, `Updated record details by ${activeStaffName}.`);
           alert("Entry Updated Successfully! (Press Ctrl+Z if you need to undo)");
           resetForm();
         })
@@ -855,11 +854,7 @@
       
       db.collection("dl_records").add(recordData)
         .then(() => {
-          logActivity(
-            'ENTRY_CREATED', 
-            recordData.customerName, 
-            `Created new admission entry. Total Fee: ₹${recordData.totalFee}, Paid: ₹${recordData.advancePayment}`
-          );
+          logActivity('ENTRY_CREATED', recordData.customerName, `Created new admission entry. Total Fee: ₹${recordData.totalFee}, Paid: ₹${recordData.advancePayment}`);
           alert("New Entry Saved Successfully!");
           resetForm();
         })
@@ -867,7 +862,6 @@
     }
   }
 
-  // REALTIME LOADER & AUTH SYNC
   function loadLiveEntries() {
     const currentUser = auth.currentUser;
     if (currentUser) {
@@ -935,7 +929,6 @@
     });
   }
 
-  // EDIT RECORD
   function editRecord(id) {
     const rec = globalRecords.find(r => r.id === id);
     if (!rec) return;
@@ -967,7 +960,6 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  // DELETE RECORD
   function deleteRecord(id, customerName) {
     const recToDelete = globalRecords.find(r => r.id === id);
     if (confirm(`Are you sure you want to delete the record for ${customerName}?`)) {
@@ -984,7 +976,6 @@
     }
   }
 
-  // RESET FORM
   function resetForm() {
     document.getElementById('admissionForm').reset();
     document.getElementById('editRecordId').value = '';
@@ -994,7 +985,6 @@
     document.getElementById('cancelBtn').style.display = 'none';
   }
 
-  // FILTERS
   function applyFilters() {
     const searchVal = document.getElementById('searchInput').value.toLowerCase();
     const vehicleSelect = document.getElementById('filterVehicle');
@@ -1041,9 +1031,8 @@
     renderTable(globalRecords);
   }
 
-  // COLLECTIONS SUMMARY MODAL LOGIC
+  // COLLECTIONS SUMMARY & DATE-WISE HISAB MODAL LOGIC
   function openCollectionModal() {
-    // Set default filter date to today
     document.getElementById('collectionFilterDate').valueAsDate = new Date();
     calculateCollectionData();
     document.getElementById('collectionModal').style.display = 'flex';
@@ -1069,29 +1058,39 @@
     let allInstallmentsArr = [];
     let dateWiseTransactions = [];
     let dateWiseReceivedSum = 0;
+    let dateWisePendingSum = 0;
+    let dateWiseDiscountSum = 0;
 
     globalRecords.forEach(d => {
       let netFee = (parseFloat(d.totalFee) || 0) - (parseFloat(d.discountAmount) || 0);
       let received = parseFloat(d.advancePayment) || 0;
       let pending = parseFloat(d.balanceAmount) || 0;
+      let discount = parseFloat(d.discountAmount) || 0;
 
       totalFeesSum += netFee;
       totalReceivedSum += received;
       totalPendingSum += pending;
 
       // Vehicle wise split
-      let vTypes = d.vehicleType ? d.vehicleType.split(', ') : ['Other'];
+      let vTypes = d.vehicleType ? d.vehicleType.split(' + ') : ['Other'];
       vTypes.forEach(v => {
         let vClean = v.trim();
         if (!vClean) return;
         if (!vehicleStats[vClean]) {
-          vehicleStats[vClean] = { count: 0, totalFee: 0, received: 0, pending: 0 };
+          vehicleStats[vClean] = { count: 0, totalFee: 0, discount: 0, received: 0, pending: 0 };
         }
         vehicleStats[vClean].count += 1;
         vehicleStats[vClean].totalFee += (netFee / vTypes.length);
+        vehicleStats[vClean].discount += (discount / vTypes.length);
         vehicleStats[vClean].received += (received / vTypes.length);
         vehicleStats[vClean].pending += (pending / vTypes.length);
       });
+
+      // If entry date matches selected filter date, include in date-wise summary
+      if (selectedDate && d.paymentDate === selectedDate) {
+        dateWisePendingSum += pending;
+        dateWiseDiscountSum += discount;
+      }
 
       // Gather all installment/payment transactions
       if (d.installmentsList && d.installmentsList.length > 0) {
@@ -1103,13 +1102,13 @@
             vehicleType: d.vehicleType || '-',
             type: inst.type || 'Installment',
             amount: parseFloat(inst.amount) || 0,
+            discount: discount,
             currentBalance: d.balanceAmount || 0,
             operator: inst.operator || d.addedBy || 'Staff'
           };
           
           allInstallmentsArr.push(instObj);
 
-          // Check if this transaction matches the selected filter date
           if (selectedDate && instDate === selectedDate) {
             dateWiseTransactions.push(instObj);
             dateWiseReceivedSum += instObj.amount;
@@ -1123,15 +1122,17 @@
     document.getElementById('sumTotalReceived').innerText = '₹' + totalReceivedSum.toFixed(0);
     document.getElementById('sumTotalPending').innerText = '₹' + totalPendingSum.toFixed(0);
 
-    // Populate Date Wise Cards
+    // Populate Date Wise Cards (Paid, Pending, Discount on selected date)
     document.getElementById('dateWiseReceived').innerText = '₹' + dateWiseReceivedSum.toFixed(0);
+    document.getElementById('dateWisePending').innerText = '₹' + dateWisePendingSum.toFixed(0);
+    document.getElementById('dateWiseDiscount').innerText = '₹' + dateWiseDiscountSum.toFixed(0);
     document.getElementById('dateWiseTransactionsCount').innerText = dateWiseTransactions.length;
 
     // Render Date-Specific Transactions Table
     let dateBody = document.getElementById('dateWiseTransactionsBody');
     dateBody.innerHTML = "";
     if (dateWiseTransactions.length === 0) {
-      dateBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#666;">No payment collections found on ${formatDateToDMY(selectedDate)}.</td></tr>`;
+      dateBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#666;">No payment collections found on ${formatDateToDMY(selectedDate)}.</td></tr>`;
     } else {
       dateWiseTransactions.forEach(item => {
         dateBody.innerHTML += `<tr>
@@ -1139,6 +1140,7 @@
           <td>${item.vehicleType}</td>
           <td>${item.type}</td>
           <td style="color:green; font-weight:bold;">₹${item.amount}</td>
+          <td style="color:#ff9800; font-weight:bold;">₹${item.discount}</td>
           <td style="color:red; font-weight:bold;">₹${item.currentBalance}</td>
           <td>${item.operator}</td>
         </tr>`;
@@ -1154,6 +1156,7 @@
         <td><b>${v}</b></td>
         <td>${st.count}</td>
         <td>₹${st.totalFee.toFixed(0)}</td>
+        <td style="color:#ff9800; font-weight:bold;">₹${st.discount.toFixed(0)}</td>
         <td style="color:green; font-weight:bold;">₹${st.received.toFixed(0)}</td>
         <td style="color:red; font-weight:bold;">₹${st.pending.toFixed(0)}</td>
       </tr>`;
@@ -1183,7 +1186,6 @@
     document.getElementById('collectionModal').style.display = 'none';
   }
 
-  // MODALS & EXCEL EXPORT
   function openDetailsModal(id) {
     const d = globalRecords.find(r => r.id === id);
     if (!d) return;
