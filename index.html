@@ -769,6 +769,15 @@
     return vehicleStr || "";
   }
 
+  // Helper to split any vehicle string consistently into array of clean vehicle names
+  function parseVehicleList(vehicleStr) {
+    if (!vehicleStr) return ['Other'];
+    let str = vehicleStr.replace(/Both \(2W \+ 4W\)/gi, 'Two Wheeler, Four Wheeler')
+                        .replace(/AD\+TWO\+FOUR/gi, 'AD, Two Wheeler, Four Wheeler');
+    let list = str.split(/[\+,\&]/).map(v => v.trim()).filter(v => v.length > 0);
+    return list.length > 0 ? list : ['Other'];
+  }
+
   // Save OR Update Entry Handler
   function handleFormSubmit(e) {
     e.preventDefault();
@@ -1048,8 +1057,9 @@
       let pending = parseFloat(d.balanceAmount) || 0;
       let discount = parseFloat(d.discountAmount) || 0;
 
-      // Overall vehicle breakdown
-      let vTypes = d.vehicleType ? d.vehicleType.split(' + ') : ['Other'];
+      // Clean Split Breakdown
+      let vTypes = parseVehicleList(d.vehicleType);
+
       vTypes.forEach(v => {
         let vClean = v.trim();
         if (!vClean) return;
@@ -1078,7 +1088,7 @@
               vehicleType: d.vehicleType || '-',
               type: inst.type || (idx === 0 ? 'Initial Admission Payment' : 'Installment'),
               amount: parseFloat(inst.amount) || 0,
-              discount: discount, // Associated discount displayed
+              discount: discount,
               currentBalance: d.balanceAmount || 0,
               operator: inst.operator || d.addedBy || 'Staff'
             };
@@ -1088,7 +1098,6 @@
         });
       }
 
-      // Calculation logic update: Include total discount if customer had activity on the selected date
       if (selectedDate && (d.paymentDate === selectedDate || customerHasActivityOnDate)) {
         dateWiseDiscountSum += discount;
       }
