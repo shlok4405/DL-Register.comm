@@ -4,8 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TEJ SINGH MOTOR TRAINING SCHOOL - Secure Portal</title>
-  <!-- SheetJS for Excel Export -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
     * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     body { background-color: #f0f4f8; margin: 0; padding: 20px; }
@@ -1342,10 +1340,23 @@
     document.getElementById('auditLogModal').style.display = 'none';
   }
 
+  // DYNAMICALLY LOADED SHEETJS FOR FAST APP STARTUP
   function exportToExcel() {
-    let table = document.getElementById("customerTable");
-    let wb = XLSX.utils.table_to_book(table, {sheet: "Customer Register"});
-    XLSX.writeFile(wb, "TejSingh_Customer_Register.xlsx");
+    if (window.XLSX) {
+      let table = document.getElementById("customerTable");
+      let wb = XLSX.utils.table_to_book(table, {sheet: "Customer Register"});
+      XLSX.writeFile(wb, "TejSingh_Customer_Register.xlsx");
+      return;
+    }
+
+    let script = document.createElement('script');
+    script.src = "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";
+    script.onload = function() {
+      let table = document.getElementById("customerTable");
+      let wb = XLSX.utils.table_to_book(table, {sheet: "Customer Register"});
+      XLSX.writeFile(wb, "TejSingh_Customer_Register.xlsx");
+    };
+    document.head.appendChild(script);
   }
 
   function backupData() {
@@ -1401,4 +1412,3 @@
 </script>
 </body>
 </html>
-```[cite: 4]
