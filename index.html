@@ -169,7 +169,7 @@
           <input type="date" id="dob" required>
         </div>
         
-        <!-- Multi-Select Vehicle Types -->
+        <!-- Multi-Select Vehicle Checkbox Box -->
         <div class="form-group full-width">
           <label>Vehicle Type (Select Multiple) *</label>
           <div class="checkbox-group" id="vehicleCheckboxGroup">
@@ -353,7 +353,7 @@
         <button type="button" class="btn-sm btn-edit" onclick="setTodayCollectionDate()" style="padding: 8px 12px; font-size: 13px;">View Today's Collection 🎯</button>
       </div>
       
-      <!-- Date Specific Cards (Showing Paid, Pending, Discount on selected date) -->
+      <!-- Date Specific Cards -->
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-top: 15px;">
         <div style="background: white; padding: 10px; border-radius: 5px; border: 1px solid #ccc; text-align: center;">
           <small style="color: #555; font-weight: bold;">Paid Amount on Date:</small>
@@ -769,13 +769,12 @@
     return vehicleStr || "";
   }
 
-  // Save OR Update Entry Handler (Bypasses duplicate warning if editing)
+  // Save OR Update Entry Handler
   function handleFormSubmit(e) {
     e.preventDefault();
     const editId = document.getElementById('editRecordId').value;
     const mobileInput = document.getElementById('mobile').value.trim();
 
-    // Duplicate check sirf tabhi hoga jab nayi entry save ho rahi ho (edit ke waqt bypass hoga)
     const duplicateCheck = globalRecords.find(r => r.mobile === mobileInput && r.id !== editId);
     if (duplicateCheck && !editId) {
       let proceed = confirm(`⚠️ WARNING: Mobile number ${mobileInput} is already registered under customer "${duplicateCheck.customerName}". Do you still want to save this duplicate entry?`);
@@ -1018,7 +1017,7 @@
     renderTable(globalRecords);
   }
 
-  // COLLECTIONS SUMMARY & DATE-WISE HISAB MODAL LOGIC
+  // UPDATED COLLECTIONS SUMMARY & DATE-WISE HISAB LOGIC
   function openCollectionModal() {
     document.getElementById('collectionFilterDate').valueAsDate = new Date();
     calculateCollectionData();
@@ -1049,7 +1048,7 @@
       let pending = parseFloat(d.balanceAmount) || 0;
       let discount = parseFloat(d.discountAmount) || 0;
 
-      // Vehicle wise split for overall summary
+      // Overall vehicle breakdown
       let vTypes = d.vehicleType ? d.vehicleType.split(' + ') : ['Other'];
       vTypes.forEach(v => {
         let vClean = v.trim();
@@ -1064,24 +1063,22 @@
         vehicleStats[vClean].pending += (pending / vTypes.length);
       });
 
-      // Track Date-wise initial admission entries & discounts
-      if (selectedDate && d.paymentDate === selectedDate) {
-        dateWiseDiscountSum += discount;
-      }
+      // Track Date-wise installments & Dues
+      let customerHasActivityOnDate = false;
 
-      // Check installments/payments made on selected date
       if (d.installmentsList && d.installmentsList.length > 0) {
         d.installmentsList.forEach((inst, idx) => {
           let instDate = inst.date || d.paymentDate || '-';
           
           if (selectedDate && instDate === selectedDate) {
+            customerHasActivityOnDate = true;
             let instObj = {
               date: instDate,
               customerName: d.customerName,
               vehicleType: d.vehicleType || '-',
               type: inst.type || (idx === 0 ? 'Initial Admission Payment' : 'Installment'),
               amount: parseFloat(inst.amount) || 0,
-              discount: idx === 0 ? discount : 0, 
+              discount: discount, // Associated discount displayed
               currentBalance: d.balanceAmount || 0,
               operator: inst.operator || d.addedBy || 'Staff'
             };
@@ -1089,6 +1086,11 @@
             dateWiseReceivedSum += instObj.amount;
           }
         });
+      }
+
+      // Calculation logic update: Include total discount if customer had activity on the selected date
+      if (selectedDate && (d.paymentDate === selectedDate || customerHasActivityOnDate)) {
+        dateWiseDiscountSum += discount;
       }
     });
 
