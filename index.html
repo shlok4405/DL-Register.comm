@@ -707,7 +707,7 @@
     }
   }
 
-  // DUPLICATE MOBILE CHECKING WARNING
+  // DUPLICATE MOBILE CHECKING WARNING (Ignored during Edit)
   function checkDuplicateMobile() {
     const mobileInput = document.getElementById('mobile').value.trim();
     const editId = document.getElementById('editRecordId').value;
@@ -719,7 +719,7 @@
     }
 
     const existingMatch = globalRecords.find(r => r.mobile === mobileInput && r.id !== editId);
-    if (existingMatch) {
+    if (existingMatch && !editId) {
       warningEl.style.display = 'block';
       warningEl.innerText = `⚠️ Warning: Mobile number already registered for customer "${existingMatch.customerName}"!`;
     } else {
@@ -771,15 +771,15 @@
     return vehicleStr || "";
   }
 
-  // Save OR Update Entry Handler
+  // Save OR Update Entry Handler (Bypasses duplicate warning if editing)
   function handleFormSubmit(e) {
     e.preventDefault();
     const editId = document.getElementById('editRecordId').value;
     const mobileInput = document.getElementById('mobile').value.trim();
 
-    // Double Entry Check Warning Alert
+    // Duplicate check sirf tabhi hoga jab nayi entry save ho rahi ho (edit ke waqt bypass hoga)
     const duplicateCheck = globalRecords.find(r => r.mobile === mobileInput && r.id !== editId);
-    if (duplicateCheck) {
+    if (duplicateCheck && !editId) {
       let proceed = confirm(`⚠️ WARNING: Mobile number ${mobileInput} is already registered under customer "${duplicateCheck.customerName}". Do you still want to save this duplicate entry?`);
       if (!proceed) return;
     }
@@ -826,8 +826,8 @@
       
       db.collection("dl_records").doc(editId).update(recordData)
         .then(() => {
-          logActivity('ENTRY_EDITED', recordData.customerName, `Updated record details by ${activeStaffName}.`);
-          alert("Entry Updated Successfully! (Press Ctrl+Z if you need to undo)");
+          logActivity('ENTRY_EDITED', recordData.customerName, `Updated/Replaced record details by ${activeStaffName}.`);
+          alert("Entry Successfully Replaced & Updated! (Press Ctrl+Z if you need to undo)");
           resetForm();
         })
         .catch(err => alert("Update Error: " + err.message));
@@ -1020,7 +1020,7 @@
     renderTable(globalRecords);
   }
 
-  // COLLECTIONS SUMMARY & DATE-WISE HISAB MODAL LOGIC (FIXED FOR DISCOUNT & PENDING MATCHING)
+  // COLLECTIONS SUMMARY & DATE-WISE HISAB MODAL LOGIC
   function openCollectionModal() {
     document.getElementById('collectionFilterDate').valueAsDate = new Date();
     calculateCollectionData();
@@ -1083,7 +1083,6 @@
               vehicleType: d.vehicleType || '-',
               type: inst.type || (idx === 0 ? 'Initial Admission Payment' : 'Installment'),
               amount: parseFloat(inst.amount) || 0,
-              // Show discount and pending balance properly associated with this record entry on the chosen date
               discount: idx === 0 ? discount : 0, 
               currentBalance: d.balanceAmount || 0,
               operator: inst.operator || d.addedBy || 'Staff'
@@ -1095,20 +1094,17 @@
       }
     });
 
-    // Calculate total pending balance for records associated/created or active on that selected date
     globalRecords.forEach(d => {
       if (selectedDate && (d.paymentDate === selectedDate || (d.installmentsList && d.installmentsList.some(i => i.date === selectedDate)))) {
         dateWisePendingSum += (parseFloat(d.balanceAmount) || 0);
       }
     });
 
-    // Populate Date Wise Cards Header
     document.getElementById('dateWiseReceived').innerText = '₹' + dateWiseReceivedSum.toFixed(0);
     document.getElementById('dateWisePending').innerText = '₹' + dateWisePendingSum.toFixed(0);
     document.getElementById('dateWiseDiscount').innerText = '₹' + dateWiseDiscountSum.toFixed(0);
     document.getElementById('dateWiseTransactionsCount').innerText = dateWiseTransactions.length;
 
-    // Render Date-Specific Transactions Table
     let dateBody = document.getElementById('dateWiseTransactionsBody');
     dateBody.innerHTML = "";
     if (dateWiseTransactions.length === 0) {
@@ -1127,7 +1123,6 @@
       });
     }
 
-    // Render Vehicle stats table
     let vBody = document.getElementById('vehicleCollectionBody');
     vBody.innerHTML = "";
     for (let v in vehicleStats) {
@@ -1406,3 +1401,4 @@
 </script>
 </body>
 </html>
+```[cite: 4]
