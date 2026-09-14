@@ -894,13 +894,24 @@
     }
   }
 
+  // FIXED: Normalized old database entries automatically so they adopt new calculation rules and default fields
   function loadLiveEntries() {
     db.collection("dl_records").orderBy("paymentDate", "desc").onSnapshot(snapshot => {
       globalRecords = [];
       snapshot.forEach(doc => {
         let d = doc.data();
         d.id = doc.id;
-        if (!d.installmentsList) {
+
+        // Automatically normalize numeric values and missing fields for old records
+        d.totalFee = parseFloat(d.totalFee) || 0;
+        d.discountAmount = parseFloat(d.discountAmount) || 0;
+        d.advancePayment = parseFloat(d.advancePayment) || 0;
+        
+        let netFee = d.totalFee - d.discountAmount;
+        d.balanceAmount = netFee - d.advancePayment;
+        if (d.balanceAmount < 0) d.balanceAmount = 0;
+
+        if (!d.installmentsList || !Array.isArray(d.installmentsList) || d.installmentsList.length === 0) {
           d.installmentsList = [{
             type: 'Initial Admission Payment',
             amount: d.advancePayment || 0,
@@ -908,6 +919,19 @@
             operator: d.addedBy || 'Staff'
           }];
         }
+
+        if (!d.vehicleType) d.vehicleType = 'Uncategorized';
+        if (!d.reference) d.reference = '-';
+        if (!d.llOutside) d.llOutside = 'No (Made Here)';
+        if (!d.address) d.address = '-';
+        if (!d.llAppNo) d.llAppNo = '-';
+        if (!d.llNo) d.llNo = '-';
+        if (!d.dlAppNo) d.dlAppNo = '-';
+        if (!d.remarks) d.remarks = '-';
+        if (!d.discountNote) d.discountNote = '-';
+        if (!d.paymentDate) d.paymentDate = new Date().toISOString().slice(0,10);
+        if (!d.addedBy) d.addedBy = 'Staff';
+
         globalRecords.push(d);
       });
       applyFilters();
@@ -1085,7 +1109,6 @@
     calculateCollectionData();
   }
 
-  // UPDATED COLLECTION DATA WITH DYNAMIC DATE FILTER FOR BREAKDOWN TABLE
   function calculateCollectionData() {
     let selectedDate = document.getElementById('collectionFilterDate').value;
     let bdFromDate = document.getElementById('bdFromDate').value;
@@ -1116,7 +1139,6 @@
         vType = "Renewal";
       }
 
-      // Check if entry falls within breakdown date filter
       let inBdDateRange = true;
       if (bdFromDate && d.paymentDate < bdFromDate) inBdDateRange = false;
       if (bdToDate && d.paymentDate > bdToDate) inBdDateRange = false;
@@ -1138,7 +1160,6 @@
         vehicleMap[vType].pending += pending;
       }
 
-      // Daily transactions calculation logic
       let customerHasActivityOnDate = false;
       if (d.installmentsList && d.installmentsList.length > 0) {
         d.installmentsList.forEach((inst, idx) => {
@@ -1172,13 +1193,11 @@
       }
     });
 
-    // Update Overall Metric Cards
     document.getElementById('cardTotalFee').innerText = '₹' + totalOverallFee.toLocaleString('en-IN');
     document.getElementById('cardTotalDiscount').innerText = '₹' + totalOverallDiscount.toLocaleString('en-IN');
     document.getElementById('cardTotalReceived').innerText = '₹' + totalOverallReceived.toLocaleString('en-IN');
     document.getElementById('cardTotalPending').innerText = '₹' + totalOverallPending.toLocaleString('en-IN');
 
-    // Populate Vehicle Breakdown Table
     let breakdownTbody = document.getElementById('vehicleBreakdownTableBody');
     breakdownTbody.innerHTML = "";
     if (Object.keys(vehicleMap).length === 0) {
@@ -1197,14 +1216,12 @@
       });
     }
 
-    // Grand Total Footer Update
     document.getElementById('gtCustomers').innerText = filteredCustomersCount;
     document.getElementById('gtTotalFee').innerText = '₹' + totalOverallFee.toLocaleString('en-IN');
     document.getElementById('gtDiscount').innerText = '₹' + totalOverallDiscount.toLocaleString('en-IN');
     document.getElementById('gtReceived').innerText = '₹' + totalOverallReceived.toLocaleString('en-IN');
     document.getElementById('gtPending').innerText = '₹' + totalOverallPending.toLocaleString('en-IN');
 
-    // Daily Metrics Update
     document.getElementById('dateWiseReceived').innerText = '₹' + dateWiseReceivedSum.toFixed(0);
     document.getElementById('dateWisePending').innerText = '₹' + dateWisePendingSum.toFixed(0);
     document.getElementById('dateWiseDiscount').innerText = '₹' + dateWiseDiscountSum.toFixed(0);
@@ -1516,4 +1533,3 @@
 </script>
 </body>
 </html>
-
