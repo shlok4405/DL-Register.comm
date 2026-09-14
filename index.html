@@ -1038,7 +1038,7 @@
     calculateCollectionData();
   }
 
-  // UPDATED DYNAMIC COLLECTION & BREAKDOWN CALCULATIONS
+  // UPDATED DYNAMIC COLLECTION & BREAKDOWN CALCULATIONS WITH RENEWAL OVERRIDE
   function calculateCollectionData() {
     let selectedDate = document.getElementById('collectionFilterDate').value;
 
@@ -1052,7 +1052,7 @@
     let totalOverallReceived = 0;
     let totalOverallPending = 0;
 
-    // Vehicle Category Map to store Dynamic Groupings like screenshot
+    // Vehicle Category Map to store Dynamic Groupings
     let vehicleMap = {};
 
     globalRecords.forEach(d => {
@@ -1060,7 +1060,13 @@
       let discount = parseFloat(d.discountAmount) || 0;
       let received = parseFloat(d.advancePayment) || 0;
       let pending = parseFloat(d.balanceAmount) || 0;
-      let vType = d.vehicleType || "Uncategorized";
+      let rawVType = (d.vehicleType || "Uncategorized").trim();
+
+      // Check if 'Renewal' keyword is anywhere in the vehicle string
+      let vType = rawVType;
+      if (/renewal/i.test(rawVType)) {
+        vType = "Renewal";
+      }
 
       // Overall Grand Totals
       totalOverallFee += fee;
