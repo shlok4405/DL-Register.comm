@@ -861,8 +861,6 @@
     if (editId) {
       const oldRec = globalRecords.find(r => r.id === editId);
       
-      // FIX APPLIED HERE: Jab entry edit ho, toh installments array mein pehla item (Initial Admission Payment) ki date 
-      // bhi updated paymentDate ke sath synchronize ho jaani chahiye taaki collection modal mein galat date par na dikhe.
       let installments = oldRec && oldRec.installmentsList ? JSON.parse(JSON.stringify(oldRec.installmentsList)) : [];
       if (installments.length > 0) {
         installments[0].date = newPaymentDate;
@@ -1169,8 +1167,6 @@
         vehicleMap[vType].pending += pending;
       }
 
-      // FIX APPLIED HERE: Har customer ki installments list mein exact stored date (`inst.date`) check hoti hai, 
-      // jisse edit karne ke baad nayi date hi collection hisab mein reflect hogi.
       if (d.installmentsList && d.installmentsList.length > 0) {
         d.installmentsList.forEach((inst, idx) => {
           let instDate = inst.date || d.paymentDate || '-';
@@ -1191,7 +1187,6 @@
         });
       }
 
-      // Calculate date-wise discounts and pending based on matching installment dates or entry payment dates
       let matchesSelectedDate = (d.paymentDate === selectedDate) || (d.installmentsList && d.installmentsList.some(i => i.date === selectedDate));
       if (selectedDate && matchesSelectedDate) {
         dateWiseDiscountSum += discount;
