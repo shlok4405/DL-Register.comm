@@ -190,14 +190,14 @@
         <div class="form-group full-width">
           <label>Vehicle Type (Select Multiple) *</label>
           <div class="checkbox-group" id="vehicleCheckboxGroup">
-            <label><input type="checkbox" value="Two Wheeler" onchange="toggleAdPaymentFields()"> Two Wheeler</label>
-            <label><input type="checkbox" value="Four Wheeler" onchange="toggleAdPaymentFields()"> Four Wheeler</label>
-            <label><input type="checkbox" value="AD" onchange="toggleAdPaymentFields()"> AD</label>
-            <label><input type="checkbox" value="LDRX" onchange="toggleAdPaymentFields()"> LDRX</label>
-            <label><input type="checkbox" value="Commercial / Heavy" onchange="toggleAdPaymentFields()"> Commercial / Heavy</label>
-            <label><input type="checkbox" value="Crane" onchange="toggleAdPaymentFields()"> Crane</label>
-            <label><input type="checkbox" value="Forklift" onchange="toggleAdPaymentFields()"> Forklift</label>
-            <label><input type="checkbox" value="Renewal" onchange="toggleAdPaymentFields()"> Renewal</label>
+            <label><input type="checkbox" value="Two Wheeler"> Two Wheeler</label>
+            <label><input type="checkbox" value="Four Wheeler"> Four Wheeler</label>
+            <label><input type="checkbox" value="AD"> AD</label>
+            <label><input type="checkbox" value="LDRX"> LDRX</label>
+            <label><input type="checkbox" value="Commercial / Heavy"> Commercial / Heavy</label>
+            <label><input type="checkbox" value="Crane"> Crane</label>
+            <label><input type="checkbox" value="Forklift"> Forklift</label>
+            <label><input type="checkbox" value="Renewal"> Renewal</label>
           </div>
         </div>
 
@@ -236,11 +236,9 @@
         </div>
       </div>
 
-      <!-- Section 2: Payment Details (Dynamic Split if AD + Other Vehicle Selected) -->
+      <!-- Section 2 -->
       <h3 class="section-title">2. Payment Details</h3>
-      
-      <!-- Normal / Single Payment Section (Used when ONLY AD or ONLY Other Vehicle is selected) -->
-      <div class="form-grid" id="singlePaymentContainer">
+      <div class="form-grid">
         <div class="form-group">
           <label>Discount Reference Note:</label>
           <input type="text" id="discountNote" placeholder="e.g. Offered by Sir">
@@ -249,6 +247,7 @@
           <label>Discount Amount (₹):</label>
           <input type="number" id="discountAmount" value="0" oninput="calculateBalance()">
         </div>
+        
         <div class="form-group">
           <label>Total Fee / Amount (₹) *</label>
           <input type="number" id="totalFee" placeholder="Enter total fee" required oninput="calculateBalance()">
@@ -261,63 +260,10 @@
           <label>Balance Amount (₹)</label>
           <input type="number" id="balanceAmount" readonly placeholder="0">
         </div>
+        
         <div class="form-group">
           <label>Payment Date *</label>
           <input type="date" id="paymentDate" required>
-        </div>
-      </div>
-
-      <!-- Split Payment Section (Used when AD + Another Vehicle are BOTH selected) -->
-      <div id="splitPaymentContainer" style="display: none; background: #eef5fc; padding: 15px; border-radius: 6px; border: 1px solid #1d70b8; margin-top: 15px;">
-        <p style="margin-top:0; color:#0b3c5d; font-weight:bold; font-size:14px;">🔀 AD & Vehicle Split Payment Entry:</p>
-        
-        <div class="form-grid" style="margin-top: 10px;">
-          <!-- AD Part -->
-          <div class="form-group">
-            <label style="color:#2a52be;">AD Total Fee (₹) *</label>
-            <input type="number" id="adTotalFee" placeholder="AD Fee" oninput="calculateSplitBalance()">
-          </div>
-          <div class="form-group">
-            <label style="color:#2a52be;">AD Discount (₹)</label>
-            <input type="number" id="adDiscount" value="0" oninput="calculateSplitBalance()">
-          </div>
-          <div class="form-group">
-            <label style="color:#2a52be;">AD Advance Paid (₹) *</label>
-            <input type="number" id="adAdvance" placeholder="AD Paid" oninput="calculateSplitBalance()">
-          </div>
-          <div class="form-group">
-            <label style="color:#2a52be;">AD Balance (₹)</label>
-            <input type="number" id="adBalance" readonly placeholder="0">
-          </div>
-
-          <!-- Other Vehicle Part -->
-          <div class="form-group">
-            <label style="color:#d9534f;">Other Vehicle Total Fee (₹) *</label>
-            <input type="number" id="otherTotalFee" placeholder="Other Vehicle Fee" oninput="calculateSplitBalance()">
-          </div>
-          <div class="form-group">
-            <label style="color:#d9534f;">Other Vehicle Discount (₹)</label>
-            <input type="number" id="otherDiscount" value="0" oninput="calculateSplitBalance()">
-          </div>
-          <div class="form-group">
-            <label style="color:#d9534f;">Other Vehicle Advance Paid (₹) *</label>
-            <input type="number" id="otherAdvance" placeholder="Other Vehicle Paid" oninput="calculateSplitBalance()">
-          </div>
-          <div class="form-group">
-            <label style="color:#d9534f;">Other Vehicle Balance (₹)</label>
-            <input type="number" id="otherBalance" readonly placeholder="0">
-          </div>
-        </div>
-
-        <div class="form-grid" style="margin-top: 10px;">
-          <div class="form-group">
-            <label>Discount Reference Note:</label>
-            <input type="text" id="splitDiscountNote" placeholder="e.g. Offered by Sir">
-          </div>
-          <div class="form-group">
-            <label>Payment Date *</label>
-            <input type="date" id="splitPaymentDate">
-          </div>
         </div>
       </div>
 
@@ -436,7 +382,7 @@
 
     <!-- VEHICLE WISE OVERALL BREAKDOWN TABLE WITH DATE FILTER & GRAND TOTAL -->
     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 10px; gap: 10px;">
-      <h3 style="color: #0b3c5d; font-size: 16px; margin: 0;">Vehicle Type Wise Breakdown (Including Dedicated AD Report):</h3>
+      <h3 style="color: #0b3c5d; font-size: 16px; margin: 0;">Vehicle Type Wise Breakdown:</h3>
       
       <!-- Date Filter Controls for Breakdown Table -->
       <div style="display: flex; gap: 8px; align-items: center; background: #eef5fc; padding: 6px 12px; border-radius: 6px; border: 1px solid #1d70b8;">
@@ -544,16 +490,6 @@
       <p style="margin-top:0;"><strong>Customer:</strong> <span id="payCustomerName">-</span></p>
       <p><strong>Current Pending Balance:</strong> <span id="payCurrentBalance" style="color:red; font-weight:bold;">₹0</span></p>
       
-      <!-- Prompt Selection for AD / Vehicle payment split when both exist -->
-      <div class="form-group" id="payCategorySelectionGroup" style="display: none; margin-bottom: 12px; background: #eef5fc; padding: 10px; border-radius: 5px; border: 1px solid #1d70b8;">
-        <label style="color: #0b3c5d; font-weight: bold;">Select Payment Category for this Installment *</label>
-        <select id="payCategoryChoice" required style="margin-top: 5px;">
-          <option value="AD">AD Payment Only</option>
-          <option value="Other">Other Vehicle Payment Only</option>
-          <option value="Both">Both (Split equally or enter total)</option>
-        </select>
-      </div>
-
       <div class="form-group" style="margin-bottom:12px;">
         <label>Amount Being Paid (₹) *</label>
         <input type="number" id="payAmountInput" placeholder="Enter amount" required min="1">
@@ -707,7 +643,6 @@
   const ADMIN_EMAILS = ["singharvind1082@gmail.com", "shlok44066@gmail.com"];
 
   document.getElementById('paymentDate').valueAsDate = new Date();
-  document.getElementById('splitPaymentDate').valueAsDate = new Date();
 
   // KEYBOARD SHORTCUTS: Ctrl + Z for Undo, Shift + C for Collections Modal
   document.addEventListener('keydown', function(e) {
@@ -865,20 +800,10 @@
     document.getElementById('balanceAmount').value = balance >= 0 ? balance : 0;
   }
 
-  function calculateSplitBalance() {
-    // AD Part
-    const adTot = parseFloat(document.getElementById('adTotalFee').value) || 0;
-    const adDisc = parseFloat(document.getElementById('adDiscount').value) || 0;
-    const adAdv = parseFloat(document.getElementById('adAdvance').value) || 0;
-    const adBal = (adTot - adDisc) - adAdv;
-    document.getElementById('adBalance').value = adBal >= 0 ? adBal : 0;
-
-    // Other Part
-    const othTot = parseFloat(document.getElementById('otherTotalFee').value) || 0;
-    const othDisc = parseFloat(document.getElementById('otherDiscount').value) || 0;
-    const othAdv = parseFloat(document.getElementById('otherAdvance').value) || 0;
-    const othBal = (othTot - othDisc) - othAdv;
-    document.getElementById('otherBalance').value = othBal >= 0 ? othBal : 0;
+  function formatDateToDMY(dateString) {
+    if (!dateString || dateString === '-') return '-';
+    const parts = dateString.split('-');
+    return parts.length === 3 ? `${parts[2]}-${parts[1]}-${parts[0]}` : dateString;
   }
 
   function getSelectedVehicles() {
@@ -894,56 +819,13 @@
     checkboxes.forEach(cb => {
       cb.checked = vehicleString && vehicleString.includes(cb.value);
     });
-    toggleAdPaymentFields();
-  }
-
-  function toggleAdPaymentFields() {
-    const checkboxes = document.querySelectorAll('#vehicleCheckboxGroup input[type="checkbox"]:checked');
-    let selected = [];
-    checkboxes.forEach(cb => selected.push(cb.value));
-
-    const hasAd = selected.includes("AD");
-    const hasOther = selected.some(v => v !== "AD");
-
-    const singleContainer = document.getElementById('singlePaymentContainer');
-    const splitContainer = document.getElementById('splitPaymentContainer');
-
-    if (hasAd && hasOther) {
-      // Show split payment view
-      singleContainer.style.display = 'none';
-      splitContainer.style.display = 'block';
-
-      // Remove required attributes from single, add to split
-      document.getElementById('totalFee').removeAttribute('required');
-      document.getElementById('advancePayment').removeAttribute('required');
-      document.getElementById('paymentDate').removeAttribute('required');
-
-      document.getElementById('adTotalFee').setAttribute('required', 'true');
-      document.getElementById('adAdvance').setAttribute('required', 'true');
-      document.getElementById('otherTotalFee').setAttribute('required', 'true');
-      document.getElementById('otherAdvance').setAttribute('required', 'true');
-      document.getElementById('splitPaymentDate').setAttribute('required', 'true');
-    } else {
-      // Show normal single payment view
-      singleContainer.style.display = 'grid';
-      splitContainer.style.display = 'none';
-
-      document.getElementById('totalFee').setAttribute('required', 'true');
-      document.getElementById('advancePayment').setAttribute('required', 'true');
-      document.getElementById('paymentDate').setAttribute('required', 'true');
-
-      document.getElementById('adTotalFee').removeAttribute('required');
-      document.getElementById('adAdvance').removeAttribute('required');
-      document.getElementById('otherTotalFee').removeAttribute('required');
-      document.getElementById('otherAdvance').removeAttribute('required');
-      document.getElementById('splitPaymentDate').removeAttribute('required');
-    }
   }
 
   function handleFormSubmit(e) {
     e.preventDefault();
     const editId = document.getElementById('editRecordId').value;
     const mobileInput = document.getElementById('mobile').value.trim();
+    const newPaymentDate = document.getElementById('paymentDate').value;
 
     const duplicateCheck = globalRecords.find(r => r.mobile === mobileInput && r.id !== editId);
     if (duplicateCheck && !editId) {
@@ -953,12 +835,7 @@
     const selectedVehicles = getSelectedVehicles();
     if (!selectedVehicles) { alert("Please select at least one vehicle type!"); return; }
 
-    const checkboxes = document.querySelectorAll('#vehicleCheckboxGroup input[type="checkbox"]:checked');
-    let selArr = [];
-    checkboxes.forEach(cb => selArr.push(cb.value));
-    const isSplit = selArr.includes("AD") && selArr.some(v => v !== "AD");
-
-    let recordData = {
+    const recordData = {
       customerName: document.getElementById('customerName').value,
       fatherName: document.getElementById('fatherName').value,
       mobile: mobileInput,
@@ -971,58 +848,28 @@
       llNo: document.getElementById('llNo').value || '-',
       dlAppNo: document.getElementById('dlAppNo').value || '-',
       remarks: document.getElementById('remarks').value || '-',
-      isSplitEntry: isSplit,
+      discountNote: document.getElementById('discountNote').value || '-',
+      discountAmount: parseFloat(document.getElementById('discountAmount').value) || 0,
+      totalFee: parseFloat(document.getElementById('totalFee').value) || 0,
+      advancePayment: parseFloat(document.getElementById('advancePayment').value) || 0,
+      balanceAmount: parseFloat(document.getElementById('balanceAmount').value) || 0,
+      paymentDate: newPaymentDate,
       addedBy: activeStaffName || 'Staff',
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     };
-
-    if (isSplit) {
-      recordData.discountNote = document.getElementById('splitDiscountNote').value || '-';
-      recordData.paymentDate = document.getElementById('splitPaymentDate').value;
-      
-      // AD parts
-      recordData.adTotalFee = parseFloat(document.getElementById('adTotalFee').value) || 0;
-      recordData.adDiscount = parseFloat(document.getElementById('adDiscount').value) || 0;
-      recordData.adAdvance = parseFloat(document.getElementById('adAdvance').value) || 0;
-      recordData.adBalance = parseFloat(document.getElementById('adBalance').value) || 0;
-
-      // Other parts
-      let otherVehicles = selArr.filter(v => v !== "AD").join(", ");
-      recordData.otherVehicleName = otherVehicles;
-      recordData.otherTotalFee = parseFloat(document.getElementById('otherTotalFee').value) || 0;
-      recordData.otherDiscount = parseFloat(document.getElementById('otherDiscount').value) || 0;
-      recordData.otherAdvance = parseFloat(document.getElementById('otherAdvance').value) || 0;
-      recordData.otherBalance = parseFloat(document.getElementById('otherBalance').value) || 0;
-
-      // Combined totals for main table overview
-      recordData.totalFee = recordData.adTotalFee + recordData.otherTotalFee;
-      recordData.discountAmount = recordData.adDiscount + recordData.otherDiscount;
-      recordData.advancePayment = recordData.adAdvance + recordData.otherAdvance;
-      recordData.balanceAmount = recordData.adBalance + recordData.otherBalance;
-
-    } else {
-      recordData.discountNote = document.getElementById('discountNote').value || '-';
-      recordData.discountAmount = parseFloat(document.getElementById('discountAmount').value) || 0;
-      recordData.totalFee = parseFloat(document.getElementById('totalFee').value) || 0;
-      recordData.advancePayment = parseFloat(document.getElementById('advancePayment').value) || 0;
-      recordData.balanceAmount = parseFloat(document.getElementById('balanceAmount').value) || 0;
-      recordData.paymentDate = document.getElementById('paymentDate').value;
-    }
 
     if (editId) {
       const oldRec = globalRecords.find(r => r.id === editId);
       
       let installments = oldRec && oldRec.installmentsList ? JSON.parse(JSON.stringify(oldRec.installmentsList)) : [];
       if (installments.length > 0) {
-        installments[0].date = recordData.paymentDate;
+        installments[0].date = newPaymentDate;
         installments[0].amount = recordData.advancePayment;
-        installments[0].category = isSplit ? 'Both (AD & Other)' : selectedVehicles;
       } else {
         installments = [{
           type: 'Initial Admission Payment',
           amount: recordData.advancePayment,
-          date: recordData.paymentDate,
-          category: isSplit ? 'Both (AD & Other)' : selectedVehicles,
+          date: newPaymentDate,
           operator: activeStaffName
         }];
       }
@@ -1041,8 +888,7 @@
       recordData.installmentsList = [{
         type: 'Initial Admission Payment',
         amount: recordData.advancePayment,
-        date: recordData.paymentDate,
-        category: isSplit ? 'Both (AD & Other)' : selectedVehicles,
+        date: newPaymentDate,
         operator: activeStaffName
       }];
       recordData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
@@ -1067,14 +913,16 @@
         d.totalFee = parseFloat(d.totalFee) || 0;
         d.discountAmount = parseFloat(d.discountAmount) || 0;
         d.advancePayment = parseFloat(d.advancePayment) || 0;
-        d.balanceAmount = parseFloat(d.balanceAmount) || 0;
+        
+        let netFee = d.totalFee - d.discountAmount;
+        d.balanceAmount = netFee - d.advancePayment;
+        if (d.balanceAmount < 0) d.balanceAmount = 0;
 
         if (!d.installmentsList || !Array.isArray(d.installmentsList) || d.installmentsList.length === 0) {
           d.installmentsList = [{
             type: 'Initial Admission Payment',
             amount: d.advancePayment || 0,
             date: d.paymentDate || '-',
-            category: d.vehicleType || 'General',
             operator: d.addedBy || 'Staff'
           }];
         }
@@ -1125,7 +973,7 @@
         <td>${d.addedBy}</td>
         <td>
           <button class="btn-sm btn-details" onclick="openDetailsModal('${d.id}')">View</button>
-          <button class="btn-sm btn-pay" onclick="openPayModal('${d.id}')">Pay</button>
+          <button class="btn-sm btn-pay" onclick="openPayModal('${d.id}', '${d.customerName}', ${d.balanceAmount})">Pay</button>
           <button class="btn-sm btn-edit" onclick="editRecord('${d.id}')">Edit</button>
           <button class="btn-sm btn-del" onclick="deleteRecord('${d.id}', '${d.customerName}')">Del</button>
         </td>
@@ -1151,26 +999,12 @@
     document.getElementById('llNo').value = rec.llNo === '-' ? '' : rec.llNo;
     document.getElementById('dlAppNo').value = rec.dlAppNo === '-' ? '' : rec.dlAppNo;
     document.getElementById('remarks').value = rec.remarks === '-' ? '' : rec.remarks;
-
-    if (rec.isSplitEntry) {
-      document.getElementById('splitDiscountNote').value = rec.discountNote === '-' ? '' : rec.discountNote;
-      document.getElementById('splitPaymentDate').value = rec.paymentDate || '';
-      document.getElementById('adTotalFee').value = rec.adTotalFee || 0;
-      document.getElementById('adDiscount').value = rec.adDiscount || 0;
-      document.getElementById('adAdvance').value = rec.adAdvance || 0;
-      document.getElementById('adBalance').value = rec.adBalance || 0;
-      document.getElementById('otherTotalFee').value = rec.otherTotalFee || 0;
-      document.getElementById('otherDiscount').value = rec.otherDiscount || 0;
-      document.getElementById('otherAdvance').value = rec.otherAdvance || 0;
-      document.getElementById('otherBalance').value = rec.otherBalance || 0;
-    } else {
-      document.getElementById('discountNote').value = rec.discountNote === '-' ? '' : rec.discountNote;
-      document.getElementById('discountAmount').value = rec.discountAmount || 0;
-      document.getElementById('totalFee').value = rec.totalFee || 0;
-      document.getElementById('advancePayment').value = rec.advancePayment || 0;
-      document.getElementById('balanceAmount').value = rec.balanceAmount || 0;
-      document.getElementById('paymentDate').value = rec.paymentDate || '';
-    }
+    document.getElementById('discountNote').value = rec.discountNote === '-' ? '' : rec.discountNote;
+    document.getElementById('discountAmount').value = rec.discountAmount || 0;
+    document.getElementById('totalFee').value = rec.totalFee || 0;
+    document.getElementById('advancePayment').value = rec.advancePayment || 0;
+    document.getElementById('balanceAmount').value = rec.balanceAmount || 0;
+    document.getElementById('paymentDate').value = rec.paymentDate || '';
 
     document.getElementById('saveBtn').style.display = 'none';
     document.getElementById('updateBtn').style.display = 'inline-block';
@@ -1198,8 +1032,6 @@
     document.getElementById('editRecordId').value = '';
     document.getElementById('duplicateWarning').style.display = 'none';
     document.getElementById('paymentDate').valueAsDate = new Date();
-    document.getElementById('splitPaymentDate').valueAsDate = new Date();
-    setSelectedVehicles('');
     document.getElementById('saveBtn').style.display = 'inline-block';
     document.getElementById('updateBtn').style.display = 'none';
     document.getElementById('cancelBtn').style.display = 'none';
@@ -1307,6 +1139,12 @@
       let discount = parseFloat(d.discountAmount) || 0;
       let received = parseFloat(d.advancePayment) || 0;
       let pending = parseFloat(d.balanceAmount) || 0;
+      let rawVType = (d.vehicleType || "Uncategorized").trim();
+
+      let vType = rawVType;
+      if (/renewal/i.test(rawVType)) {
+        vType = "Renewal";
+      }
 
       let inBdDateRange = true;
       if (bdFromDate && d.paymentDate < bdFromDate) inBdDateRange = false;
@@ -1319,41 +1157,14 @@
         totalOverallReceived += received;
         totalOverallPending += pending;
 
-        if (d.isSplitEntry) {
-          // Add AD part to AD breakdown
-          if (!vehicleMap["AD"]) {
-            vehicleMap["AD"] = { customers: 0, totalFee: 0, discount: 0, received: 0, pending: 0 };
-          }
-          vehicleMap["AD"].customers += 1;
-          vehicleMap["AD"].totalFee += (parseFloat(d.adTotalFee) || 0);
-          vehicleMap["AD"].discount += (parseFloat(d.adDiscount) || 0);
-          vehicleMap["AD"].received += (parseFloat(d.adAdvance) || 0);
-          vehicleMap["AD"].pending += (parseFloat(d.adBalance) || 0);
-
-          // Add Other vehicle part to its own breakdown
-          let othName = d.otherVehicleName || "Other Vehicle";
-          if (!vehicleMap[othName]) {
-            vehicleMap[othName] = { customers: 0, totalFee: 0, discount: 0, received: 0, pending: 0 };
-          }
-          vehicleMap[othName].customers += 1;
-          vehicleMap[othName].totalFee += (parseFloat(d.otherTotalFee) || 0);
-          vehicleMap[othName].discount += (parseFloat(d.otherDiscount) || 0);
-          vehicleMap[othName].received += (parseFloat(d.otherAdvance) || 0);
-          vehicleMap[othName].pending += (parseFloat(d.otherBalance) || 0);
-
-        } else {
-          let rawVType = (d.vehicleType || "Uncategorized").trim();
-          let vType = /renewal/i.test(rawVType) ? "Renewal" : rawVType;
-
-          if (!vehicleMap[vType]) {
-            vehicleMap[vType] = { customers: 0, totalFee: 0, discount: 0, received: 0, pending: 0 };
-          }
-          vehicleMap[vType].customers += 1;
-          vehicleMap[vType].totalFee += fee;
-          vehicleMap[vType].discount += discount;
-          vehicleMap[vType].received += received;
-          vehicleMap[vType].pending += pending;
+        if (!vehicleMap[vType]) {
+          vehicleMap[vType] = { customers: 0, totalFee: 0, discount: 0, received: 0, pending: 0 };
         }
+        vehicleMap[vType].customers += 1;
+        vehicleMap[vType].totalFee += fee;
+        vehicleMap[vType].discount += discount;
+        vehicleMap[vType].received += received;
+        vehicleMap[vType].pending += pending;
       }
 
       if (d.installmentsList && d.installmentsList.length > 0) {
@@ -1363,7 +1174,7 @@
             let instObj = {
               date: instDate,
               customerName: d.customerName,
-              vehicleType: inst.category || d.vehicleType || '-',
+              vehicleType: d.vehicleType || '-',
               type: inst.type || (idx === 0 ? 'Initial Admission Payment' : 'Installment'),
               amount: parseFloat(inst.amount) || 0,
               discount: discount,
@@ -1399,17 +1210,10 @@
     if (Object.keys(vehicleMap).length === 0) {
       breakdownTbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#666;">No breakdown data found for selected date range.</td></tr>`;
     } else {
-      // Ensure AD appears prominently if present
-      let keys = Object.keys(vehicleMap).sort((a,b) => {
-        if (a === "AD") return -1;
-        if (b === "AD") return 1;
-        return a.localeCompare(b);
-      });
-
-      keys.forEach(key => {
+      Object.keys(vehicleMap).forEach(key => {
         let item = vehicleMap[key];
         breakdownTbody.innerHTML += `<tr>
-          <td><b>${key}</b> ${key === "AD" ? '🌟 (Dedicated Report)' : ''}</td>
+          <td><b>${key}</b></td>
           <td>${item.customers}</td>
           <td>₹${item.totalFee.toLocaleString('en-IN')}</td>
           <td style="color: #ff9800; font-weight: bold;">₹${item.discount.toLocaleString('en-IN')}</td>
@@ -1488,7 +1292,6 @@
           <tr>
             <th>#</th>
             <th>Payment Type / Note</th>
-            <th>Category / Vehicle</th>
             <th>Date</th>
             <th>Amount</th>
             <th>Staff / Added By</th>
@@ -1501,7 +1304,6 @@
         tableHtml += `<tr>
           <td>${index + 1}</td>
           <td><b>${inst.type || 'Installment Payment'}</b></td>
-          <td>${inst.category || d.vehicleType || '-'}</td>
           <td>${formatDateToDMY(inst.date)}</td>
           <td style="color: green; font-weight: bold;">₹${inst.amount}</td>
           <td>${inst.operator || 'Staff'}</td>
@@ -1541,31 +1343,12 @@
     window.print();
   }
 
-  function openPayModal(id) {
-    const d = globalRecords.find(r => r.id === id);
-    if (!d) return;
-
+  function openPayModal(id, name, balance) {
     document.getElementById('payRecordId').value = id;
-    document.getElementById('payCustomerName').innerText = d.customerName;
-    document.getElementById('payCurrentBalance').innerText = '₹' + d.balanceAmount;
+    document.getElementById('payCustomerName').innerText = name;
+    document.getElementById('payCurrentBalance').innerText = '₹' + balance;
     document.getElementById('payAmountInput').value = '';
     document.getElementById('payDateInput').valueAsDate = new Date();
-
-    const catSelectGroup = document.getElementById('payCategorySelectionGroup');
-    const catChoice = document.getElementById('payCategoryChoice');
-
-    if (d.isSplitEntry) {
-      catSelectGroup.style.display = 'block';
-      catChoice.innerHTML = `
-        <option value="AD">AD Payment Only (Balance: ₹${d.adBalance || 0})</option>
-        <option value="Other">Other Vehicle Payment Only (Balance: ₹${d.otherBalance || 0})</option>
-        <option value="Both">Both (AD & Other)</option>
-      `;
-    } else {
-      catSelectGroup.style.display = 'none';
-      catChoice.innerHTML = `<option value="${d.vehicleType}">${d.vehicleType}</option>`;
-    }
-
     document.getElementById('payModal').style.display = 'flex';
   }
 
@@ -1578,7 +1361,6 @@
     const id = document.getElementById('payRecordId').value;
     const payAmt = parseFloat(document.getElementById('payAmountInput').value) || 0;
     const payDate = document.getElementById('payDateInput').value;
-    const categoryChoice = document.getElementById('payCategoryChoice').value;
 
     const d = globalRecords.find(r => r.id === id);
     if (!d) return;
@@ -1589,49 +1371,6 @@
     const newBalance = (d.balanceAmount || 0) - payAmt;
     const finalBalance = newBalance >= 0 ? newBalance : 0;
 
-    // If split entry, adjust specific part balance
-    let updateObj = {
-      advancePayment: newPaid,
-      balanceAmount: finalBalance,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    };
-
-    if (d.isSplitEntry) {
-      let adAdv = d.adAdvance || 0;
-      let adBal = d.adBalance || 0;
-      let othAdv = d.otherAdvance || 0;
-      let othBal = d.otherBalance || 0;
-
-      if (categoryChoice === 'AD') {
-        adAdv += payAmt;
-        adBal = (d.adTotalFee - (d.adDiscount || 0)) - adAdv;
-        if (adBal < 0) adBal = 0;
-        updateObj.adAdvance = adAdv;
-        updateObj.adBalance = adBal;
-      } else if (categoryChoice === 'Other') {
-        othAdv += payAmt;
-        othBal = ((d.otherTotalFee || 0) - (d.otherDiscount || 0)) - othAdv;
-        if (othBal < 0) othBal = 0;
-        updateObj.otherAdvance = othAdv;
-        updateObj.otherBalance = othBal;
-      } else {
-        // Split 50-50 or custom
-        let half = payAmt / 2;
-        adAdv += half;
-        adBal = (d.adTotalFee - (d.adDiscount || 0)) - adAdv;
-        if (adBal < 0) adBal = 0;
-        
-        othAdv += half;
-        othBal = ((d.otherTotalFee || 0) - (d.otherDiscount || 0)) - othAdv;
-        if (othBal < 0) othBal = 0;
-
-        updateObj.adAdvance = adAdv;
-        updateObj.adBalance = adBal;
-        updateObj.otherAdvance = othAdv;
-        updateObj.otherBalance = othBal;
-      }
-    }
-
     let installments = d.installmentsList || [];
     let installmentNum = installments.length + 1;
 
@@ -1639,12 +1378,15 @@
       type: `Installment #${installmentNum}`,
       amount: payAmt,
       date: payDate,
-      category: d.isSplitEntry ? (categoryChoice === 'AD' ? 'AD' : (categoryChoice === 'Other' ? d.otherVehicleName : 'AD & ' + d.otherVehicleName)) : d.vehicleType,
       operator: activeStaffName
     });
-    updateObj.installmentsList = installments;
 
-    db.collection("dl_records").doc(id).update(updateObj).then(() => {
+    db.collection("dl_records").doc(id).update({
+      advancePayment: newPaid,
+      balanceAmount: finalBalance,
+      installmentsList: installments,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(() => {
       logActivity('PAYMENT_ADDED', d.customerName, `Added installment #${installmentNum} of ₹${payAmt} on ${formatDateToDMY(payDate)} by ${activeStaffName}. New balance: ₹${finalBalance}`);
       alert("Installment payment successfully saved!");
       closePayModal();
