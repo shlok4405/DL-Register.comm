@@ -376,7 +376,7 @@
 
     <!-- Date-Specific Transactions Table -->
     <h3 style="color: #0b3c5d; font-size: 15px; margin-bottom: 8px;">Transactions on Selected Date (New Payments & Initial Dues):</h3>
-    <div class="table-container" style="margin-top: 0; margin-bottom: 20px; max-height: 220px; overflow-y: auto;">
+    <div class="table-container" style="margin-top: 0; margin-bottom: 25px; max-height: 220px; overflow-y: auto;">
       <table class="installment-table">
         <thead>
           <tr>
@@ -395,24 +395,48 @@
       </table>
     </div>
 
-    <h3 style="color: #0b3c5d; font-size: 15px; margin-bottom: 8px;">Overall Vehicle Type Wise Breakdown:</h3>
-    <div class="table-container" style="margin-top: 0; margin-bottom: 20px;">
-      <table id="vehicleCollectionTable">
-        <thead>
-          <tr>
-            <th>Vehicle Type</th>
-            <th>Total Customers</th>
-            <th>Total Fee (₹)</th>
-            <th>Discount (₹)</th>
-            <th>Received (₹)</th>
-            <th>Pending (₹)</th>
-          </tr>
-        </thead>
-        <tbody id="vehicleCollectionBody">
-          <!-- Populated dynamically -->
-        </tbody>
-      </table>
+    <!-- NEW SECTION 1: OVERALL APPLICATION & REGISTRATION STATUS SUMMARY -->
+    <h3 style="color: #0b3c5d; font-size: 15px; margin-bottom: 8px;">📋 Overall Application Status Summary (RTO Tracker):</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 25px;">
+      <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; border-left: 4px solid #17a2b8;">
+        <small style="color: #666; font-weight: bold; text-transform: uppercase; font-size: 11px;">LL Application Submitted</small>
+        <p id="statLlAppCount" style="margin: 4px 0 0 0; font-size: 20px; font-weight: bold; color: #17a2b8;">0</p>
+      </div>
+      <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; border-left: 4px solid #28a745;">
+        <small style="color: #666; font-weight: bold; text-transform: uppercase; font-size: 11px;">LL Number Issued</small>
+        <p id="statLlNoCount" style="margin: 4px 0 0 0; font-size: 20px; font-weight: bold; color: #28a745;">0</p>
+      </div>
+      <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; border-left: 4px solid #0b3c5d;">
+        <small style="color: #666; font-weight: bold; text-transform: uppercase; font-size: 11px;">DL Application Submitted</small>
+        <p id="statDlAppCount" style="margin: 4px 0 0 0; font-size: 20px; font-weight: bold; color: #0b3c5d;">0</p>
+      </div>
+      <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; border-left: 4px solid #ff9800;">
+        <small style="color: #666; font-weight: bold; text-transform: uppercase; font-size: 11px;">Pending Application Numbers</small>
+        <p id="statPendingAppCount" style="margin: 4px 0 0 0; font-size: 20px; font-weight: bold; color: #ff9800;">0</p>
+      </div>
     </div>
+
+    <!-- NEW SECTION 2: OVERALL CUSTOMER & DUES OVERVIEW -->
+    <h3 style="color: #0b3c5d; font-size: 15px; margin-bottom: 8px;">📊 Overall Customer & Dues Metrics:</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 15px;">
+      <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; border-left: 4px solid #6c757d;">
+        <small style="color: #666; font-weight: bold; text-transform: uppercase; font-size: 11px;">Total Register Admissions</small>
+        <p id="statTotalCustomers" style="margin: 4px 0 0 0; font-size: 20px; font-weight: bold; color: #333;">0</p>
+      </div>
+      <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; border-left: 4px solid #28a745;">
+        <small style="color: #666; font-weight: bold; text-transform: uppercase; font-size: 11px;">Fully Paid Customers</small>
+        <p id="statFullPaidCustomers" style="margin: 4px 0 0 0; font-size: 20px; font-weight: bold; color: #28a745;">0</p>
+      </div>
+      <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; border-left: 4px solid #dc3545;">
+        <small style="color: #666; font-weight: bold; text-transform: uppercase; font-size: 11px;">Pending Dues Customers</small>
+        <p id="statPendingCustomers" style="margin: 4px 0 0 0; font-size: 20px; font-weight: bold; color: #dc3545;">0</p>
+      </div>
+      <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; border-left: 4px solid #004085;">
+        <small style="color: #666; font-weight: bold; text-transform: uppercase; font-size: 11px;">Avg Collection / Customer</small>
+        <p id="statAvgCollection" style="margin: 4px 0 0 0; font-size: 20px; font-weight: bold; color: #004085;">₹0</p>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -705,7 +729,7 @@
     }
   }
 
-  // DUPLICATE MOBILE CHECKING WARNING (Ignored during Edit)
+  // DUPLICATE MOBILE CHECKING WARNING
   function checkDuplicateMobile() {
     const mobileInput = document.getElementById('mobile').value.trim();
     const editId = document.getElementById('editRecordId').value;
@@ -725,7 +749,6 @@
     }
   }
 
-  // FIXED BALANCE & DISCOUNT CALCULATION LOGIC
   function calculateBalance() {
     const total = parseFloat(document.getElementById('totalFee').value) || 0;
     const discount = parseFloat(document.getElementById('discountAmount').value) || 0;
@@ -767,15 +790,6 @@
 
   function normalizeVehicleType(vehicleStr) {
     return vehicleStr || "";
-  }
-
-  // Helper to split any vehicle string consistently into array of clean vehicle names
-  function parseVehicleList(vehicleStr) {
-    if (!vehicleStr) return ['Other'];
-    let str = vehicleStr.replace(/Both \(2W \+ 4W\)/gi, 'Two Wheeler, Four Wheeler')
-                        .replace(/AD\+TWO\+FOUR/gi, 'AD, Two Wheeler, Four Wheeler');
-    let list = str.split(/[\+,\&]/).map(v => v.trim()).filter(v => v.length > 0);
-    return list.length > 0 ? list : ['Other'];
   }
 
   // Save OR Update Entry Handler
@@ -1026,7 +1040,7 @@
     renderTable(globalRecords);
   }
 
-  // UPDATED COLLECTIONS SUMMARY & DATE-WISE HISAB LOGIC
+  // UPDATED COLLECTIONS SUMMARY LOGIC (Replaced Vehicle Breakdown with Operations & Dues Metrics)
   function openCollectionModal() {
     document.getElementById('collectionFilterDate').valueAsDate = new Date();
     calculateCollectionData();
@@ -1045,33 +1059,45 @@
   function calculateCollectionData() {
     let selectedDate = document.getElementById('collectionFilterDate').value;
 
-    let vehicleStats = {};
     let dateWiseTransactions = [];
     let dateWiseReceivedSum = 0;
     let dateWisePendingSum = 0;
     let dateWiseDiscountSum = 0;
 
+    // Operational Counters
+    let llAppCount = 0;
+    let llNoCount = 0;
+    let dlAppCount = 0;
+    let pendingAppCount = 0;
+
+    // Dues Counters
+    let totalCustomers = globalRecords.length;
+    let fullPaidCount = 0;
+    let pendingDuesCount = 0;
+    let grandTotalPaid = 0;
+
     globalRecords.forEach(d => {
-      let netFee = (parseFloat(d.totalFee) || 0) - (parseFloat(d.discountAmount) || 0);
       let received = parseFloat(d.advancePayment) || 0;
       let pending = parseFloat(d.balanceAmount) || 0;
       let discount = parseFloat(d.discountAmount) || 0;
+      
+      grandTotalPaid += received;
 
-      // Clean Split Breakdown
-      let vTypes = parseVehicleList(d.vehicleType);
+      // 1. Application Tracker Stats
+      if (d.llAppNo && d.llAppNo.trim() !== '-' && d.llAppNo.trim() !== '') llAppCount++;
+      if (d.llNo && d.llNo.trim() !== '-' && d.llNo.trim() !== '') llNoCount++;
+      if (d.dlAppNo && d.dlAppNo.trim() !== '-' && d.dlAppNo.trim() !== '') dlAppCount++;
+      
+      if ((!d.llAppNo || d.llAppNo === '-') && (!d.llNo || d.llNo === '-') && (!d.dlAppNo || d.dlAppNo === '-')) {
+        pendingAppCount++;
+      }
 
-      vTypes.forEach(v => {
-        let vClean = v.trim();
-        if (!vClean) return;
-        if (!vehicleStats[vClean]) {
-          vehicleStats[vClean] = { count: 0, totalFee: 0, discount: 0, received: 0, pending: 0 };
-        }
-        vehicleStats[vClean].count += 1;
-        vehicleStats[vClean].totalFee += (netFee / vTypes.length);
-        vehicleStats[vClean].discount += (discount / vTypes.length);
-        vehicleStats[vClean].received += (received / vTypes.length);
-        vehicleStats[vClean].pending += (pending / vTypes.length);
-      });
+      // 2. Dues Counters
+      if (pending <= 0) {
+        fullPaidCount++;
+      } else {
+        pendingDuesCount++;
+      }
 
       // Track Date-wise installments & Dues
       let customerHasActivityOnDate = false;
@@ -1109,11 +1135,13 @@
       }
     });
 
+    // Render Date Specific Summaries
     document.getElementById('dateWiseReceived').innerText = '₹' + dateWiseReceivedSum.toFixed(0);
     document.getElementById('dateWisePending').innerText = '₹' + dateWisePendingSum.toFixed(0);
     document.getElementById('dateWiseDiscount').innerText = '₹' + dateWiseDiscountSum.toFixed(0);
     document.getElementById('dateWiseTransactionsCount').innerText = dateWiseTransactions.length;
 
+    // Populate Date Wise Transactions
     let dateBody = document.getElementById('dateWiseTransactionsBody');
     dateBody.innerHTML = "";
     if (dateWiseTransactions.length === 0) {
@@ -1132,19 +1160,19 @@
       });
     }
 
-    let vBody = document.getElementById('vehicleCollectionBody');
-    vBody.innerHTML = "";
-    for (let v in vehicleStats) {
-      let st = vehicleStats[v];
-      vBody.innerHTML += `<tr>
-        <td><b>${v}</b></td>
-        <td>${st.count}</td>
-        <td>₹${st.totalFee.toFixed(0)}</td>
-        <td style="color:#ff9800; font-weight:bold;">₹${st.discount.toFixed(0)}</td>
-        <td style="color:green; font-weight:bold;">₹${st.received.toFixed(0)}</td>
-        <td style="color:red; font-weight:bold;">₹${st.pending.toFixed(0)}</td>
-      </tr>`;
-    }
+    // Populate Application Tracker Cards
+    document.getElementById('statLlAppCount').innerText = llAppCount;
+    document.getElementById('statLlNoCount').innerText = llNoCount;
+    document.getElementById('statDlAppCount').innerText = dlAppCount;
+    document.getElementById('statPendingAppCount').innerText = pendingAppCount;
+
+    // Populate Overall Dues Cards
+    document.getElementById('statTotalCustomers').innerText = totalCustomers;
+    document.getElementById('statFullPaidCustomers').innerText = fullPaidCount;
+    document.getElementById('statPendingCustomers').innerText = pendingDuesCount;
+    
+    let avgColl = totalCustomers > 0 ? (grandTotalPaid / totalCustomers) : 0;
+    document.getElementById('statAvgCollection').innerText = '₹' + avgColl.toFixed(0);
   }
 
   function closeCollectionModal() {
