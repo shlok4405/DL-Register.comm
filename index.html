@@ -281,7 +281,7 @@
 
     <!-- FILTER SECTION -->
     <div class="filter-box">
-      <label style="color: #0b3c5d;"><strong>🔍 Advanced Register Search & Filters:</strong></label>
+      <label style="color: #0b3c5d;"><strong>🔍 Advanced Register Search & Filters:</strong> <span style="font-size: 12px; color: #666; font-weight: normal;">(Default showing last 7 days entries)</span></label>
       <div class="filter-grid">
         <input type="text" id="searchInput" onkeyup="applyFilters()" placeholder="Search Name, Mobile, App No...">
         
@@ -798,6 +798,7 @@
     });
   }
 
+  // FIXED & UPDATED EDIT & SAVE SUBMISSION
   function handleFormSubmit(e) {
     e.preventDefault();
     const editId = document.getElementById('editRecordId').value;
@@ -836,7 +837,7 @@
 
     if (editId) {
       const oldRec = globalRecords.find(r => r.id === editId);
-      recordData.installmentsList = oldRec.installmentsList || [{
+      recordData.installmentsList = (oldRec && oldRec.installmentsList) ? oldRec.installmentsList : [{
         type: 'Initial Admission Payment',
         amount: recordData.advancePayment,
         date: recordData.paymentDate,
@@ -847,7 +848,7 @@
       
       db.collection("dl_records").doc(editId).update(recordData)
         .then(() => {
-          logActivity('ENTRY_EDITED', recordData.customerName, `Updated/Replaced record details by ${activeStaffName}.`);
+          logActivity('ENTRY_EDITED', recordData.customerName, `Updated record details by ${activeStaffName}.`);
           alert("Entry Successfully Updated!");
           resetForm();
         })
@@ -895,6 +896,11 @@
     let tbody = document.getElementById('tableBody');
     tbody.innerHTML = "";
 
+    if (records.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="16" style="text-align:center; color:#666; padding: 15px;">No records found for the selected criteria (Default showing last 1 week). Use search/filters to view older entries.</td></tr>`;
+      return;
+    }
+
     records.forEach(d => {
       let row = `<tr>
         <td>${formatDateToDMY(d.paymentDate)}</td>
@@ -923,29 +929,30 @@
     });
   }
 
+  // FIXED EDIT RECORD FUNCTION
   function editRecord(id) {
     const rec = globalRecords.find(r => r.id === id);
     if (!rec) return;
 
     document.getElementById('editRecordId').value = rec.id;
-    document.getElementById('customerName').value = rec.customerName;
-    document.getElementById('fatherName').value = rec.fatherName;
-    document.getElementById('mobile').value = rec.mobile;
-    document.getElementById('dob').value = rec.dob;
-    setSelectedVehicles(rec.vehicleType);
-    document.getElementById('reference').value = rec.reference;
-    document.getElementById('llOutside').value = rec.llOutside;
-    document.getElementById('address').value = rec.address;
-    document.getElementById('llAppNo').value = rec.llAppNo;
-    document.getElementById('llNo').value = rec.llNo;
-    document.getElementById('dlAppNo').value = rec.dlAppNo;
-    document.getElementById('remarks').value = rec.remarks;
-    document.getElementById('discountNote').value = rec.discountNote;
-    document.getElementById('discountAmount').value = rec.discountAmount;
-    document.getElementById('totalFee').value = rec.totalFee;
-    document.getElementById('advancePayment').value = rec.advancePayment;
-    document.getElementById('balanceAmount').value = rec.balanceAmount;
-    document.getElementById('paymentDate').value = rec.paymentDate;
+    document.getElementById('customerName').value = rec.customerName || '';
+    document.getElementById('fatherName').value = rec.fatherName || '';
+    document.getElementById('mobile').value = rec.mobile || '';
+    document.getElementById('dob').value = rec.dob || '';
+    setSelectedVehicles(rec.vehicleType || '');
+    document.getElementById('reference').value = rec.reference === '-' ? '' : rec.reference;
+    document.getElementById('llOutside').value = rec.llOutside || 'No (Made Here)';
+    document.getElementById('address').value = rec.address === '-' ? '' : rec.address;
+    document.getElementById('llAppNo').value = rec.llAppNo === '-' ? '' : rec.llAppNo;
+    document.getElementById('llNo').value = rec.llNo === '-' ? '' : rec.llNo;
+    document.getElementById('dlAppNo').value = rec.dlAppNo === '-' ? '' : rec.dlAppNo;
+    document.getElementById('remarks').value = rec.remarks === '-' ? '' : rec.remarks;
+    document.getElementById('discountNote').value = rec.discountNote === '-' ? '' : rec.discountNote;
+    document.getElementById('discountAmount').value = rec.discountAmount || 0;
+    document.getElementById('totalFee').value = rec.totalFee || 0;
+    document.getElementById('advancePayment').value = rec.advancePayment || 0;
+    document.getElementById('balanceAmount').value = rec.balanceAmount || 0;
+    document.getElementById('paymentDate').value = rec.paymentDate || '';
 
     document.getElementById('saveBtn').style.display = 'none';
     document.getElementById('updateBtn').style.display = 'inline-block';
@@ -978,17 +985,34 @@
     document.getElementById('cancelBtn').style.display = 'none';
   }
 
+  // 1-WEEK DEFAULT DISPLAY LIMIT FILTER LOGIC
   function applyFilters() {
-    const searchVal = document.getElementById('searchInput').value.toLowerCase();
+    const searchVal = document.getElementById('searchInput').value.toLowerCase().trim();
     const vehicleSelect = document.getElementById('filterVehicle');
     const selectedVehicles = Array.from(vehicleSelect.selectedOptions).map(opt => opt.value);
     const payStatus = document.getElementById('filterPaymentStatus').value;
-    const refVal = document.getElementById('filterReference').value.toLowerCase();
+    const refVal = document.getElementById('filterReference').value.toLowerCase().trim();
     const fromDate = document.getElementById('fromDate').value;
     const toDate = document.getElementById('toDate').value;
 
+    // Check if any search or custom filter is applied
+    const isSearchingOrFiltering = searchVal !== '' || selectedVehicles.length > 0 || payStatus !== '' || refVal !== '' || fromDate !== '' || toDate !== '';
+
+    // Calculate 7 days ago date string (YYYY-MM-DD)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const defaultMinDateStr = sevenDaysAgo.toISOString().split('T')[0];
+
     let filtered = globalRecords.filter(d => {
-      const matchSearch = (d.customerName && d.customerName.toLowerCase().includes(searchVal)) ||
+      // If user is not searching/filtering, limit table to last 1 week entries
+      if (!isSearchingOrFiltering) {
+        if (d.paymentDate && d.paymentDate < defaultMinDateStr) {
+          return false;
+        }
+      }
+
+      const matchSearch = !searchVal || 
+                          (d.customerName && d.customerName.toLowerCase().includes(searchVal)) ||
                           (d.mobile && d.mobile.includes(searchVal)) ||
                           (d.llAppNo && d.llAppNo.toLowerCase().includes(searchVal)) ||
                           (d.dlAppNo && d.dlAppNo.toLowerCase().includes(searchVal));
@@ -1020,7 +1044,7 @@
     document.getElementById('filterReference').value = '';
     document.getElementById('fromDate').value = '';
     document.getElementById('toDate').value = '';
-    renderTable(globalRecords);
+    applyFilters();
   }
 
   function openCollectionModal() {
@@ -1038,7 +1062,7 @@
     calculateCollectionData();
   }
 
-  // UPDATED DYNAMIC COLLECTION & BREAKDOWN CALCULATIONS WITH RENEWAL OVERRIDE
+  // COLLECTION MODAL HAS FULL ACCESS TO ALL RECORDS OVERALL
   function calculateCollectionData() {
     let selectedDate = document.getElementById('collectionFilterDate').value;
 
@@ -1052,7 +1076,6 @@
     let totalOverallReceived = 0;
     let totalOverallPending = 0;
 
-    // Vehicle Category Map to store Dynamic Groupings
     let vehicleMap = {};
 
     globalRecords.forEach(d => {
@@ -1062,19 +1085,16 @@
       let pending = parseFloat(d.balanceAmount) || 0;
       let rawVType = (d.vehicleType || "Uncategorized").trim();
 
-      // Check if 'Renewal' keyword is anywhere in the vehicle string
       let vType = rawVType;
       if (/renewal/i.test(rawVType)) {
         vType = "Renewal";
       }
 
-      // Overall Grand Totals
       totalOverallFee += fee;
       totalOverallDiscount += discount;
       totalOverallReceived += received;
       totalOverallPending += pending;
 
-      // Map vehicle breakdown
       if (!vehicleMap[vType]) {
         vehicleMap[vType] = { customers: 0, totalFee: 0, discount: 0, received: 0, pending: 0 };
       }
@@ -1084,7 +1104,6 @@
       vehicleMap[vType].received += received;
       vehicleMap[vType].pending += pending;
 
-      // Date-specific filter calculations
       let customerHasActivityOnDate = false;
       if (d.installmentsList && d.installmentsList.length > 0) {
         d.installmentsList.forEach((inst, idx) => {
@@ -1118,13 +1137,11 @@
       }
     });
 
-    // Render Top Cards
     document.getElementById('cardTotalFee').innerText = '₹' + totalOverallFee.toLocaleString('en-IN');
     document.getElementById('cardTotalDiscount').innerText = '₹' + totalOverallDiscount.toLocaleString('en-IN');
     document.getElementById('cardTotalReceived').innerText = '₹' + totalOverallReceived.toLocaleString('en-IN');
     document.getElementById('cardTotalPending').innerText = '₹' + totalOverallPending.toLocaleString('en-IN');
 
-    // Render Vehicle Breakdown Table
     let breakdownTbody = document.getElementById('vehicleBreakdownTableBody');
     breakdownTbody.innerHTML = "";
     Object.keys(vehicleMap).forEach(key => {
@@ -1139,14 +1156,12 @@
       </tr>`;
     });
 
-    // Update Grand Total Footer Row
     document.getElementById('gtCustomers').innerText = globalRecords.length;
     document.getElementById('gtTotalFee').innerText = '₹' + totalOverallFee.toLocaleString('en-IN');
     document.getElementById('gtDiscount').innerText = '₹' + totalOverallDiscount.toLocaleString('en-IN');
     document.getElementById('gtReceived').innerText = '₹' + totalOverallReceived.toLocaleString('en-IN');
     document.getElementById('gtPending').innerText = '₹' + totalOverallPending.toLocaleString('en-IN');
 
-    // Date Specific Transactions Update
     document.getElementById('dateWiseReceived').innerText = '₹' + dateWiseReceivedSum.toFixed(0);
     document.getElementById('dateWisePending').innerText = '₹' + dateWisePendingSum.toFixed(0);
     document.getElementById('dateWiseDiscount').innerText = '₹' + dateWiseDiscountSum.toFixed(0);
