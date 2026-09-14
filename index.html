@@ -55,6 +55,7 @@
     .btn-del { background-color: #dc3545; }
     .btn-pay { background-color: #28a745; }
     .btn-details { background-color: #17a2b8; }
+    .btn-print { background-color: #6f42c1; }
 
     /* Filter Box */
     .filter-box { background: #eef5fc; padding: 15px; border-radius: 6px; margin-top: 25px; border: 1px solid #1d70b8; }
@@ -93,11 +94,13 @@
     .installment-table th { background: #1d70b8; color: white; padding: 6px; }
     .installment-table td { padding: 6px; border: 1px solid #ccc; }
 
+    /* Receipt Print Styling */
+    #receiptPrintArea { display: none; }
     @media print {
       body * { visibility: hidden; }
-      #modalDetailsContent, #modalDetailsContent * { visibility: visible; }
-      #modalDetailsContent { position: absolute; left: 0; top: 0; width: 100%; }
-      .close-modal, .no-print { display: none !important; }
+      #receiptPrintArea, #receiptPrintArea * { visibility: visible; }
+      #receiptPrintArea { display: block !important; position: absolute; left: 0; top: 0; width: 100%; max-width: 600px; padding: 20px; background: white; font-size: 13px; color: #000; border: 1px solid #000; }
+      .no-print { display: none !important; }
     }
   </style>
 </head>
@@ -395,7 +398,7 @@
       </table>
     </div>
 
-    <!-- NEW SECTION 1: OVERALL APPLICATION & REGISTRATION STATUS SUMMARY -->
+    <!-- OVERALL APPLICATION STATUS SUMMARY -->
     <h3 style="color: #0b3c5d; font-size: 15px; margin-bottom: 8px;">📋 Overall Application Status Summary (RTO Tracker):</h3>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 25px;">
       <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; border-left: 4px solid #17a2b8;">
@@ -416,7 +419,7 @@
       </div>
     </div>
 
-    <!-- NEW SECTION 2: OVERALL CUSTOMER & DUES OVERVIEW -->
+    <!-- OVERALL CUSTOMER & DUES OVERVIEW -->
     <h3 style="color: #0b3c5d; font-size: 15px; margin-bottom: 8px;">📊 Overall Customer & Dues Metrics:</h3>
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 15px;">
       <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; border-left: 4px solid #6c757d;">
@@ -512,7 +515,7 @@
       </div>
     </div>
     <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;" class="no-print">
-      <button onclick="window.print()" class="btn btn-details" style="min-width: 100px; padding: 8px;">Print Details 🖨️</button>
+      <button onclick="printCustomerReceipt()" class="btn btn-print" style="min-width: 120px; padding: 8px;">Print Receipt 🧾</button>
       <button onclick="closeDetailsModal()" class="close-modal" style="padding: 8px 15px;">Close</button>
     </div>
   </div>
@@ -545,6 +548,36 @@
   </div>
 </div>
 
+<!-- PRINT RECEIPT TEMPLATE (HIDDEN ON SCREEN, VISIBLE ON PRINT) -->
+<div id="receiptPrintArea">
+  <div style="text-align: center; border-bottom: 2px dashed #000; padding-bottom: 10px; margin-bottom: 10px;">
+    <h2 style="margin: 0; text-transform: uppercase;">Tej Singh Motor Training School</h2>
+    <p style="margin: 3px 0; font-size: 12px;">Customer Fee Receipt / Admission Summary</p>
+    <p style="margin: 0; font-size: 11px;">Date: <span id="rPrintDate">-</span></p>
+  </div>
+  
+  <div style="line-height: 1.6; font-size: 13px;">
+    <p style="margin: 4px 0;"><strong>Customer Name:</strong> <span id="rCustomerName">-</span></p>
+    <p style="margin: 4px 0;"><strong>Father's Name:</strong> <span id="rFatherName">-</span></p>
+    <p style="margin: 4px 0;"><strong>Mobile:</strong> <span id="rMobile">-</span></p>
+    <p style="margin: 4px 0;"><strong>Vehicle Selected:</strong> <span id="rVehicleType">-</span></p>
+    <p style="margin: 4px 0;"><strong>LL App No:</strong> <span id="rLlAppNo">-</span> | <strong>DL App No:</strong> <span id="rDlAppNo">-</span></p>
+    
+    <div style="border-top: 1px dashed #000; border-bottom: 1px dashed #000; margin: 10px 0; padding: 8px 0;">
+      <p style="margin: 3px 0; display: flex; justify-content: space-between;"><span>Total Course Fee:</span> <strong>₹<span id="rTotalFee">0</span></strong></p>
+      <p style="margin: 3px 0; display: flex; justify-content: space-between;"><span>Discount Amount:</span> <strong>₹<span id="rDiscountAmount">0</span></strong></p>
+      <p style="margin: 3px 0; display: flex; justify-content: space-between;"><span>Total Received:</span> <strong>₹<span id="rPaidAmount">0</span></strong></p>
+      <p style="margin: 3px 0; display: flex; justify-content: space-between;"><span>Pending Balance:</span> <strong>₹<span id="rBalanceAmount">0</span></strong></p>
+    </div>
+    
+    <p style="margin: 4px 0;"><strong>Operator / Staff:</strong> <span id="rStaffName">-</span></p>
+  </div>
+  
+  <div style="text-align: center; margin-top: 25px; font-size: 11px; border-top: 1px solid #ccc; padding-top: 8px;">
+    Thank you for choosing Tej Singh Motor Training School!
+  </div>
+</div>
+
 <!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -569,6 +602,7 @@
   let globalRecords = [];
   let activeStaffName = "";
   let activeStaffEmail = "";
+  let activeSelectedRecord = null;
 
   // Undo Stack for Ctrl+Z
   let undoStack = [];
@@ -1040,7 +1074,6 @@
     renderTable(globalRecords);
   }
 
-  // UPDATED COLLECTIONS SUMMARY LOGIC (Replaced Vehicle Breakdown with Operations & Dues Metrics)
   function openCollectionModal() {
     document.getElementById('collectionFilterDate').valueAsDate = new Date();
     calculateCollectionData();
@@ -1064,13 +1097,11 @@
     let dateWisePendingSum = 0;
     let dateWiseDiscountSum = 0;
 
-    // Operational Counters
     let llAppCount = 0;
     let llNoCount = 0;
     let dlAppCount = 0;
     let pendingAppCount = 0;
 
-    // Dues Counters
     let totalCustomers = globalRecords.length;
     let fullPaidCount = 0;
     let pendingDuesCount = 0;
@@ -1083,7 +1114,6 @@
       
       grandTotalPaid += received;
 
-      // 1. Application Tracker Stats
       if (d.llAppNo && d.llAppNo.trim() !== '-' && d.llAppNo.trim() !== '') llAppCount++;
       if (d.llNo && d.llNo.trim() !== '-' && d.llNo.trim() !== '') llNoCount++;
       if (d.dlAppNo && d.dlAppNo.trim() !== '-' && d.dlAppNo.trim() !== '') dlAppCount++;
@@ -1092,14 +1122,12 @@
         pendingAppCount++;
       }
 
-      // 2. Dues Counters
       if (pending <= 0) {
         fullPaidCount++;
       } else {
         pendingDuesCount++;
       }
 
-      // Track Date-wise installments & Dues
       let customerHasActivityOnDate = false;
 
       if (d.installmentsList && d.installmentsList.length > 0) {
@@ -1135,13 +1163,11 @@
       }
     });
 
-    // Render Date Specific Summaries
     document.getElementById('dateWiseReceived').innerText = '₹' + dateWiseReceivedSum.toFixed(0);
     document.getElementById('dateWisePending').innerText = '₹' + dateWisePendingSum.toFixed(0);
     document.getElementById('dateWiseDiscount').innerText = '₹' + dateWiseDiscountSum.toFixed(0);
     document.getElementById('dateWiseTransactionsCount').innerText = dateWiseTransactions.length;
 
-    // Populate Date Wise Transactions
     let dateBody = document.getElementById('dateWiseTransactionsBody');
     dateBody.innerHTML = "";
     if (dateWiseTransactions.length === 0) {
@@ -1160,13 +1186,11 @@
       });
     }
 
-    // Populate Application Tracker Cards
     document.getElementById('statLlAppCount').innerText = llAppCount;
     document.getElementById('statLlNoCount').innerText = llNoCount;
     document.getElementById('statDlAppCount').innerText = dlAppCount;
     document.getElementById('statPendingAppCount').innerText = pendingAppCount;
 
-    // Populate Overall Dues Cards
     document.getElementById('statTotalCustomers').innerText = totalCustomers;
     document.getElementById('statFullPaidCustomers').innerText = fullPaidCount;
     document.getElementById('statPendingCustomers').innerText = pendingDuesCount;
@@ -1182,6 +1206,8 @@
   function openDetailsModal(id) {
     const d = globalRecords.find(r => r.id === id);
     if (!d) return;
+
+    activeSelectedRecord = d;
 
     document.getElementById('kName').innerText = d.customerName || '-';
     document.getElementById('kFather').innerText = d.fatherName || '-';
@@ -1241,6 +1267,26 @@
 
   function closeDetailsModal() {
     document.getElementById('detailsModal').style.display = 'none';
+  }
+
+  function printCustomerReceipt() {
+    if (!activeSelectedRecord) return;
+    const d = activeSelectedRecord;
+
+    document.getElementById('rPrintDate').innerText = formatDateToDMY(d.paymentDate);
+    document.getElementById('rCustomerName').innerText = d.customerName || '-';
+    document.getElementById('rFatherName').innerText = d.fatherName || '-';
+    document.getElementById('rMobile').innerText = d.mobile || '-';
+    document.getElementById('rVehicleType').innerText = d.vehicleType || '-';
+    document.getElementById('rLlAppNo').innerText = d.llAppNo || '-';
+    document.getElementById('rDlAppNo').innerText = d.dlAppNo || '-';
+    document.getElementById('rTotalFee').innerText = d.totalFee || 0;
+    document.getElementById('rDiscountAmount').innerText = d.discountAmount || 0;
+    document.getElementById('rPaidAmount').innerText = d.advancePayment || 0;
+    document.getElementById('rBalanceAmount').innerText = d.balanceAmount || 0;
+    document.getElementById('rStaffName').innerText = d.addedBy || activeStaffName || 'Staff';
+
+    window.print();
   }
 
   function openPayModal(id, name, balance) {
