@@ -71,7 +71,7 @@
 
     /* Modal Popup Styling */
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; }
-    .modal-content { background: white; width: 90%; max-width: 900px; max-height: 90vh; overflow-y: auto; border-radius: 8px; padding: 25px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); position: relative; }
+    .modal-content { background: white; width: 90%; max-width: 950px; max-height: 90vh; overflow-y: auto; border-radius: 8px; padding: 25px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); position: relative; }
     .modal-header { border-bottom: 2px solid #0b3c5d; padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
     .modal-header h2 { margin: 0; color: #0b3c5d; font-size: 20px; }
     .close-modal { background: #dc3545; color: white; border: none; padding: 5px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; }
@@ -342,7 +342,7 @@
 <div id="collectionModal" class="modal-overlay">
   <div class="modal-content" style="max-width: 950px;">
     <div class="modal-header">
-      <h2>💰 Financial Collections & Date-wise Summary</h2>
+      <h2>💰 Financial Collections & Vehicle Breakdown</h2>
       <button class="close-modal" onclick="closeCollectionModal()">X</button>
     </div>
     
@@ -398,24 +398,36 @@
       </table>
     </div>
 
-    <!-- OVERALL APPLICATION STATUS SUMMARY -->
-    <h3 style="color: #0b3c5d; font-size: 15px; margin-bottom: 8px;">📋 Overall Application Status Summary (RTO Tracker):</h3>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 25px;">
+    <!-- VEHICLE WISE OVERALL BREAKDOWN CATEGORIES -->
+    <h3 style="color: #0b3c5d; font-size: 15px; margin-bottom: 8px;">🏎️ Vehicle Wise Overall Breakdown (Count & Admissions):</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 25px;">
       <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; border-left: 4px solid #17a2b8;">
-        <small style="color: #666; font-weight: bold; text-transform: uppercase; font-size: 11px;">LL Application Submitted</small>
-        <p id="statLlAppCount" style="margin: 4px 0 0 0; font-size: 20px; font-weight: bold; color: #17a2b8;">0</p>
+        <small style="color: #666; font-weight: bold; text-transform: uppercase; font-size: 11px;">Two Wheeler</small>
+        <p id="breakdownTwoWheeler" style="margin: 4px 0 0 0; font-size: 20px; font-weight: bold; color: #17a2b8;">0</p>
       </div>
       <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; border-left: 4px solid #28a745;">
-        <small style="color: #666; font-weight: bold; text-transform: uppercase; font-size: 11px;">LL Number Issued</small>
-        <p id="statLlNoCount" style="margin: 4px 0 0 0; font-size: 20px; font-weight: bold; color: #28a745;">0</p>
+        <small style="color: #666; font-weight: bold; text-transform: uppercase; font-size: 11px;">Four Wheeler</small>
+        <p id="breakdownFourWheeler" style="margin: 4px 0 0 0; font-size: 20px; font-weight: bold; color: #28a745;">0</p>
       </div>
       <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; border-left: 4px solid #0b3c5d;">
-        <small style="color: #666; font-weight: bold; text-transform: uppercase; font-size: 11px;">DL Application Submitted</small>
-        <p id="statDlAppCount" style="margin: 4px 0 0 0; font-size: 20px; font-weight: bold; color: #0b3c5d;">0</p>
+        <small style="color: #666; font-weight: bold; text-transform: uppercase; font-size: 11px;">Both (2W + 4W)</small>
+        <p id="breakdownTwoFour" style="margin: 4px 0 0 0; font-size: 20px; font-weight: bold; color: #0b3c5d;">0</p>
+      </div>
+      <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; border-left: 4px solid #6f42c1;">
+        <small style="color: #666; font-weight: bold; text-transform: uppercase; font-size: 11px;">AD Only</small>
+        <p id="breakdownAD" style="margin: 4px 0 0 0; font-size: 20px; font-weight: bold; color: #6f42c1;">0</p>
+      </div>
+      <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; border-left: 4px solid #fd7e14;">
+        <small style="color: #666; font-weight: bold; text-transform: uppercase; font-size: 11px;">AD + Two + Four</small>
+        <p id="breakdownAdTwoFour" style="margin: 4px 0 0 0; font-size: 20px; font-weight: bold; color: #fd7e14;">0</p>
+      </div>
+      <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; border-left: 4px solid #dc3545;">
+        <small style="color: #666; font-weight: bold; text-transform: uppercase; font-size: 11px;">Heavy / Commercial</small>
+        <p id="breakdownHeavy" style="margin: 4px 0 0 0; font-size: 20px; font-weight: bold; color: #dc3545;">0</p>
       </div>
       <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; border-left: 4px solid #ff9800;">
-        <small style="color: #666; font-weight: bold; text-transform: uppercase; font-size: 11px;">Pending Application Numbers</small>
-        <p id="statPendingAppCount" style="margin: 4px 0 0 0; font-size: 20px; font-weight: bold; color: #ff9800;">0</p>
+        <small style="color: #666; font-weight: bold; text-transform: uppercase; font-size: 11px;">Renewal (All Vehicles)</small>
+        <p id="breakdownRenewal" style="margin: 4px 0 0 0; font-size: 20px; font-weight: bold; color: #ff9800;">0</p>
       </div>
     </div>
 
@@ -1097,10 +1109,14 @@
     let dateWisePendingSum = 0;
     let dateWiseDiscountSum = 0;
 
-    let llAppCount = 0;
-    let llNoCount = 0;
-    let dlAppCount = 0;
-    let pendingAppCount = 0;
+    // Vehicle Category Breakdown Variables
+    let cntTwoWheeler = 0;
+    let cntFourWheeler = 0;
+    let cntTwoFour = 0;
+    let cntAD = 0;
+    let cntAdTwoFour = 0;
+    let cntHeavy = 0;
+    let cntRenewal = 0;
 
     let totalCustomers = globalRecords.length;
     let fullPaidCount = 0;
@@ -1111,15 +1127,25 @@
       let received = parseFloat(d.advancePayment) || 0;
       let pending = parseFloat(d.balanceAmount) || 0;
       let discount = parseFloat(d.discountAmount) || 0;
+      let vType = (d.vehicleType || "").toLowerCase();
       
       grandTotalPaid += received;
 
-      if (d.llAppNo && d.llAppNo.trim() !== '-' && d.llAppNo.trim() !== '') llAppCount++;
-      if (d.llNo && d.llNo.trim() !== '-' && d.llNo.trim() !== '') llNoCount++;
-      if (d.dlAppNo && d.dlAppNo.trim() !== '-' && d.dlAppNo.trim() !== '') dlAppCount++;
-      
-      if ((!d.llAppNo || d.llAppNo === '-') && (!d.llNo || d.llNo === '-') && (!d.dlAppNo || d.dlAppNo === '-')) {
-        pendingAppCount++;
+      // Dynamic Vehicle Category Mapping Logic (Renewal Priority)
+      if (vType.includes("renewal")) {
+        cntRenewal++;
+      } else if (vType.includes("ad") && vType.includes("two") && vType.includes("four")) {
+        cntAdTwoFour++;
+      } else if (vType.includes("both") || (vType.includes("two") && vType.includes("four"))) {
+        cntTwoFour++;
+      } else if (vType.includes("ad")) {
+        cntAD++;
+      } else if (vType.includes("commercial") || vType.includes("heavy") || vType.includes("crane") || vType.includes("forklift") || vType.includes("ldrx")) {
+        cntHeavy++;
+      } else if (vType.includes("two")) {
+        cntTwoWheeler++;
+      } else if (vType.includes("four")) {
+        cntFourWheeler++;
       }
 
       if (pending <= 0) {
@@ -1186,10 +1212,14 @@
       });
     }
 
-    document.getElementById('statLlAppCount').innerText = llAppCount;
-    document.getElementById('statLlNoCount').innerText = llNoCount;
-    document.getElementById('statDlAppCount').innerText = dlAppCount;
-    document.getElementById('statPendingAppCount').innerText = pendingAppCount;
+    // Vehicle Breakdown UI Updates
+    document.getElementById('breakdownTwoWheeler').innerText = cntTwoWheeler;
+    document.getElementById('breakdownFourWheeler').innerText = cntFourWheeler;
+    document.getElementById('breakdownTwoFour').innerText = cntTwoFour;
+    document.getElementById('breakdownAD').innerText = cntAD;
+    document.getElementById('breakdownAdTwoFour').innerText = cntAdTwoFour;
+    document.getElementById('breakdownHeavy').innerText = cntHeavy;
+    document.getElementById('breakdownRenewal').innerText = cntRenewal;
 
     document.getElementById('statTotalCustomers').innerText = totalCustomers;
     document.getElementById('statFullPaidCustomers').innerText = fullPaidCount;
