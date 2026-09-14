@@ -825,6 +825,7 @@
     e.preventDefault();
     const editId = document.getElementById('editRecordId').value;
     const mobileInput = document.getElementById('mobile').value.trim();
+    const newPaymentDate = document.getElementById('paymentDate').value;
 
     const duplicateCheck = globalRecords.find(r => r.mobile === mobileInput && r.id !== editId);
     if (duplicateCheck && !editId) {
@@ -852,19 +853,29 @@
       totalFee: parseFloat(document.getElementById('totalFee').value) || 0,
       advancePayment: parseFloat(document.getElementById('advancePayment').value) || 0,
       balanceAmount: parseFloat(document.getElementById('balanceAmount').value) || 0,
-      paymentDate: document.getElementById('paymentDate').value,
+      paymentDate: newPaymentDate,
       addedBy: activeStaffName || 'Staff',
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     };
 
     if (editId) {
       const oldRec = globalRecords.find(r => r.id === editId);
-      recordData.installmentsList = (oldRec && oldRec.installmentsList) ? oldRec.installmentsList : [{
-        type: 'Initial Admission Payment',
-        amount: recordData.advancePayment,
-        date: recordData.paymentDate,
-        operator: activeStaffName
-      }];
+      
+      // FIX APPLIED HERE: Jab entry edit ho, toh installments array mein pehla item (Initial Admission Payment) ki date 
+      // bhi updated paymentDate ke sath synchronize ho jaani chahiye taaki collection modal mein galat date par na dikhe.
+      let installments = oldRec && oldRec.installmentsList ? JSON.parse(JSON.stringify(oldRec.installmentsList)) : [];
+      if (installments.length > 0) {
+        installments[0].date = newPaymentDate;
+        installments[0].amount = recordData.advancePayment;
+      } else {
+        installments = [{
+          type: 'Initial Admission Payment',
+          amount: recordData.advancePayment,
+          date: newPaymentDate,
+          operator: activeStaffName
+        }];
+      }
+      recordData.installmentsList = installments;
 
       pushToUndoStack('EDIT_RECORD', editId, oldRec);
       
@@ -879,7 +890,7 @@
       recordData.installmentsList = [{
         type: 'Initial Admission Payment',
         amount: recordData.advancePayment,
-        date: recordData.paymentDate,
+        date: newPaymentDate,
         operator: activeStaffName
       }];
       recordData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
@@ -894,7 +905,6 @@
     }
   }
 
-  // FIXED: Normalized old database entries automatically so they adopt new calculation rules and default fields
   function loadLiveEntries() {
     db.collection("dl_records").orderBy("paymentDate", "desc").onSnapshot(snapshot => {
       globalRecords = [];
@@ -902,7 +912,6 @@
         let d = doc.data();
         d.id = doc.id;
 
-        // Automatically normalize numeric values and missing fields for old records
         d.totalFee = parseFloat(d.totalFee) || 0;
         d.discountAmount = parseFloat(d.discountAmount) || 0;
         d.advancePayment = parseFloat(d.advancePayment) || 0;
@@ -1160,12 +1169,12 @@
         vehicleMap[vType].pending += pending;
       }
 
-      let customerHasActivityOnDate = false;
+      // FIX APPLIED HERE: Har customer ki installments list mein exact stored date (`inst.date`) check hoti hai, 
+      // jisse edit karne ke baad nayi date hi collection hisab mein reflect hogi.
       if (d.installmentsList && d.installmentsList.length > 0) {
         d.installmentsList.forEach((inst, idx) => {
           let instDate = inst.date || d.paymentDate || '-';
           if (selectedDate && instDate === selectedDate) {
-            customerHasActivityOnDate = true;
             let instObj = {
               date: instDate,
               customerName: d.customerName,
@@ -1182,13 +1191,16 @@
         });
       }
 
-      if (selectedDate && (d.paymentDate === selectedDate || customerHasActivityOnDate)) {
+      // Calculate date-wise discounts and pending based on matching installment dates or entry payment dates
+      let matchesSelectedDate = (d.paymentDate === selectedDate) || (d.installmentsList && d.installmentsList.some(i => i.date === selectedDate));
+      if (selectedDate && matchesSelectedDate) {
         dateWiseDiscountSum += discount;
       }
     });
 
     globalRecords.forEach(d => {
-      if (selectedDate && (d.paymentDate === selectedDate || (d.installmentsList && d.installmentsList.some(i => i.date === selectedDate)))) {
+      let matchesSelectedDate = (d.paymentDate === selectedDate) || (d.installmentsList && d.installmentsList.some(i => i.date === selectedDate));
+      if (selectedDate && matchesSelectedDate) {
         dateWisePendingSum += (parseFloat(d.balanceAmount) || 0);
       }
     });
