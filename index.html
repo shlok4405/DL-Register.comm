@@ -381,13 +381,13 @@
 <div id="collectionModal" class="modal-overlay">
   <div class="modal-content" style="max-width: 1100px;">
     <div class="modal-header">
-      <h2>💰 Multi-School Financial Collections & Vehicle Breakdown</h2>
+      <h2>💰 Multi-School Separate Financial Collections & Vehicle Breakdown</h2>
       <button class="close-modal" onclick="closeCollectionModal()">X</button>
     </div>
 
     <!-- Date Filter Controls for Collections -->
     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 20px; gap: 10px; background: #eef5fc; padding: 10px 15px; border-radius: 6px; border: 1px solid #1d70b8;">
-      <h3 style="color: #0b3c5d; font-size: 15px; margin: 0;">📅 Filter Financial Summary by Date Range:</h3>
+      <h3 style="color: #0b3c5d; font-size: 15px; margin: 0;">📅 Filter Breakdown by Date Range:</h3>
       <div style="display: flex; gap: 8px; align-items: center;">
         <label style="font-size: 12px; font-weight: bold; color: #0b3c5d;">From:</label>
         <input type="date" id="bdFromDate" style="padding: 5px; font-size: 13px; border: 1px solid #ccc; border-radius: 4px;">
@@ -398,31 +398,20 @@
       </div>
     </div>
 
-    <!-- CONTAINER FOR INDIVIDUAL SCHOOL BREAKDOWNS -->
-    <div id="schoolBreakdownsContainer">
-      <!-- Dynamically generated per school -->
-    </div>
-
-    <!-- COMBINED GRAND TOTAL OVERALL SUMMARY BLOCK -->
-    <div class="school-block" style="background: #f8f9fa; border-color: #0b3c5d;">
-      <h3 class="school-title" style="color: #0b3c5d; border-bottom-color: #0b3c5d;">
-        <span>🌐 COMBINED GRAND TOTAL (ALL SCHOOLS COMBINED)</span>
-      </h3>
-
-      <div class="stats-container">
-        <div class="stat-card fee"><span class="card-title">Grand Total Fee (₹)</span><h2 id="grandTotalFee" style="color: #0b3c5d;">₹0</h2></div>
-        <div class="stat-card discount"><span class="card-title">Grand Total Discount (₹)</span><h2 id="grandTotalDiscount" style="color: #ff9800;">₹0</h2></div>
-        <div class="stat-card received"><span class="card-title">Grand Total Received (₹)</span><h2 id="grandTotalReceived" style="color: #28a745;">₹0</h2></div>
-        <div class="stat-card pending"><span class="card-title">Grand Total Pending (₹)</span><h2 id="grandTotalPending" style="color: #dc3545;">₹0</h2></div>
-      </div>
-    </div>
-    
     <!-- Date-Specific Lookup Filter Box inside Collections Modal -->
     <div style="background: #eef5fc; padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #1d70b8;">
       <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-        <div>
-          <label style="color: #0b3c5d; font-weight: bold; font-size: 14px;">📅 Select Specific Date for Daily Hisab (All Units):</label>
-          <input type="date" id="collectionFilterDate" onchange="updateCollectionDateFilter()" style="padding: 8px; border: 1px solid #1d70b8; border-radius: 4px; margin-left: 10px; font-size: 14px;">
+        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+          <label style="color: #0b3c5d; font-weight: bold; font-size: 14px;">📅 Select Date for Daily Hisab:</label>
+          <input type="date" id="collectionFilterDate" onchange="updateCollectionDateFilter()" style="padding: 8px; border: 1px solid #1d70b8; border-radius: 4px; font-size: 14px;">
+          
+          <label style="color: #0b3c5d; font-weight: bold; font-size: 14px; margin-left: 10px;">🏫 School Unit:</label>
+          <select id="collectionSchoolFilter" onchange="updateCollectionDateFilter()" style="padding: 8px; border: 1px solid #1d70b8; border-radius: 4px; font-size: 14px; font-weight: bold; color: #0b3c5d;">
+            <option value="">-- All Schools / Units --</option>
+            <option value="Tej Singh Motor Training School">Tej Singh Motor Training School</option>
+            <option value="CF">CF Unit</option>
+            <option value="STSMTS">STSMTS Unit</option>
+          </select>
         </div>
         <button type="button" class="btn-sm btn-edit" onclick="setTodayCollectionDate()" style="padding: 8px 12px; font-size: 13px;">View Today's Collection 🎯</button>
       </div>
@@ -450,7 +439,7 @@
 
     <!-- Date-Specific Transactions Table -->
     <h3 style="color: #0b3c5d; font-size: 15px; margin-bottom: 8px;">Transactions on Selected Date (New Payments & Initial Dues):</h3>
-    <div class="table-container" style="margin-top: 0; margin-bottom: 15px; max-height: 200px; overflow-y: auto;">
+    <div class="table-container" style="margin-top: 0; margin-bottom: 25px; max-height: 200px; overflow-y: auto;">
       <table class="installment-table">
         <thead>
           <tr>
@@ -468,6 +457,11 @@
           <!-- Populated dynamically -->
         </tbody>
       </table>
+    </div>
+
+    <!-- CONTAINER FOR INDIVIDUAL SCHOOL SEPARATE BREAKDOWNS & OVERALL CARDS -->
+    <div id="schoolBreakdownsContainer">
+      <!-- Dynamically generated separate section per school -->
     </div>
 
   </div>
@@ -1103,6 +1097,7 @@
 
   function openCollectionModal() {
     document.getElementById('collectionFilterDate').valueAsDate = new Date();
+    document.getElementById('collectionSchoolFilter').value = '';
     calculateCollectionData();
     document.getElementById('collectionModal').style.display = 'flex';
   }
@@ -1124,6 +1119,7 @@
 
   function calculateCollectionData() {
     let selectedDate = document.getElementById('collectionFilterDate').value;
+    let selectedSchoolFilter = document.getElementById('collectionSchoolFilter').value;
     let bdFromDate = document.getElementById('bdFromDate').value;
     let bdToDate = document.getElementById('bdToDate').value;
 
@@ -1145,11 +1141,6 @@
         vehicleMap: {}
       };
     });
-
-    let overallGrandTotalFee = 0;
-    let overallGrandTotalDiscount = 0;
-    let overallGrandTotalReceived = 0;
-    let overallGrandTotalPending = 0;
 
     globalRecords.forEach(d => {
       let unit = d.schoolUnit || "Tej Singh Motor Training School";
@@ -1179,11 +1170,6 @@
         schoolDataMap[unit].received += received;
         schoolDataMap[unit].pending += pending;
 
-        overallGrandTotalFee += fee;
-        overallGrandTotalDiscount += discount;
-        overallGrandTotalReceived += received;
-        overallGrandTotalPending += pending;
-
         let vMap = schoolDataMap[unit].vehicleMap;
         if (!vMap[vType]) {
           vMap[vType] = { customers: 0, totalFee: 0, discount: 0, received: 0, pending: 0 };
@@ -1195,7 +1181,9 @@
         vMap[vType].pending += pending;
       }
 
-      if (d.installmentsList && d.installmentsList.length > 0) {
+      let matchSchoolForDaily = !selectedSchoolFilter || unit === selectedSchoolFilter;
+
+      if (matchSchoolForDaily && d.installmentsList && d.installmentsList.length > 0) {
         d.installmentsList.forEach((inst, idx) => {
           let instDate = inst.date || d.paymentDate || '-';
           if (selectedDate && instDate === selectedDate) {
@@ -1217,14 +1205,16 @@
       }
 
       let matchesSelectedDate = (d.paymentDate === selectedDate) || (d.installmentsList && d.installmentsList.some(i => i.date === selectedDate));
-      if (selectedDate && matchesSelectedDate) {
+      if (matchSchoolForDaily && selectedDate && matchesSelectedDate) {
         dateWiseDiscountSum += discount;
       }
     });
 
     globalRecords.forEach(d => {
+      let unit = d.schoolUnit || "Tej Singh Motor Training School";
+      let matchSchoolForDaily = !selectedSchoolFilter || unit === selectedSchoolFilter;
       let matchesSelectedDate = (d.paymentDate === selectedDate) || (d.installmentsList && d.installmentsList.some(i => i.date === selectedDate));
-      if (selectedDate && matchesSelectedDate) {
+      if (matchSchoolForDaily && selectedDate && matchesSelectedDate) {
         dateWisePendingSum += (parseFloat(d.balanceAmount) || 0);
       }
     });
@@ -1239,7 +1229,7 @@
       let html = `
         <div class="school-block ${themeClass}">
           <h3 class="school-title" style="color: #0b3c5d;">
-            <span>🏫 ${schoolName}</span>
+            <span>🏫 ${schoolName} (SEPARATE OVERALL HISAB)</span>
           </h3>
 
           <div class="stats-container">
@@ -1300,11 +1290,6 @@
       container.innerHTML += html;
     });
 
-    document.getElementById('grandTotalFee').innerText = '₹' + overallGrandTotalFee.toLocaleString('en-IN');
-    document.getElementById('grandTotalDiscount').innerText = '₹' + overallGrandTotalDiscount.toLocaleString('en-IN');
-    document.getElementById('grandTotalReceived').innerText = '₹' + overallGrandTotalReceived.toLocaleString('en-IN');
-    document.getElementById('grandTotalPending').innerText = '₹' + overallGrandTotalPending.toLocaleString('en-IN');
-
     document.getElementById('dateWiseReceived').innerText = '₹' + dateWiseReceivedSum.toFixed(0);
     document.getElementById('dateWisePending').innerText = '₹' + dateWisePendingSum.toFixed(0);
     document.getElementById('dateWiseDiscount').innerText = '₹' + dateWiseDiscountSum.toFixed(0);
@@ -1313,7 +1298,7 @@
     let dateBody = document.getElementById('dateWiseTransactionsBody');
     dateBody.innerHTML = "";
     if (dateWiseTransactions.length === 0) {
-      dateBody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#666;">No payment transactions found on ${formatDateToDMY(selectedDate)}.</td></tr>`;
+      dateBody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#666;">No payment transactions found on ${formatDateToDMY(selectedDate)}${selectedSchoolFilter ? ' for ' + selectedSchoolFilter : ''}.</td></tr>`;
     } else {
       dateWiseTransactions.forEach(item => {
         dateBody.innerHTML += `<tr>
