@@ -21,7 +21,7 @@
     .header p { margin: 5px 0 0; font-size: 15px; font-weight: 500; }
     .header-btns { position: absolute; right: 20px; top: 15px; display: flex; flex-direction: column; gap: 5px; align-items: flex-end; }
     .log-btn, .collection-btn { background: #ff9800; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; display: none; width: 150px; text-align: center; }
-    .collection-btn { background: #28a745; display: none; } /* Hidden completely, only opens via Shift + C */
+    .collection-btn { background: #28a745; display: none; }
     .logout-btn { background: #d9534f; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; width: 150px; text-align: center; }
 
     /* Form Design */
@@ -198,6 +198,8 @@
             <label><input type="checkbox" value="Crane"> Crane</label>
             <label><input type="checkbox" value="Forklift"> Forklift</label>
             <label><input type="checkbox" value="Renewal"> Renewal</label>
+            <label><input type="checkbox" value="CF"> CF</label>
+            <label><input type="checkbox" value="STSMTS"> STSMTS</label>
           </div>
         </div>
 
@@ -296,6 +298,8 @@
             <option value="Crane">Crane</option>
             <option value="Forklift">Forklift</option>
             <option value="Renewal">Renewal</option>
+            <option value="CF">CF</option>
+            <option value="STSMTS">STSMTS</option>
           </select>
         </div>
 
@@ -1141,10 +1145,9 @@
       let pending = parseFloat(d.balanceAmount) || 0;
       let rawVType = (d.vehicleType || "Uncategorized").trim();
 
-      let vType = rawVType;
-      if (/renewal/i.test(rawVType)) {
-        vType = "Renewal";
-      }
+      // Split comma separated vehicle types to attribute breakdown accurately per category
+      let selectedTypeList = rawVType.split(',').map(s => s.trim()).filter(s => s.length > 0);
+      if (selectedTypeList.length === 0) selectedTypeList = ["Uncategorized"];
 
       let inBdDateRange = true;
       if (bdFromDate && d.paymentDate < bdFromDate) inBdDateRange = false;
@@ -1157,14 +1160,18 @@
         totalOverallReceived += received;
         totalOverallPending += pending;
 
-        if (!vehicleMap[vType]) {
-          vehicleMap[vType] = { customers: 0, totalFee: 0, discount: 0, received: 0, pending: 0 };
-        }
-        vehicleMap[vType].customers += 1;
-        vehicleMap[vType].totalFee += fee;
-        vehicleMap[vType].discount += discount;
-        vehicleMap[vType].received += received;
-        vehicleMap[vType].pending += pending;
+        // Breakdown mapping for each type (including CF and STSMTS)
+        let splitCount = selectedTypeList.length;
+        selectedTypeList.forEach(vType => {
+          if (!vehicleMap[vType]) {
+            vehicleMap[vType] = { customers: 0, totalFee: 0, discount: 0, received: 0, pending: 0 };
+          }
+          vehicleMap[vType].customers += 1;
+          vehicleMap[vType].totalFee += (fee / splitCount);
+          vehicleMap[vType].discount += (discount / splitCount);
+          vehicleMap[vType].received += (received / splitCount);
+          vehicleMap[vType].pending += (pending / splitCount);
+        });
       }
 
       if (d.installmentsList && d.installmentsList.length > 0) {
@@ -1215,10 +1222,10 @@
         breakdownTbody.innerHTML += `<tr>
           <td><b>${key}</b></td>
           <td>${item.customers}</td>
-          <td>₹${item.totalFee.toLocaleString('en-IN')}</td>
-          <td style="color: #ff9800; font-weight: bold;">₹${item.discount.toLocaleString('en-IN')}</td>
-          <td style="color: #28a745; font-weight: bold;">₹${item.received.toLocaleString('en-IN')}</td>
-          <td style="color: #dc3545; font-weight: bold;">₹${item.pending.toLocaleString('en-IN')}</td>
+          <td>₹${item.totalFee.toLocaleString('en-IN', {maximumFractionDigits: 0})}</td>
+          <td style="color: #ff9800; font-weight: bold;">₹${item.discount.toLocaleString('en-IN', {maximumFractionDigits: 0})}</td>
+          <td style="color: #28a745; font-weight: bold;">₹${item.received.toLocaleString('en-IN', {maximumFractionDigits: 0})}</td>
+          <td style="color: #dc3545; font-weight: bold;">₹${item.pending.toLocaleString('en-IN', {maximumFractionDigits: 0})}</td>
         </tr>`;
       });
     }
