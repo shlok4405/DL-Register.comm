@@ -377,290 +377,97 @@
   </div>
 </div>
 
-<!-- MULTI-SCHOOL SEPARATE COLLECTIONS MODAL POPUP -->
+<!-- COLLECTION SUMMARY & OVERALL BREAKDOWN MODAL -->
 <div id="collectionModal" class="modal-overlay">
-  <div class="modal-content" style="max-width: 1050px;">
+  <div class="modal-content" style="max-width: 1100px;">
     <div class="modal-header">
-      <h2>💰 Multi-School Collections & Financial Hisab</h2>
+      <h2>💰 Multi-School Financial Collections & Vehicle Breakdown</h2>
       <button class="close-modal" onclick="closeCollectionModal()">X</button>
     </div>
 
-    <!-- 1. TEJ SINGH MOTOR TRAINING SCHOOL COLLECTION BLOCK -->
-    <div class="school-block">
-      <div class="school-title" style="color: #0b3c5d;">
-        <span>🏢 TEJ SINGH MOTOR TRAINING SCHOOL</span>
-        <small style="font-size: 12px; color: #666;">Main Training School Hisab</small>
-      </div>
-
-      <!-- Financial Cards for Tej Singh -->
-      <div class="stats-container">
-        <div class="stat-card fee">
-          <span class="card-title">Total Fee (₹)</span>
-          <h2 id="ts_cardTotalFee" style="color: #0b3c5d;">₹0</h2>
-        </div>
-        <div class="stat-card discount">
-          <span class="card-title">Total Discount (₹)</span>
-          <h2 id="ts_cardTotalDiscount" style="color: #ff9800;">₹0</h2>
-        </div>
-        <div class="stat-card received">
-          <span class="card-title">Total Received (₹)</span>
-          <h2 id="ts_cardTotalReceived" style="color: #28a745;">₹0</h2>
-        </div>
-        <div class="stat-card pending">
-          <span class="card-title">Total Pending (₹)</span>
-          <h2 id="ts_cardTotalPending" style="color: #dc3545;">₹0</h2>
-        </div>
-      </div>
-
-      <!-- Date Filter for Tej Singh Breakdown -->
-      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 10px; gap: 10px;">
-        <h4 style="color: #0b3c5d; margin: 0;">Vehicle Type Breakdown (Tej Singh):</h4>
-        <div style="display: flex; gap: 8px; align-items: center; background: #eef5fc; padding: 4px 8px; border-radius: 6px; border: 1px solid #1d70b8;">
-          <label style="font-size: 11px; font-weight: bold; color: #0b3c5d;">From:</label>
-          <input type="date" id="ts_bdFromDate" style="padding: 3px; font-size: 11px;">
-          <label style="font-size: 11px; font-weight: bold; color: #0b3c5d;">To:</label>
-          <input type="date" id="ts_bdToDate" style="padding: 3px; font-size: 11px;">
-          <button type="button" onclick="calculateCollectionData()" style="background: #0b3c5d; color: white; border: none; padding: 3px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;">Filter</button>
-        </div>
-      </div>
-
-      <div class="table-container" style="margin-top: 0; margin-bottom: 15px;">
-        <table class="breakdown-table">
-          <thead>
-            <tr>
-              <th>Vehicle Type</th>
-              <th>Total Customers</th>
-              <th>Total Fee (₹)</th>
-              <th>Discount (₹)</th>
-              <th>Received (₹)</th>
-              <th>Pending (₹)</th>
-            </tr>
-          </thead>
-          <tbody id="ts_vehicleBreakdownTableBody"></tbody>
-          <tfoot>
-            <tr style="background-color: #0b3c5d; color: white; font-weight: bold;">
-              <td>Grand Total</td>
-              <td id="ts_gtCustomers">0</td>
-              <td id="ts_gtTotalFee">₹0</td>
-              <td id="ts_gtDiscount" style="color: #ffc107;">₹0</td>
-              <td id="ts_gtReceived" style="color: #2ecc71;">₹0</td>
-              <td id="ts_gtPending" style="color: #ff4d4d;">₹0</td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
-
-      <!-- Date-Specific Daily Hisab for Tej Singh -->
-      <div style="background: #f8f9fa; padding: 10px; border-radius: 6px; border: 1px solid #ccc; margin-bottom: 10px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-          <div>
-            <label style="color: #0b3c5d; font-weight: bold; font-size: 13px;">📅 Daily Hisab Date (Tej Singh):</label>
-            <input type="date" id="ts_collectionFilterDate" onchange="calculateCollectionData()" style="padding: 5px; font-size: 13px;">
-          </div>
-          <button type="button" class="btn-sm btn-edit" onclick="setTodayDateFor('ts_collectionFilterDate')">View Today 🎯</button>
-        </div>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 10px;">
-          <div style="background: white; padding: 6px; text-align: center; border: 1px solid #ddd; border-radius: 4px;"><small>Paid on Date:</small><br><b id="ts_dateWiseReceived" style="color: #28a745;">₹0</b></div>
-          <div style="background: white; padding: 6px; text-align: center; border: 1px solid #ddd; border-radius: 4px;"><small>Pending on Date:</small><br><b id="ts_dateWisePending" style="color: #dc3545;">₹0</b></div>
-          <div style="background: white; padding: 6px; text-align: center; border: 1px solid #ddd; border-radius: 4px;"><small>Discount on Date:</small><br><b id="ts_dateWiseDiscount" style="color: #ff9800;">₹0</b></div>
-          <div style="background: white; padding: 6px; text-align: center; border: 1px solid #ddd; border-radius: 4px;"><small>Payments Count:</small><br><b id="ts_dateWiseTransactionsCount" style="color: #0b3c5d;">0</b></div>
-        </div>
-      </div>
-
-      <div class="table-container" style="margin-top: 0; max-height: 160px; overflow-y: auto;">
-        <table class="installment-table">
-          <thead>
-            <tr><th>Customer Name</th><th>Vehicle Type</th><th>Type</th><th>Paid (₹)</th><th>Discount (₹)</th><th>Pending (₹)</th><th>Staff</th></tr>
-          </thead>
-          <tbody id="ts_dateWiseTransactionsBody"></tbody>
-        </table>
+    <!-- Date Filter Controls for Collections -->
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 20px; gap: 10px; background: #eef5fc; padding: 10px 15px; border-radius: 6px; border: 1px solid #1d70b8;">
+      <h3 style="color: #0b3c5d; font-size: 15px; margin: 0;">📅 Filter Financial Summary by Date Range:</h3>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <label style="font-size: 12px; font-weight: bold; color: #0b3c5d;">From:</label>
+        <input type="date" id="bdFromDate" style="padding: 5px; font-size: 13px; border: 1px solid #ccc; border-radius: 4px;">
+        <label style="font-size: 12px; font-weight: bold; color: #0b3c5d;">To:</label>
+        <input type="date" id="bdToDate" style="padding: 5px; font-size: 13px; border: 1px solid #ccc; border-radius: 4px;">
+        <button type="button" onclick="calculateCollectionData()" style="background: #0b3c5d; color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; cursor: pointer; font-weight: bold;">Apply Date Filter 🔍</button>
+        <button type="button" onclick="clearBreakdownDateFilter()" style="background: #6c757d; color: white; border: none; padding: 6px 10px; border-radius: 4px; font-size: 12px; cursor: pointer;">Reset Filter</button>
       </div>
     </div>
 
+    <!-- CONTAINER FOR INDIVIDUAL SCHOOL BREAKDOWNS -->
+    <div id="schoolBreakdownsContainer">
+      <!-- Dynamically generated per school -->
+    </div>
 
-    <!-- 2. CF SCHOOL / UNIT COLLECTION BLOCK -->
-    <div class="school-block cf-theme">
-      <div class="school-title" style="color: #28a745;">
-        <span>🏢 CF (COMMERCIAL / FITNESS UNIT)</span>
-        <small style="font-size: 12px; color: #666;">CF Dedicated Hisab</small>
-      </div>
+    <!-- COMBINED GRAND TOTAL OVERALL SUMMARY BLOCK -->
+    <div class="school-block" style="background: #f8f9fa; border-color: #0b3c5d;">
+      <h3 class="school-title" style="color: #0b3c5d; border-bottom-color: #0b3c5d;">
+        <span>🌐 COMBINED GRAND TOTAL (ALL SCHOOLS COMBINED)</span>
+      </h3>
 
-      <!-- Financial Cards for CF -->
       <div class="stats-container">
-        <div class="stat-card fee">
-          <span class="card-title">Total Fee (₹)</span>
-          <h2 id="cf_cardTotalFee" style="color: #0b3c5d;">₹0</h2>
-        </div>
-        <div class="stat-card discount">
-          <span class="card-title">Total Discount (₹)</span>
-          <h2 id="cf_cardTotalDiscount" style="color: #ff9800;">₹0</h2>
-        </div>
-        <div class="stat-card received">
-          <span class="card-title">Total Received (₹)</span>
-          <h2 id="cf_cardTotalReceived" style="color: #28a745;">₹0</h2>
-        </div>
-        <div class="stat-card pending">
-          <span class="card-title">Total Pending (₹)</span>
-          <h2 id="cf_cardTotalPending" style="color: #dc3545;">₹0</h2>
-        </div>
+        <div class="stat-card fee"><span class="card-title">Grand Total Fee (₹)</span><h2 id="grandTotalFee" style="color: #0b3c5d;">₹0</h2></div>
+        <div class="stat-card discount"><span class="card-title">Grand Total Discount (₹)</span><h2 id="grandTotalDiscount" style="color: #ff9800;">₹0</h2></div>
+        <div class="stat-card received"><span class="card-title">Grand Total Received (₹)</span><h2 id="grandTotalReceived" style="color: #28a745;">₹0</h2></div>
+        <div class="stat-card pending"><span class="card-title">Grand Total Pending (₹)</span><h2 id="grandTotalPending" style="color: #dc3545;">₹0</h2></div>
       </div>
-
-      <!-- Date Filter for CF Breakdown -->
-      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 10px; gap: 10px;">
-        <h4 style="color: #28a745; margin: 0;">Vehicle Type Breakdown (CF Unit):</h4>
-        <div style="display: flex; gap: 8px; align-items: center; background: #eef9f1; padding: 4px 8px; border-radius: 6px; border: 1px solid #28a745;">
-          <label style="font-size: 11px; font-weight: bold; color: #28a745;">From:</label>
-          <input type="date" id="cf_bdFromDate" style="padding: 3px; font-size: 11px;">
-          <label style="font-size: 11px; font-weight: bold; color: #28a745;">To:</label>
-          <input type="date" id="cf_bdToDate" style="padding: 3px; font-size: 11px;">
-          <button type="button" onclick="calculateCollectionData()" style="background: #28a745; color: white; border: none; padding: 3px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;">Filter</button>
+    </div>
+    
+    <!-- Date-Specific Lookup Filter Box inside Collections Modal -->
+    <div style="background: #eef5fc; padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #1d70b8;">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+        <div>
+          <label style="color: #0b3c5d; font-weight: bold; font-size: 14px;">📅 Select Specific Date for Daily Hisab (All Units):</label>
+          <input type="date" id="collectionFilterDate" onchange="updateCollectionDateFilter()" style="padding: 8px; border: 1px solid #1d70b8; border-radius: 4px; margin-left: 10px; font-size: 14px;">
         </div>
+        <button type="button" class="btn-sm btn-edit" onclick="setTodayCollectionDate()" style="padding: 8px 12px; font-size: 13px;">View Today's Collection 🎯</button>
       </div>
-
-      <div class="table-container" style="margin-top: 0; margin-bottom: 15px;">
-        <table class="breakdown-table">
-          <thead>
-            <tr>
-              <th style="background-color: #28a745;">Vehicle Type</th>
-              <th style="background-color: #28a745;">Total Customers</th>
-              <th style="background-color: #28a745;">Total Fee (₹)</th>
-              <th style="background-color: #28a745;">Discount (₹)</th>
-              <th style="background-color: #28a745;">Received (₹)</th>
-              <th style="background-color: #28a745;">Pending (₹)</th>
-            </tr>
-          </thead>
-          <tbody id="cf_vehicleBreakdownTableBody"></tbody>
-          <tfoot>
-            <tr style="background-color: #28a745; color: white; font-weight: bold;">
-              <td>Grand Total</td>
-              <td id="cf_gtCustomers">0</td>
-              <td id="cf_gtTotalFee">₹0</td>
-              <td id="cf_gtDiscount" style="color: #ffc107;">₹0</td>
-              <td id="cf_gtReceived" style="color: #ffffff;">₹0</td>
-              <td id="cf_gtPending" style="color: #ff9999;">₹0</td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
-
-      <!-- Date-Specific Daily Hisab for CF -->
-      <div style="background: #f8f9fa; padding: 10px; border-radius: 6px; border: 1px solid #ccc; margin-bottom: 10px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-          <div>
-            <label style="color: #28a745; font-weight: bold; font-size: 13px;">📅 Daily Hisab Date (CF Unit):</label>
-            <input type="date" id="cf_collectionFilterDate" onchange="calculateCollectionData()" style="padding: 5px; font-size: 13px;">
-          </div>
-          <button type="button" class="btn-sm btn-edit" onclick="setTodayDateFor('cf_collectionFilterDate')">View Today 🎯</button>
+      
+      <!-- Date Specific Metrics -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-top: 15px;">
+        <div style="background: white; padding: 10px; border-radius: 5px; border: 1px solid #ccc; text-align: center;">
+          <small style="color: #555; font-weight: bold;">Paid Amount on Date:</small>
+          <p id="dateWiseReceived" style="margin: 5px 0 0 0; font-size: 18px; color: #28a745; font-weight: bold;">₹0</p>
         </div>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 10px;">
-          <div style="background: white; padding: 6px; text-align: center; border: 1px solid #ddd; border-radius: 4px;"><small>Paid on Date:</small><br><b id="cf_dateWiseReceived" style="color: #28a745;">₹0</b></div>
-          <div style="background: white; padding: 6px; text-align: center; border: 1px solid #ddd; border-radius: 4px;"><small>Pending on Date:</small><br><b id="cf_dateWisePending" style="color: #dc3545;">₹0</b></div>
-          <div style="background: white; padding: 6px; text-align: center; border: 1px solid #ddd; border-radius: 4px;"><small>Discount on Date:</small><br><b id="cf_dateWiseDiscount" style="color: #ff9800;">₹0</b></div>
-          <div style="background: white; padding: 6px; text-align: center; border: 1px solid #ddd; border-radius: 4px;"><small>Payments Count:</small><br><b id="cf_dateWiseTransactionsCount" style="color: #0b3c5d;">0</b></div>
+        <div style="background: white; padding: 10px; border-radius: 5px; border: 1px solid #ccc; text-align: center;">
+          <small style="color: #555; font-weight: bold;">Pending Balance on Date:</small>
+          <p id="dateWisePending" style="margin: 5px 0 0 0; font-size: 18px; color: #dc3545; font-weight: bold;">₹0</p>
         </div>
-      </div>
-
-      <div class="table-container" style="margin-top: 0; max-height: 160px; overflow-y: auto;">
-        <table class="installment-table">
-          <thead>
-            <tr><th>Customer Name</th><th>Vehicle Type</th><th>Type</th><th>Paid (₹)</th><th>Discount (₹)</th><th>Pending (₹)</th><th>Staff</th></tr>
-          </thead>
-          <tbody id="cf_dateWiseTransactionsBody"></tbody>
-        </table>
+        <div style="background: white; padding: 10px; border-radius: 5px; border: 1px solid #ccc; text-align: center;">
+          <small style="color: #555; font-weight: bold;">Discount Given on Date:</small>
+          <p id="dateWiseDiscount" style="margin: 5px 0 0 0; font-size: 18px; color: #ff9800; font-weight: bold;">₹0</p>
+        </div>
+        <div style="background: white; padding: 10px; border-radius: 5px; border: 1px solid #ccc; text-align: center;">
+          <small style="color: #555; font-weight: bold;">Entries / Payments Count:</small>
+          <p id="dateWiseTransactionsCount" style="margin: 5px 0 0 0; font-size: 18px; color: #0b3c5d; font-weight: bold;">0</p>
+        </div>
       </div>
     </div>
 
-
-    <!-- 3. STSMTS SCHOOL / UNIT COLLECTION BLOCK -->
-    <div class="school-block stsmts-theme">
-      <div class="school-title" style="color: #6f42c1;">
-        <span>🏢 STSMTS UNIT</span>
-        <small style="font-size: 12px; color: #666;">STSMTS Dedicated Hisab</small>
-      </div>
-
-      <!-- Financial Cards for STSMTS -->
-      <div class="stats-container">
-        <div class="stat-card fee">
-          <span class="card-title">Total Fee (₹)</span>
-          <h2 id="stsmts_cardTotalFee" style="color: #0b3c5d;">₹0</h2>
-        </div>
-        <div class="stat-card discount">
-          <span class="card-title">Total Discount (₹)</span>
-          <h2 id="stsmts_cardTotalDiscount" style="color: #ff9800;">₹0</h2>
-        </div>
-        <div class="stat-card received">
-          <span class="card-title">Total Received (₹)</span>
-          <h2 id="stsmts_cardTotalReceived" style="color: #28a745;">₹0</h2>
-        </div>
-        <div class="stat-card pending">
-          <span class="card-title">Total Pending (₹)</span>
-          <h2 id="stsmts_cardTotalPending" style="color: #dc3545;">₹0</h2>
-        </div>
-      </div>
-
-      <!-- Date Filter for STSMTS Breakdown -->
-      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 10px; gap: 10px;">
-        <h4 style="color: #6f42c1; margin: 0;">Vehicle Type Breakdown (STSMTS Unit):</h4>
-        <div style="display: flex; gap: 8px; align-items: center; background: #f3ebff; padding: 4px 8px; border-radius: 6px; border: 1px solid #6f42c1;">
-          <label style="font-size: 11px; font-weight: bold; color: #6f42c1;">From:</label>
-          <input type="date" id="stsmts_bdFromDate" style="padding: 3px; font-size: 11px;">
-          <label style="font-size: 11px; font-weight: bold; color: #6f42c1;">To:</label>
-          <input type="date" id="stsmts_bdToDate" style="padding: 3px; font-size: 11px;">
-          <button type="button" onclick="calculateCollectionData()" style="background: #6f42c1; color: white; border: none; padding: 3px 8px; border-radius: 4px; font-size: 11px; cursor: pointer;">Filter</button>
-        </div>
-      </div>
-
-      <div class="table-container" style="margin-top: 0; margin-bottom: 15px;">
-        <table class="breakdown-table">
-          <thead>
-            <tr>
-              <th style="background-color: #6f42c1;">Vehicle Type</th>
-              <th style="background-color: #6f42c1;">Total Customers</th>
-              <th style="background-color: #6f42c1;">Total Fee (₹)</th>
-              <th style="background-color: #6f42c1;">Discount (₹)</th>
-              <th style="background-color: #6f42c1;">Received (₹)</th>
-              <th style="background-color: #6f42c1;">Pending (₹)</th>
-            </tr>
-          </thead>
-          <tbody id="stsmts_vehicleBreakdownTableBody"></tbody>
-          <tfoot>
-            <tr style="background-color: #6f42c1; color: white; font-weight: bold;">
-              <td>Grand Total</td>
-              <td id="stsmts_gtCustomers">0</td>
-              <td id="stsmts_gtTotalFee">₹0</td>
-              <td id="stsmts_gtDiscount" style="color: #ffc107;">₹0</td>
-              <td id="stsmts_gtReceived" style="color: #ffffff;">₹0</td>
-              <td id="stsmts_gtPending" style="color: #ff9999;">₹0</td>
-            </tr>
-          </tfoot>
-        </table>
-      </div>
-
-      <!-- Date-Specific Daily Hisab for STSMTS -->
-      <div style="background: #f8f9fa; padding: 10px; border-radius: 6px; border: 1px solid #ccc; margin-bottom: 10px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-          <div>
-            <label style="color: #6f42c1; font-weight: bold; font-size: 13px;">📅 Daily Hisab Date (STSMTS Unit):</label>
-            <input type="date" id="stsmts_collectionFilterDate" onchange="calculateCollectionData()" style="padding: 5px; font-size: 13px;">
-          </div>
-          <button type="button" class="btn-sm btn-edit" onclick="setTodayDateFor('stsmts_collectionFilterDate')">View Today 🎯</button>
-        </div>
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 10px;">
-          <div style="background: white; padding: 6px; text-align: center; border: 1px solid #ddd; border-radius: 4px;"><small>Paid on Date:</small><br><b id="stsmts_dateWiseReceived" style="color: #28a745;">₹0</b></div>
-          <div style="background: white; padding: 6px; text-align: center; border: 1px solid #ddd; border-radius: 4px;"><small>Pending on Date:</small><br><b id="stsmts_dateWisePending" style="color: #dc3545;">₹0</b></div>
-          <div style="background: white; padding: 6px; text-align: center; border: 1px solid #ddd; border-radius: 4px;"><small>Discount on Date:</small><br><b id="stsmts_dateWiseDiscount" style="color: #ff9800;">₹0</b></div>
-          <div style="background: white; padding: 6px; text-align: center; border: 1px solid #ddd; border-radius: 4px;"><small>Payments Count:</small><br><b id="stsmts_dateWiseTransactionsCount" style="color: #0b3c5d;">0</b></div>
-        </div>
-      </div>
-
-      <div class="table-container" style="margin-top: 0; max-height: 160px; overflow-y: auto;">
-        <table class="installment-table">
-          <thead>
-            <tr><th>Customer Name</th><th>Vehicle Type</th><th>Type</th><th>Paid (₹)</th><th>Discount (₹)</th><th>Pending (₹)</th><th>Staff</th></tr>
-          </thead>
-          <tbody id="stsmts_dateWiseTransactionsBody"></tbody>
-        </table>
-      </div>
+    <!-- Date-Specific Transactions Table -->
+    <h3 style="color: #0b3c5d; font-size: 15px; margin-bottom: 8px;">Transactions on Selected Date (New Payments & Initial Dues):</h3>
+    <div class="table-container" style="margin-top: 0; margin-bottom: 15px; max-height: 200px; overflow-y: auto;">
+      <table class="installment-table">
+        <thead>
+          <tr>
+            <th>Customer Name</th>
+            <th>School / Unit</th>
+            <th>Vehicle Type</th>
+            <th>Payment Note / Type</th>
+            <th>Amount Paid (₹)</th>
+            <th>Discount (₹)</th>
+            <th>Current Pending Balance (₹)</th>
+            <th>Staff</th>
+          </tr>
+        </thead>
+        <tbody id="dateWiseTransactionsBody">
+          <!-- Populated dynamically -->
+        </tbody>
+      </table>
     </div>
 
   </div>
@@ -704,7 +511,7 @@
       <button class="close-modal" onclick="closeDetailsModal()">X</button>
     </div>
     <div class="details-grid">
-      <div class="details-item"><label>School / Unit</label><span id="kSchool" style="color:#0b3c5d; font-weight:bold;">-</span></div>
+      <div class="details-item"><label>School / Unit</label><span id="kSchool" style="color: #0b3c5d; font-weight: bold;">-</span></div>
       <div class="details-item"><label>Customer Name</label><span id="kName">-</span></div>
       <div class="details-item"><label>Father's Name</label><span id="kFather">-</span></div>
       <div class="details-item"><label>Mobile Number</label><span id="kMobile">-</span></div>
@@ -728,7 +535,9 @@
       
       <div class="details-item full-width" style="grid-column: 1 / -1;">
         <label>Detailed Payment & Installment History</label>
-        <div id="kInstallmentHistoryContainer" style="margin-top: 5px;"></div>
+        <div id="kInstallmentHistoryContainer" style="margin-top: 5px;">
+          <!-- Populated dynamically with table and delete buttons -->
+        </div>
       </div>
 
       <div class="details-item full-width" style="grid-column: 1 / -1;">
@@ -762,7 +571,9 @@
             <th>Change Details</th>
           </tr>
         </thead>
-        <tbody id="auditLogTableBody"></tbody>
+        <tbody id="auditLogTableBody">
+          <!-- Dynamically populated from Firestore audit_logs -->
+        </tbody>
       </table>
     </div>
   </div>
@@ -771,7 +582,7 @@
 <!-- PRINT RECEIPT TEMPLATE -->
 <div id="receiptPrintArea">
   <div style="text-align: center; border-bottom: 2px dashed #000; padding-bottom: 10px; margin-bottom: 10px;">
-    <h2 style="margin: 0; text-transform: uppercase;" id="rSchoolTitle">Tej Singh Motor Training School</h2>
+    <h2 style="margin: 0; text-transform: uppercase;" id="rSchoolName">Tej Singh Motor Training School</h2>
     <p style="margin: 3px 0; font-size: 12px;">Customer Fee Receipt / Admission Summary</p>
     <p style="margin: 0; font-size: 11px;">Date: <span id="rPrintDate">-</span></p>
   </div>
@@ -794,7 +605,7 @@
   </div>
   
   <div style="text-align: center; margin-top: 25px; font-size: 11px; border-top: 1px solid #ccc; padding-top: 8px;">
-    Thank you for choosing us!
+    Thank you for choosing Tej Singh Motor Training School!
   </div>
 </div>
 
@@ -829,17 +640,19 @@
 
   document.getElementById('paymentDate').valueAsDate = new Date();
 
-  // KEYBOARD SHORTCUTS
+  // KEYBOARD SHORTCUTS: Ctrl + Z for Undo, Shift + C for Collections Modal
   document.addEventListener('keydown', function(e) {
     const activeEl = document.activeElement;
     const isInputActive = activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.tagName === 'SELECT';
     
+    // Undo: Ctrl+Z or Cmd+Z
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
       if (isInputActive) return;
       e.preventDefault();
       performUndo();
     }
     
+    // Open Collections Modal: Shift + C
     if (e.shiftKey && e.key.toLowerCase() === 'c') {
       if (isInputActive) return;
       e.preventDefault();
@@ -1063,7 +876,7 @@
       
       db.collection("dl_records").doc(editId).update(recordData)
         .then(() => {
-          logActivity('ENTRY_EDITED', recordData.customerName, `Updated record details for ${recordData.schoolUnit} by ${activeStaffName}.`);
+          logActivity('ENTRY_EDITED', recordData.customerName, `Updated record details for unit [${recordData.schoolUnit}] by ${activeStaffName}.`);
           alert("Entry Successfully Updated!");
           resetForm();
         })
@@ -1079,7 +892,7 @@
       
       db.collection("dl_records").add(recordData)
         .then(() => {
-          logActivity('ENTRY_CREATED', recordData.customerName, `Created entry for ${recordData.schoolUnit}. Fee: ₹${recordData.totalFee}, Paid: ₹${recordData.advancePayment}`);
+          logActivity('ENTRY_CREATED', recordData.customerName, `Created new admission entry for [${recordData.schoolUnit}]. Total Fee: ₹${recordData.totalFee}, Paid: ₹${recordData.advancePayment}`);
           alert("New Entry Saved Successfully!");
           resetForm();
         })
@@ -1094,14 +907,6 @@
         let d = doc.data();
         d.id = doc.id;
 
-        // Auto-detect & Categorize School Unit for existing records if missing
-        if (!d.schoolUnit) {
-          let vStr = (d.vehicleType || "").toUpperCase();
-          if (vStr.includes("CF")) d.schoolUnit = "CF";
-          else if (vStr.includes("STSMTS")) d.schoolUnit = "STSMTS";
-          else d.schoolUnit = "Tej Singh Motor Training School";
-        }
-
         d.totalFee = parseFloat(d.totalFee) || 0;
         d.discountAmount = parseFloat(d.discountAmount) || 0;
         d.advancePayment = parseFloat(d.advancePayment) || 0;
@@ -1109,6 +914,8 @@
         let netFee = d.totalFee - d.discountAmount;
         d.balanceAmount = netFee - d.advancePayment;
         if (d.balanceAmount < 0) d.balanceAmount = 0;
+
+        if (!d.schoolUnit) d.schoolUnit = 'Tej Singh Motor Training School';
 
         if (!d.installmentsList || !Array.isArray(d.installmentsList) || d.installmentsList.length === 0) {
           d.installmentsList = [{
@@ -1142,7 +949,7 @@
     tbody.innerHTML = "";
 
     if (records.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="17" style="text-align:center; color:#666; padding: 15px;">No records found for the selected criteria.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="17" style="text-align:center; color:#666; padding: 15px;">No records found for the selected criteria (Default showing last 1 week). Use search/filters to view older entries.</td></tr>`;
       return;
     }
 
@@ -1249,7 +1056,9 @@
 
     let filtered = globalRecords.filter(d => {
       if (!isSearchingOrFiltering) {
-        if (d.paymentDate && d.paymentDate < defaultMinDateStr) return false;
+        if (d.paymentDate && d.paymentDate < defaultMinDateStr) {
+          return false;
+        }
       }
 
       const matchSearch = !searchVal || 
@@ -1258,7 +1067,8 @@
                           (d.llAppNo && d.llAppNo.toLowerCase().includes(searchVal)) ||
                           (d.dlAppNo && d.dlAppNo.toLowerCase().includes(searchVal));
 
-      const matchSchool = !schoolVal || d.schoolUnit === schoolVal;
+      let matchSchool = true;
+      if (schoolVal) matchSchool = d.schoolUnit === schoolVal;
 
       let matchVehicle = true;
       if (selectedVehicles.length > 0) {
@@ -1292,79 +1102,97 @@
   }
 
   function openCollectionModal() {
-    const today = new Date().toISOString().slice(0, 10);
-    document.getElementById('ts_collectionFilterDate').value = today;
-    document.getElementById('cf_collectionFilterDate').value = today;
-    document.getElementById('stsmts_collectionFilterDate').value = today;
-    
+    document.getElementById('collectionFilterDate').valueAsDate = new Date();
     calculateCollectionData();
     document.getElementById('collectionModal').style.display = 'flex';
   }
 
-  function setTodayDateFor(elementId) {
-    document.getElementById(elementId).valueAsDate = new Date();
+  function setTodayCollectionDate() {
+    document.getElementById('collectionFilterDate').valueAsDate = new Date();
+    calculateCollectionData();
+  }
+
+  function updateCollectionDateFilter() {
+    calculateCollectionData();
+  }
+
+  function clearBreakdownDateFilter() {
+    document.getElementById('bdFromDate').value = '';
+    document.getElementById('bdToDate').value = '';
     calculateCollectionData();
   }
 
   function calculateCollectionData() {
-    // Process calculation for each school entity independently
-    calculateSchoolCollection('Tej Singh Motor Training School', 'ts_');
-    calculateSchoolCollection('CF', 'cf_');
-    calculateSchoolCollection('STSMTS', 'stsmts_');
-  }
-
-  function calculateSchoolCollection(schoolName, prefix) {
-    let selectedDate = document.getElementById(prefix + 'collectionFilterDate').value;
-    let bdFromDate = document.getElementById(prefix + 'bdFromDate').value;
-    let bdToDate = document.getElementById(prefix + 'bdToDate').value;
+    let selectedDate = document.getElementById('collectionFilterDate').value;
+    let bdFromDate = document.getElementById('bdFromDate').value;
+    let bdToDate = document.getElementById('bdToDate').value;
 
     let dateWiseTransactions = [];
     let dateWiseReceivedSum = 0;
     let dateWisePendingSum = 0;
     let dateWiseDiscountSum = 0;
 
-    let totalOverallFee = 0;
-    let totalOverallDiscount = 0;
-    let totalOverallReceived = 0;
-    let totalOverallPending = 0;
+    const schoolUnits = ["Tej Singh Motor Training School", "CF", "STSMTS"];
+    let schoolDataMap = {};
 
-    let vehicleMap = {};
-    let filteredCustomersCount = 0;
+    schoolUnits.forEach(unit => {
+      schoolDataMap[unit] = {
+        totalFee: 0,
+        discount: 0,
+        received: 0,
+        pending: 0,
+        customersCount: 0,
+        vehicleMap: {}
+      };
+    });
 
-    let schoolRecords = globalRecords.filter(d => d.schoolUnit === schoolName);
+    let overallGrandTotalFee = 0;
+    let overallGrandTotalDiscount = 0;
+    let overallGrandTotalReceived = 0;
+    let overallGrandTotalPending = 0;
 
-    schoolRecords.forEach(d => {
+    globalRecords.forEach(d => {
+      let unit = d.schoolUnit || "Tej Singh Motor Training School";
+      if (!schoolDataMap[unit]) {
+        schoolDataMap[unit] = { totalFee: 0, discount: 0, received: 0, pending: 0, customersCount: 0, vehicleMap: {} };
+      }
+
       let fee = parseFloat(d.totalFee) || 0;
       let discount = parseFloat(d.discountAmount) || 0;
       let received = parseFloat(d.advancePayment) || 0;
       let pending = parseFloat(d.balanceAmount) || 0;
       let rawVType = (d.vehicleType || "Uncategorized").trim();
 
-      let selectedTypeList = rawVType.split(',').map(s => s.trim()).filter(s => s.length > 0);
-      if (selectedTypeList.length === 0) selectedTypeList = ["Uncategorized"];
+      let vType = rawVType;
+      if (/renewal/i.test(rawVType)) {
+        vType = "Renewal";
+      }
 
       let inBdDateRange = true;
       if (bdFromDate && d.paymentDate < bdFromDate) inBdDateRange = false;
       if (bdToDate && d.paymentDate > bdToDate) inBdDateRange = false;
 
       if (inBdDateRange) {
-        filteredCustomersCount++;
-        totalOverallFee += fee;
-        totalOverallDiscount += discount;
-        totalOverallReceived += received;
-        totalOverallPending += pending;
+        schoolDataMap[unit].customersCount++;
+        schoolDataMap[unit].totalFee += fee;
+        schoolDataMap[unit].discount += discount;
+        schoolDataMap[unit].received += received;
+        schoolDataMap[unit].pending += pending;
 
-        let splitCount = selectedTypeList.length;
-        selectedTypeList.forEach(vType => {
-          if (!vehicleMap[vType]) {
-            vehicleMap[vType] = { customers: 0, totalFee: 0, discount: 0, received: 0, pending: 0 };
-          }
-          vehicleMap[vType].customers += 1;
-          vehicleMap[vType].totalFee += (fee / splitCount);
-          vehicleMap[vType].discount += (discount / splitCount);
-          vehicleMap[vType].received += (received / splitCount);
-          vehicleMap[vType].pending += (pending / splitCount);
-        });
+        overallGrandTotalFee += fee;
+        overallGrandTotalDiscount += discount;
+        overallGrandTotalReceived += received;
+        overallGrandTotalPending += pending;
+
+        let vMap = schoolDataMap[unit].vehicleMap;
+        if (!vMap[vType]) {
+          vMap[vType] = { customers: 0, totalFee: 0, discount: 0, received: 0, pending: 0 };
+        }
+        vMap[vType].customers += 1;
+        vMap[vType].totalFee += fee;
+        vMap[vType].discount += discount;
+        vMap[vType].received += received;
+        vMap[vType].pending += pending;
       }
 
       if (d.installmentsList && d.installmentsList.length > 0) {
@@ -1374,6 +1202,7 @@
             let instObj = {
               date: instDate,
               customerName: d.customerName,
+              schoolUnit: unit,
               vehicleType: d.vehicleType || '-',
               type: inst.type || (idx === 0 ? 'Initial Admission Payment' : 'Installment'),
               amount: parseFloat(inst.amount) || 0,
@@ -1393,55 +1222,103 @@
       }
     });
 
-    schoolRecords.forEach(d => {
+    globalRecords.forEach(d => {
       let matchesSelectedDate = (d.paymentDate === selectedDate) || (d.installmentsList && d.installmentsList.some(i => i.date === selectedDate));
       if (selectedDate && matchesSelectedDate) {
         dateWisePendingSum += (parseFloat(d.balanceAmount) || 0);
       }
     });
 
-    document.getElementById(prefix + 'cardTotalFee').innerText = '₹' + totalOverallFee.toLocaleString('en-IN');
-    document.getElementById(prefix + 'cardTotalDiscount').innerText = '₹' + totalOverallDiscount.toLocaleString('en-IN');
-    document.getElementById(prefix + 'cardTotalReceived').innerText = '₹' + totalOverallReceived.toLocaleString('en-IN');
-    document.getElementById(prefix + 'cardTotalPending').innerText = '₹' + totalOverallPending.toLocaleString('en-IN');
+    let container = document.getElementById('schoolBreakdownsContainer');
+    container.innerHTML = "";
 
-    let breakdownTbody = document.getElementById(prefix + 'vehicleBreakdownTableBody');
-    breakdownTbody.innerHTML = "";
-    if (Object.keys(vehicleMap).length === 0) {
-      breakdownTbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#666;">No breakdown data found for ${schoolName}.</td></tr>`;
-    } else {
-      Object.keys(vehicleMap).forEach(key => {
-        let item = vehicleMap[key];
-        breakdownTbody.innerHTML += `<tr>
-          <td><b>${key}</b></td>
-          <td>${item.customers}</td>
-          <td>₹${item.totalFee.toLocaleString('en-IN', {maximumFractionDigits: 0})}</td>
-          <td style="color: #ff9800; font-weight: bold;">₹${item.discount.toLocaleString('en-IN', {maximumFractionDigits: 0})}</td>
-          <td style="color: #28a745; font-weight: bold;">₹${item.received.toLocaleString('en-IN', {maximumFractionDigits: 0})}</td>
-          <td style="color: #dc3545; font-weight: bold;">₹${item.pending.toLocaleString('en-IN', {maximumFractionDigits: 0})}</td>
-        </tr>`;
-      });
-    }
+    Object.keys(schoolDataMap).forEach(schoolName => {
+      let data = schoolDataMap[schoolName];
+      let themeClass = schoolName === 'CF' ? 'cf-theme' : (schoolName === 'STSMTS' ? 'stsmts-theme' : '');
 
-    document.getElementById(prefix + 'gtCustomers').innerText = filteredCustomersCount;
-    document.getElementById(prefix + 'gtTotalFee').innerText = '₹' + totalOverallFee.toLocaleString('en-IN');
-    document.getElementById(prefix + 'gtDiscount').innerText = '₹' + totalOverallDiscount.toLocaleString('en-IN');
-    document.getElementById(prefix + 'gtReceived').innerText = '₹' + totalOverallReceived.toLocaleString('en-IN');
-    document.getElementById(prefix + 'gtPending').innerText = '₹' + totalOverallPending.toLocaleString('en-IN');
+      let html = `
+        <div class="school-block ${themeClass}">
+          <h3 class="school-title" style="color: #0b3c5d;">
+            <span>🏫 ${schoolName}</span>
+          </h3>
 
-    document.getElementById(prefix + 'dateWiseReceived').innerText = '₹' + dateWiseReceivedSum.toFixed(0);
-    document.getElementById(prefix + 'dateWisePending').innerText = '₹' + dateWisePendingSum.toFixed(0);
-    document.getElementById(prefix + 'dateWiseDiscount').innerText = '₹' + dateWiseDiscountSum.toFixed(0);
-    document.getElementById(prefix + 'dateWiseTransactionsCount').innerText = dateWiseTransactions.length;
+          <div class="stats-container">
+            <div class="stat-card fee"><span class="card-title">Total Fee (₹)</span><h2 style="color: #0b3c5d;">₹${data.totalFee.toLocaleString('en-IN')}</h2></div>
+            <div class="stat-card discount"><span class="card-title">Total Discount (₹)</span><h2 style="color: #ff9800;">₹${data.discount.toLocaleString('en-IN')}</h2></div>
+            <div class="stat-card received"><span class="card-title">Total Received (₹)</span><h2 style="color: #28a745;">₹${data.received.toLocaleString('en-IN')}</h2></div>
+            <div class="stat-card pending"><span class="card-title">Total Pending (₹)</span><h2 style="color: #dc3545;">₹${data.pending.toLocaleString('en-IN')}</h2></div>
+          </div>
 
-    let dateBody = document.getElementById(prefix + 'dateWiseTransactionsBody');
+          <h4 style="color: #0b3c5d; margin: 15px 0 8px 0; font-size: 14px;">Vehicle Breakdown for ${schoolName}:</h4>
+          <div class="table-container" style="margin-top: 0;">
+            <table class="breakdown-table">
+              <thead>
+                <tr>
+                  <th>Vehicle Type</th>
+                  <th>Total Customers</th>
+                  <th>Total Fee (₹)</th>
+                  <th>Discount (₹)</th>
+                  <th>Received (₹)</th>
+                  <th>Pending (₹)</th>
+                </tr>
+              </thead>
+              <tbody>`;
+
+      if (Object.keys(data.vehicleMap).length === 0) {
+        html += `<tr><td colspan="6" style="text-align:center; color:#666;">No breakdown data found for selected date range.</td></tr>`;
+      } else {
+        Object.keys(data.vehicleMap).forEach(vKey => {
+          let vItem = data.vehicleMap[vKey];
+          html += `<tr>
+            <td><b>${vKey}</b></td>
+            <td>${vItem.customers}</td>
+            <td>₹${vItem.totalFee.toLocaleString('en-IN')}</td>
+            <td style="color: #ff9800; font-weight: bold;">₹${vItem.discount.toLocaleString('en-IN')}</td>
+            <td style="color: #28a745; font-weight: bold;">₹${vItem.received.toLocaleString('en-IN')}</td>
+            <td style="color: #dc3545; font-weight: bold;">₹${vItem.pending.toLocaleString('en-IN')}</td>
+          </tr>`;
+        });
+      }
+
+      html += `
+              </tbody>
+              <tfoot>
+                <tr style="background-color: #0b3c5d; color: white; font-weight: bold;">
+                  <td>Subtotal (${schoolName})</td>
+                  <td>${data.customersCount}</td>
+                  <td>₹${data.totalFee.toLocaleString('en-IN')}</td>
+                  <td style="color: #ffc107;">₹${data.discount.toLocaleString('en-IN')}</td>
+                  <td style="color: #2ecc71;">₹${data.received.toLocaleString('en-IN')}</td>
+                  <td style="color: #ff4d4d;">₹${data.pending.toLocaleString('en-IN')}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      `;
+
+      container.innerHTML += html;
+    });
+
+    document.getElementById('grandTotalFee').innerText = '₹' + overallGrandTotalFee.toLocaleString('en-IN');
+    document.getElementById('grandTotalDiscount').innerText = '₹' + overallGrandTotalDiscount.toLocaleString('en-IN');
+    document.getElementById('grandTotalReceived').innerText = '₹' + overallGrandTotalReceived.toLocaleString('en-IN');
+    document.getElementById('grandTotalPending').innerText = '₹' + overallGrandTotalPending.toLocaleString('en-IN');
+
+    document.getElementById('dateWiseReceived').innerText = '₹' + dateWiseReceivedSum.toFixed(0);
+    document.getElementById('dateWisePending').innerText = '₹' + dateWisePendingSum.toFixed(0);
+    document.getElementById('dateWiseDiscount').innerText = '₹' + dateWiseDiscountSum.toFixed(0);
+    document.getElementById('dateWiseTransactionsCount').innerText = dateWiseTransactions.length;
+
+    let dateBody = document.getElementById('dateWiseTransactionsBody');
     dateBody.innerHTML = "";
     if (dateWiseTransactions.length === 0) {
-      dateBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#666;">No payment transactions on ${formatDateToDMY(selectedDate)} for ${schoolName}.</td></tr>`;
+      dateBody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#666;">No payment transactions found on ${formatDateToDMY(selectedDate)}.</td></tr>`;
     } else {
       dateWiseTransactions.forEach(item => {
         dateBody.innerHTML += `<tr>
           <td><b>${item.customerName}</b></td>
+          <td><b style="color:#0b3c5d;">${item.schoolUnit}</b></td>
           <td>${item.vehicleType}</td>
           <td>${item.type}</td>
           <td style="color:green; font-weight:bold;">₹${item.amount}</td>
@@ -1528,7 +1405,7 @@
     if (!activeSelectedRecord) return;
     const d = activeSelectedRecord;
 
-    document.getElementById('rSchoolTitle').innerText = d.schoolUnit || 'Tej Singh Motor Training School';
+    document.getElementById('rSchoolName').innerText = d.schoolUnit || 'Tej Singh Motor Training School';
     document.getElementById('rPrintDate').innerText = formatDateToDMY(d.paymentDate);
     document.getElementById('rCustomerName').innerText = d.customerName || '-';
     document.getElementById('rFatherName').innerText = d.fatherName || '-';
@@ -1589,7 +1466,7 @@
       installmentsList: installments,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     }).then(() => {
-      logActivity('PAYMENT_ADDED', d.customerName, `Added installment #${installmentNum} of ₹${payAmt} on ${formatDateToDMY(payDate)} for ${d.schoolUnit}`);
+      logActivity('PAYMENT_ADDED', d.customerName, `Added installment #${installmentNum} of ₹${payAmt} on ${formatDateToDMY(payDate)} by ${activeStaffName}. New balance: ₹${finalBalance}`);
       alert("Installment payment successfully saved!");
       closePayModal();
     }).catch(err => alert("Payment Error: " + err.message));
