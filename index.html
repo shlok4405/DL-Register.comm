@@ -69,6 +69,11 @@
     td { padding: 8px; border: 1px solid #ddd; white-space: nowrap; }
     tr:nth-child(even) { background-color: #f9f9f9; }
 
+    /* Pagination Styles */
+    .pagination-container { display: flex; justify-content: space-between; align-items: center; margin-top: 15px; font-size: 13px; }
+    .pagination-btns button { padding: 6px 12px; background: #0b3c5d; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+    .pagination-btns button:disabled { background: #ccc; cursor: not-allowed; }
+
     /* Breakdown Table Styling */
     .breakdown-table th { background-color: #0b3c5d; color: white; }
     .breakdown-table tfoot td { font-weight: bold; background-color: #eef5fc; }
@@ -300,9 +305,9 @@
     <div class="filter-box">
       <label style="color: #0b3c5d;"><strong>🔍 Advanced Register Search & Filters:</strong> <span style="font-size: 12px; color: #666; font-weight: normal;">(Default showing last 7 days entries)</span></label>
       <div class="filter-grid">
-        <input type="text" id="searchInput" onkeyup="applyFilters()" placeholder="Search Name, Mobile, App No...">
+        <input type="text" id="searchInput" onkeyup="debouncedApplyFilters()" placeholder="Search Name, Mobile, App No...">
         
-        <select id="filterSchool" onchange="applyFilters()">
+        <select id="filterSchool" onchange="debouncedApplyFilters()">
           <option value="">-- All Schools / Units --</option>
           <option value="Tej Singh Motor Training School">Tej Singh School</option>
           <option value="CF">CF Unit</option>
@@ -311,7 +316,7 @@
 
         <div style="display:flex; flex-direction:column;">
           <small style="font-weight:bold; color:#555;">Filter Vehicles (Hold Ctrl/Cmd):</small>
-          <select id="filterVehicle" multiple onchange="applyFilters()">
+          <select id="filterVehicle" multiple onchange="debouncedApplyFilters()">
             <option value="Two Wheeler">Two Wheeler</option>
             <option value="Four Wheeler">Four Wheeler</option>
             <option value="AD">AD</option>
@@ -323,21 +328,21 @@
           </select>
         </div>
 
-        <select id="filterPaymentStatus" onchange="applyFilters()">
+        <select id="filterPaymentStatus" onchange="debouncedApplyFilters()">
           <option value="">-- Payment Status --</option>
           <option value="due">Pending Balance (Due)</option>
           <option value="paid">Fully Paid</option>
         </select>
 
-        <input type="text" id="filterReference" onkeyup="applyFilters()" placeholder="Filter by Reference...">
+        <input type="text" id="filterReference" onkeyup="debouncedApplyFilters()" placeholder="Filter by Reference...">
         
         <div style="display:flex; flex-direction:column;">
           <small style="font-weight:bold; color:#555;">From Date:</small>
-          <input type="date" id="fromDate" onchange="applyFilters()">
+          <input type="date" id="fromDate" onchange="debouncedApplyFilters()">
         </div>
         <div style="display:flex; flex-direction:column;">
           <small style="font-weight:bold; color:#555;">To Date:</small>
-          <input type="date" id="toDate" onchange="applyFilters()">
+          <input type="date" id="toDate" onchange="debouncedApplyFilters()">
         </div>
         <button type="button" class="clear-btn" onclick="clearFilters()" style="margin-top: auto; padding: 9px;">Clear Filters 🔄</button>
       </div>
@@ -372,6 +377,15 @@
           <!-- Dynamically populated from Firestore -->
         </tbody>
       </table>
+    </div>
+
+    <!-- PAGINATION CONTROLS -->
+    <div class="pagination-container">
+      <span id="pageInfo">Page 1 of 1 (0 Total Entries)</span>
+      <div class="pagination-btns">
+        <button id="prevBtn" onclick="changePage(-1)" disabled>Previous</button>
+        <button id="nextBtn" onclick="changePage(1)" disabled>Next</button>
+      </div>
     </div>
 
   </div>
@@ -625,10 +639,15 @@
   const db = firebase.firestore();
 
   let globalRecords = [];
+  let currentFilteredRecords = [];
+  let currentPage = 1;
+  const recordsPerPage = 25;
+
   let activeStaffName = "";
   let activeStaffEmail = "";
   let activeSelectedRecord = null;
   let undoStack = [];
+  let debounceTimer = null;
 
   const ADMIN_EMAILS = ["singharvind1082@gmail.com", "shlok44066@gmail.com"];
 
@@ -938,17 +957,88 @@
     });
   }
 
-  function renderTable(records) {
+  function debouncedApplyFilters() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      applyFilters();
+    }, 250);
+  }
+
+  function applyFilters() {
+    const searchVal = document.getElementById('searchInput').value.toLowerCase().trim();
+    const schoolVal = document.getElementById('filterSchool').value;
+    const vehicleSelect = document.getElementById('filterVehicle');
+    const selectedVehicles = Array.from(vehicleSelect.selectedOptions).map(opt => opt.value);
+    const payStatus = document.getElementById('filterPaymentStatus').value;
+    const refVal = document.getElementById('filterReference').value.toLowerCase().trim();
+    const fromDate = document.getElementById('fromDate').value;
+    const toDate = document.getElementById('toDate').value;
+
+    const isSearchingOrFiltering = searchVal !== '' || schoolVal !== '' || selectedVehicles.length > 0 || payStatus !== '' || refVal !== '' || fromDate !== '' || toDate !== '';
+
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const defaultMinDateStr = sevenDaysAgo.toISOString().split('T')[0];
+
+    currentFilteredRecords = globalRecords.filter(d => {
+      if (!isSearchingOrFiltering) {
+        if (d.paymentDate && d.paymentDate < defaultMinDateStr) {
+          return false;
+        }
+      }
+
+      const matchSearch = !searchVal || 
+                          (d.customerName && d.customerName.toLowerCase().includes(searchVal)) ||
+                          (d.mobile && d.mobile.includes(searchVal)) ||
+                          (d.llAppNo && d.llAppNo.toLowerCase().includes(searchVal)) ||
+                          (d.dlAppNo && d.dlAppNo.toLowerCase().includes(searchVal));
+
+      let matchSchool = true;
+      if (schoolVal) matchSchool = d.schoolUnit === schoolVal;
+
+      let matchVehicle = true;
+      if (selectedVehicles.length > 0) {
+        matchVehicle = selectedVehicles.some(v => d.vehicleType && d.vehicleType.includes(v));
+      }
+
+      let matchPay = true;
+      if (payStatus === 'due') matchPay = d.balanceAmount > 0;
+      if (payStatus === 'paid') matchPay = d.balanceAmount <= 0;
+
+      const matchRef = !refVal || (d.reference && d.reference.toLowerCase().includes(refVal));
+      let matchDate = true;
+      if (fromDate && d.paymentDate < fromDate) matchDate = false;
+      if (toDate && d.paymentDate > toDate) matchDate = false;
+
+      return matchSearch && matchSchool && matchVehicle && matchPay && matchRef && matchDate;
+    });
+
+    currentPage = 1;
+    renderTablePage();
+  }
+
+  function renderTablePage() {
     let tbody = document.getElementById('tableBody');
     tbody.innerHTML = "";
 
-    if (records.length === 0) {
+    const totalRecords = currentFilteredRecords.length;
+    if (totalRecords === 0) {
       tbody.innerHTML = `<tr><td colspan="17" style="text-align:center; color:#666; padding: 15px;">No records found for the selected criteria (Default showing last 1 week). Use search/filters to view older entries.</td></tr>`;
+      document.getElementById('pageInfo').innerText = "Page 0 of 0 (0 Total Entries)";
+      document.getElementById('prevBtn').disabled = true;
+      document.getElementById('nextBtn').disabled = true;
       return;
     }
 
-    records.forEach(d => {
-      let row = `<tr>
+    const totalPages = Math.ceil(totalRecords / recordsPerPage);
+    if (currentPage > totalPages) currentPage = totalPages;
+
+    const startIndex = (currentPage - 1) * recordsPerPage;
+    const pageRecords = currentFilteredRecords.slice(startIndex, startIndex + recordsPerPage);
+
+    let rowsHtml = "";
+    pageRecords.forEach(d => {
+      rowsHtml += `<tr>
         <td>${formatDateToDMY(d.paymentDate)}</td>
         <td><b style="color:#0b3c5d;">${d.schoolUnit}</b></td>
         <td><b>${d.customerName}</b></td>
@@ -972,8 +1062,17 @@
           <button class="btn-sm btn-del" onclick="deleteRecord('${d.id}', '${d.customerName}')">Del</button>
         </td>
       </tr>`;
-      tbody.innerHTML += row;
     });
+    tbody.innerHTML = rowsHtml;
+
+    document.getElementById('pageInfo').innerText = `Page ${currentPage} of ${totalPages} (${totalRecords} Total Entries)`;
+    document.getElementById('prevBtn').disabled = currentPage === 1;
+    document.getElementById('nextBtn').disabled = currentPage === totalPages;
+  }
+
+  function changePage(direction) {
+    currentPage += direction;
+    renderTablePage();
   }
 
   function editRecord(id) {
@@ -1030,58 +1129,6 @@
     document.getElementById('saveBtn').style.display = 'inline-block';
     document.getElementById('updateBtn').style.display = 'none';
     document.getElementById('cancelBtn').style.display = 'none';
-  }
-
-  function applyFilters() {
-    const searchVal = document.getElementById('searchInput').value.toLowerCase().trim();
-    const schoolVal = document.getElementById('filterSchool').value;
-    const vehicleSelect = document.getElementById('filterVehicle');
-    const selectedVehicles = Array.from(vehicleSelect.selectedOptions).map(opt => opt.value);
-    const payStatus = document.getElementById('filterPaymentStatus').value;
-    const refVal = document.getElementById('filterReference').value.toLowerCase().trim();
-    const fromDate = document.getElementById('fromDate').value;
-    const toDate = document.getElementById('toDate').value;
-
-    const isSearchingOrFiltering = searchVal !== '' || schoolVal !== '' || selectedVehicles.length > 0 || payStatus !== '' || refVal !== '' || fromDate !== '' || toDate !== '';
-
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-    const defaultMinDateStr = sevenDaysAgo.toISOString().split('T')[0];
-
-    let filtered = globalRecords.filter(d => {
-      if (!isSearchingOrFiltering) {
-        if (d.paymentDate && d.paymentDate < defaultMinDateStr) {
-          return false;
-        }
-      }
-
-      const matchSearch = !searchVal || 
-                          (d.customerName && d.customerName.toLowerCase().includes(searchVal)) ||
-                          (d.mobile && d.mobile.includes(searchVal)) ||
-                          (d.llAppNo && d.llAppNo.toLowerCase().includes(searchVal)) ||
-                          (d.dlAppNo && d.dlAppNo.toLowerCase().includes(searchVal));
-
-      let matchSchool = true;
-      if (schoolVal) matchSchool = d.schoolUnit === schoolVal;
-
-      let matchVehicle = true;
-      if (selectedVehicles.length > 0) {
-        matchVehicle = selectedVehicles.some(v => d.vehicleType && d.vehicleType.includes(v));
-      }
-
-      let matchPay = true;
-      if (payStatus === 'due') matchPay = d.balanceAmount > 0;
-      if (payStatus === 'paid') matchPay = d.balanceAmount <= 0;
-
-      const matchRef = !refVal || (d.reference && d.reference.toLowerCase().includes(refVal));
-      let matchDate = true;
-      if (fromDate && d.paymentDate < fromDate) matchDate = false;
-      if (toDate && d.paymentDate > toDate) matchDate = false;
-
-      return matchSearch && matchSchool && matchVehicle && matchPay && matchRef && matchDate;
-    });
-
-    renderTable(filtered);
   }
 
   function clearFilters() {
