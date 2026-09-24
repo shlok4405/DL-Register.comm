@@ -794,7 +794,7 @@
     const existingMatch = globalRecords.find(r => r.mobile === mobileInput && r.id !== editId);
     if (existingMatch && !editId) {
       warningEl.style.display = 'block';
-      warningEl.innerText = `⚠️ Warning: Mobile number already registered for customer "${existingMatch.customerName}"!`;
+      warningEl.textContent = `⚠️ Warning: Mobile number already registered for customer "${existingMatch.customerName}"!`;
     } else {
       warningEl.style.display = 'none';
     }
@@ -1023,8 +1023,17 @@
 
     const totalRecords = currentFilteredRecords.length;
     if (totalRecords === 0) {
-      tbody.innerHTML = `<tr><td colspan="17" style="text-align:center; color:#666; padding: 15px;">No records found for the selected criteria (Default showing last 1 week). Use search/filters to view older entries.</td></tr>`;
-      document.getElementById('pageInfo').innerText = "Page 0 of 0 (0 Total Entries)";
+      let tr = document.createElement('tr');
+      let td = document.createElement('td');
+      td.colSpan = 17;
+      td.style.textAlign = 'center';
+      td.style.color = '#666';
+      td.style.padding = '15px';
+      td.textContent = "No records found for the selected criteria (Default showing last 1 week). Use search/filters to view older entries.";
+      tr.appendChild(td);
+      tbody.appendChild(tr);
+
+      document.getElementById('pageInfo').textContent = "Page 0 of 0 (0 Total Entries)";
       document.getElementById('prevBtn').disabled = true;
       document.getElementById('nextBtn').disabled = true;
       return;
@@ -1036,38 +1045,85 @@
     const startIndex = (currentPage - 1) * recordsPerPage;
     const pageRecords = currentFilteredRecords.slice(startIndex, startIndex + recordsPerPage);
 
-    let rowsHtml = "";
     pageRecords.forEach(d => {
-      rowsHtml += `<tr>
-        <td>${formatDateToDMY(d.paymentDate)}</td>
-        <td><b style="color:#0b3c5d;">${d.schoolUnit}</b></td>
-        <td><b>${d.customerName}</b></td>
-        <td>${d.fatherName || '-'}</td>
-        <td>${d.mobile}</td>
-        <td>${d.dob}</td>
-        <td>${d.reference}</td>
-        <td>${d.llAppNo}</td>
-        <td>${d.llNo}</td>
-        <td>${d.dlAppNo}</td>
-        <td>${d.vehicleType}</td>
-        <td>₹${d.totalFee}</td>
-        <td>₹${d.discountAmount}</td>
-        <td>₹${d.advancePayment}</td>
-        <td style="color: ${d.balanceAmount > 0 ? 'red' : 'green'}; font-weight:bold;">₹${d.balanceAmount}</td>
-        <td>${d.addedBy}</td>
-        <td>
-          <button class="btn-sm btn-details" onclick="openDetailsModal('${d.id}')">View</button>
-          <button class="btn-sm btn-pay" onclick="openPayModal('${d.id}', '${d.customerName}', ${d.balanceAmount})">Pay</button>
-          <button class="btn-sm btn-edit" onclick="editRecord('${d.id}')">Edit</button>
-          <button class="btn-sm btn-del" onclick="deleteRecord('${d.id}', '${d.customerName}')">Del</button>
-        </td>
-      </tr>`;
-    });
-    tbody.innerHTML = rowsHtml;
+      let tr = document.createElement('tr');
 
-    document.getElementById('pageInfo').innerText = `Page ${currentPage} of ${totalPages} (${totalRecords} Total Entries)`;
+      // Helper function to create table cells securely
+      function addCell(text, isHtml = false, styleObj = {}) {
+        let td = document.createElement('td');
+        if (isHtml) {
+          td.innerHTML = text;
+        } else {
+          td.textContent = text;
+        }
+        for (let key in styleObj) {
+          td.style[key] = styleObj[key];
+        }
+        tr.appendChild(td);
+      }
+
+      addCell(formatDateToDMY(d.paymentDate));
+      addCell(`<b style="color:#0b3c5d;">${escapeHtml(d.schoolUnit)}</b>`, true);
+      addCell(d.customerName, false, { fontWeight: 'bold' });
+      addCell(d.fatherName || '-');
+      addCell(d.mobile);
+      addCell(d.dob);
+      addCell(d.reference);
+      addCell(d.llAppNo);
+      addCell(d.llNo);
+      addCell(d.dlAppNo);
+      addCell(d.vehicleType);
+      addCell('₹' + d.totalFee);
+      addCell('₹' + d.discountAmount);
+      addCell('₹' + d.advancePayment);
+      addCell('₹' + d.balanceAmount, false, { color: d.balanceAmount > 0 ? 'red' : 'green', fontWeight: 'bold' });
+      addCell(d.addedBy);
+
+      // Actions cell
+      let actionTd = document.createElement('td');
+      
+      let viewBtn = document.createElement('button');
+      viewBtn.className = 'btn-sm btn-details';
+      viewBtn.textContent = 'View';
+      viewBtn.onclick = () => openDetailsModal(d.id);
+      
+      let payBtn = document.createElement('button');
+      payBtn.className = 'btn-sm btn-pay';
+      payBtn.textContent = 'Pay';
+      payBtn.onclick = () => openPayModal(d.id, d.customerName, d.balanceAmount);
+
+      let editBtn = document.createElement('button');
+      editBtn.className = 'btn-sm btn-edit';
+      editBtn.textContent = 'Edit';
+      editBtn.onclick = () => editRecord(d.id);
+
+      let delBtn = document.createElement('button');
+      delBtn.className = 'btn-sm btn-del';
+      delBtn.textContent = 'Del';
+      delBtn.onclick = () => deleteRecord(d.id, d.customerName);
+
+      actionTd.appendChild(viewBtn);
+      actionTd.appendChild(payBtn);
+      actionTd.appendChild(editBtn);
+      actionTd.appendChild(delBtn);
+      tr.appendChild(actionTd);
+
+      tbody.appendChild(tr);
+    });
+
+    document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${totalPages} (${totalRecords} Total Entries)`;
     document.getElementById('prevBtn').disabled = currentPage === 1;
     document.getElementById('nextBtn').disabled = currentPage === totalPages;
+  }
+
+  function escapeHtml(text) {
+    if (!text) return '';
+    return text.toString()
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
   }
 
   function changePage(direction) {
@@ -1273,74 +1329,92 @@
       let data = schoolDataMap[schoolName];
       let themeClass = schoolName === 'CF' ? 'cf-theme' : (schoolName === 'STSMTS' ? 'stsmts-theme' : '');
 
-      let html = `
-        <div class="school-block ${themeClass}">
-          <h3 class="school-title" style="color: #0b3c5d;">
-            <span>🏫 ${schoolName} (SEPARATE OVERALL HISAB)</span>
-          </h3>
+      let schoolBlock = document.createElement('div');
+      schoolBlock.className = `school-block ${themeClass}`;
 
-          <div class="stats-container">
-            <div class="stat-card fee"><span class="card-title">Total Fee (₹)</span><h2 style="color: #0b3c5d;">₹${data.totalFee.toLocaleString('en-IN')}</h2></div>
-            <div class="stat-card discount"><span class="card-title">Total Discount (₹)</span><h2 style="color: #ff9800;">₹${data.discount.toLocaleString('en-IN')}</h2></div>
-            <div class="stat-card received"><span class="card-title">Total Received (₹)</span><h2 style="color: #28a745;">₹${data.received.toLocaleString('en-IN')}</h2></div>
-            <div class="stat-card pending"><span class="card-title">Total Pending (₹)</span><h2 style="color: #dc3545;">₹${data.pending.toLocaleString('en-IN')}</h2></div>
-          </div>
+      let titleEl = document.createElement('h3');
+      titleEl.className = 'school-title';
+      titleEl.style.color = '#0b3c5d';
+      titleEl.textContent = `🏫 ${schoolName} (SEPARATE OVERALL HISAB)`;
+      schoolBlock.appendChild(titleEl);
 
-          <h4 style="color: #0b3c5d; margin: 15px 0 8px 0; font-size: 14px;">Vehicle Breakdown for ${schoolName}:</h4>
-          <div class="table-container" style="margin-top: 0;">
-            <table class="breakdown-table">
-              <thead>
-                <tr>
-                  <th>Vehicle Type</th>
-                  <th>Total Customers</th>
-                  <th>Total Fee (₹)</th>
-                  <th>Discount (₹)</th>
-                  <th>Received (₹)</th>
-                  <th>Pending (₹)</th>
-                </tr>
-              </thead>
-              <tbody>`;
+      let statsContainer = document.createElement('div');
+      statsContainer.className = 'stats-container';
+      statsContainer.innerHTML = `
+        <div class="stat-card fee"><span class="card-title">Total Fee (₹)</span><h2 style="color: #0b3c5d;">₹${data.totalFee.toLocaleString('en-IN')}</h2></div>
+        <div class="stat-card discount"><span class="card-title">Total Discount (₹)</span><h2 style="color: #ff9800;">₹${data.discount.toLocaleString('en-IN')}</h2></div>
+        <div class="stat-card received"><span class="card-title">Total Received (₹)</span><h2 style="color: #28a745;">₹${data.received.toLocaleString('en-IN')}</h2></div>
+        <div class="stat-card pending"><span class="card-title">Total Pending (₹)</span><h2 style="color: #dc3545;">₹${data.pending.toLocaleString('en-IN')}</h2></div>
+      `;
+      schoolBlock.appendChild(statsContainer);
 
+      let subTitle = document.createElement('h4');
+      subTitle.style.cssText = "color: #0b3c5d; margin: 15px 0 8px 0; font-size: 14px;";
+      subTitle.textContent = `Vehicle Breakdown for ${schoolName}:`;
+      schoolBlock.appendChild(subTitle);
+
+      let tableContainer = document.createElement('div');
+      tableContainer.className = 'table-container';
+      tableContainer.style.marginTop = '0';
+
+      let table = document.createElement('table');
+      table.className = 'breakdown-table';
+      
+      let thead = document.createElement('thead');
+      thead.innerHTML = `
+        <tr>
+          <th>Vehicle Type</th>
+          <th>Total Customers</th>
+          <th>Total Fee (₹)</th>
+          <th>Discount (₹)</th>
+          <th>Received (₹)</th>
+          <th>Pending (₹)</th>
+        </tr>
+      `;
+      table.appendChild(thead);
+
+      let tbody = document.createElement('tbody');
       if (Object.keys(data.vehicleMap).length === 0) {
-        html += `<tr><td colspan="6" style="text-align:center; color:#666;">No breakdown data found for selected date range.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#666;">No breakdown data found for selected date range.</td></tr>`;
       } else {
         Object.keys(data.vehicleMap).forEach(vKey => {
           let vItem = data.vehicleMap[vKey];
-          html += `<tr>
-            <td><b>${vKey}</b></td>
+          let tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><b>${escapeHtml(vKey)}</b></td>
             <td>${vItem.customers}</td>
             <td>₹${vItem.totalFee.toLocaleString('en-IN')}</td>
             <td style="color: #ff9800; font-weight: bold;">₹${vItem.discount.toLocaleString('en-IN')}</td>
             <td style="color: #28a745; font-weight: bold;">₹${vItem.received.toLocaleString('en-IN')}</td>
             <td style="color: #dc3545; font-weight: bold;">₹${vItem.pending.toLocaleString('en-IN')}</td>
-          </tr>`;
+          `;
+          tbody.appendChild(tr);
         });
       }
+      table.appendChild(tbody);
 
-      html += `
-              </tbody>
-              <tfoot>
-                <tr style="background-color: #0b3c5d; color: white; font-weight: bold;">
-                  <td>Subtotal (${schoolName})</td>
-                  <td>${data.customersCount}</td>
-                  <td>₹${data.totalFee.toLocaleString('en-IN')}</td>
-                  <td style="color: #ffc107;">₹${data.discount.toLocaleString('en-IN')}</td>
-                  <td style="color: #2ecc71;">₹${data.received.toLocaleString('en-IN')}</td>
-                  <td style="color: #ff4d4d;">₹${data.pending.toLocaleString('en-IN')}</td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-        </div>
+      let tfoot = document.createElement('tfoot');
+      tfoot.innerHTML = `
+        <tr style="background-color: #0b3c5d; color: white; font-weight: bold;">
+          <td>Subtotal (${escapeHtml(schoolName)})</td>
+          <td>${data.customersCount}</td>
+          <td>₹${data.totalFee.toLocaleString('en-IN')}</td>
+          <td style="color: #ffc107;">₹${data.discount.toLocaleString('en-IN')}</td>
+          <td style="color: #2ecc71;">₹${data.received.toLocaleString('en-IN')}</td>
+          <td style="color: #ff4d4d;">₹${data.pending.toLocaleString('en-IN')}</td>
+        </tr>
       `;
+      table.appendChild(tfoot);
 
-      container.innerHTML += html;
+      tableContainer.appendChild(table);
+      schoolBlock.appendChild(tableContainer);
+      container.appendChild(schoolBlock);
     });
 
-    document.getElementById('dateWiseReceived').innerText = '₹' + dateWiseReceivedSum.toFixed(0);
-    document.getElementById('dateWisePending').innerText = '₹' + dateWisePendingSum.toFixed(0);
-    document.getElementById('dateWiseDiscount').innerText = '₹' + dateWiseDiscountSum.toFixed(0);
-    document.getElementById('dateWiseTransactionsCount').innerText = dateWiseTransactions.length;
+    document.getElementById('dateWiseReceived').textContent = '₹' + dateWiseReceivedSum.toFixed(0);
+    document.getElementById('dateWisePending').textContent = '₹' + dateWisePendingSum.toFixed(0);
+    document.getElementById('dateWiseDiscount').textContent = '₹' + dateWiseDiscountSum.toFixed(0);
+    document.getElementById('dateWiseTransactionsCount').textContent = dateWiseTransactions.length;
 
     let dateBody = document.getElementById('dateWiseTransactionsBody');
     dateBody.innerHTML = "";
@@ -1348,16 +1422,18 @@
       dateBody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#666;">No payment transactions found on ${formatDateToDMY(selectedDate)}${selectedSchoolFilter ? ' for ' + selectedSchoolFilter : ''}.</td></tr>`;
     } else {
       dateWiseTransactions.forEach(item => {
-        dateBody.innerHTML += `<tr>
-          <td><b>${item.customerName}</b></td>
-          <td><b style="color:#0b3c5d;">${item.schoolUnit}</b></td>
-          <td>${item.vehicleType}</td>
-          <td>${item.type}</td>
+        let tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><b>${escapeHtml(item.customerName)}</b></td>
+          <td><b style="color:#0b3c5d;">${escapeHtml(item.schoolUnit)}</b></td>
+          <td>${escapeHtml(item.vehicleType)}</td>
+          <td>${escapeHtml(item.type)}</td>
           <td style="color:green; font-weight:bold;">₹${item.amount}</td>
           <td style="color:#ff9800; font-weight:bold;">₹${item.discount}</td>
           <td style="color:red; font-weight:bold;">₹${item.currentBalance}</td>
-          <td>${item.operator}</td>
-        </tr>`;
+          <td>${escapeHtml(item.operator)}</td>
+        `;
+        dateBody.appendChild(tr);
       });
     }
   }
@@ -1372,58 +1448,92 @@
 
     activeSelectedRecord = d;
 
-    document.getElementById('kSchool').innerText = d.schoolUnit || 'Tej Singh Motor Training School';
-    document.getElementById('kName').innerText = d.customerName || '-';
-    document.getElementById('kFather').innerText = d.fatherName || '-';
-    document.getElementById('kMobile').innerText = d.mobile || '-';
-    document.getElementById('kDob').innerText = formatDateToDMY(d.dob) || '-';
-    document.getElementById('kAddress').innerText = d.address || '-';
-    document.getElementById('kRef').innerText = d.reference || '-';
-    document.getElementById('kVehicles').innerText = d.vehicleType || '-';
-    document.getElementById('kLlOutside').innerText = d.llOutside || '-';
-    document.getElementById('kLlAppNo').innerText = d.llAppNo || '-';
-    document.getElementById('kLlNo').innerText = d.llNo || '-';
-    document.getElementById('kDlAppNo').innerText = d.dlAppNo || '-';
-    document.getElementById('kTotal').innerText = '₹' + (d.totalFee || 0);
-    document.getElementById('kDiscount').innerText = '₹' + (d.discountAmount || 0);
-    document.getElementById('kDiscountNote').innerText = d.discountNote || '-';
-    document.getElementById('kPaid').innerText = '₹' + (d.advancePayment || 0);
-    document.getElementById('kBalance').innerText = '₹' + (d.balanceAmount || 0);
-    document.getElementById('kPayDate').innerText = formatDateToDMY(d.paymentDate) || '-';
-    document.getElementById('kOperator').innerText = d.addedBy || '-';
-    document.getElementById('kRemarks').innerText = d.remarks || '-';
+    document.getElementById('kSchool').textContent = d.schoolUnit || 'Tej Singh Motor Training School';
+    document.getElementById('kName').textContent = d.customerName || '-';
+    document.getElementById('kFather').textContent = d.fatherName || '-';
+    document.getElementById('kMobile').textContent = d.mobile || '-';
+    document.getElementById('kDob').textContent = formatDateToDMY(d.dob) || '-';
+    document.getElementById('kAddress').textContent = d.address || '-';
+    document.getElementById('kRef').textContent = d.reference || '-';
+    document.getElementById('kVehicles').textContent = d.vehicleType || '-';
+    document.getElementById('kLlOutside').textContent = d.llOutside || '-';
+    document.getElementById('kLlAppNo').textContent = d.llAppNo || '-';
+    document.getElementById('kLlNo').textContent = d.llNo || '-';
+    document.getElementById('kDlAppNo').textContent = d.dlAppNo || '-';
+    document.getElementById('kTotal').textContent = '₹' + (d.totalFee || 0);
+    document.getElementById('kDiscount').textContent = '₹' + (d.discountAmount || 0);
+    document.getElementById('kDiscountNote').textContent = d.discountNote || '-';
+    document.getElementById('kPaid').textContent = '₹' + (d.advancePayment || 0);
+    document.getElementById('kBalance').textContent = '₹' + (d.balanceAmount || 0);
+    document.getElementById('kPayDate').textContent = formatDateToDMY(d.paymentDate) || '-';
+    document.getElementById('kOperator').textContent = d.addedBy || '-';
+    document.getElementById('kRemarks').textContent = d.remarks || '-';
 
     let historyContainer = document.getElementById('kInstallmentHistoryContainer');
+    historyContainer.innerHTML = "";
+    
     if (!d.installmentsList || d.installmentsList.length === 0) {
-      historyContainer.innerHTML = `<span style="color:#666;">No payment history recorded.</span>`;
+      let span = document.createElement('span');
+      span.style.color = '#666';
+      span.textContent = "No payment history recorded.";
+      historyContainer.appendChild(span);
     } else {
-      let tableHtml = `<table class="installment-table">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Payment Type / Note</th>
-            <th>Date</th>
-            <th>Amount</th>
-            <th>Staff / Added By</th>
-            <th class="no-print">Action</th>
-          </tr>
-        </thead>
-        <tbody>`;
+      let table = document.createElement('table');
+      table.className = 'installment-table';
       
+      let thead = document.createElement('thead');
+      thead.innerHTML = `
+        <tr>
+          <th>#</th>
+          <th>Payment Type / Note</th>
+          <th>Date</th>
+          <th>Amount</th>
+          <th>Staff / Added By</th>
+          <th class="no-print">Action</th>
+        </tr>
+      `;
+      table.appendChild(thead);
+
+      let tbody = document.createElement('tbody');
       d.installmentsList.forEach((inst, index) => {
-        tableHtml += `<tr>
-          <td>${index + 1}</td>
-          <td><b>${inst.type || 'Installment Payment'}</b></td>
-          <td>${formatDateToDMY(inst.date)}</td>
-          <td style="color: green; font-weight: bold;">₹${inst.amount}</td>
-          <td>${inst.operator || 'Staff'}</td>
-          <td class="no-print">
-            <button class="btn-sm btn-del" onclick="deleteInstallment('${d.id}', ${index})">Delete</button>
-          </td>
-        </tr>`;
+        let tr = document.createElement('tr');
+        
+        let tdNum = document.createElement('td');
+        tdNum.textContent = index + 1;
+        tr.appendChild(tdNum);
+
+        let tdType = document.createElement('td');
+        let bType = document.createElement('b');
+        bType.textContent = inst.type || 'Installment Payment';
+        tdType.appendChild(bType);
+        tr.appendChild(tdType);
+
+        let tdDate = document.createElement('td');
+        tdDate.textContent = formatDateToDMY(inst.date);
+        tr.appendChild(tdDate);
+
+        let tdAmount = document.createElement('td');
+        tdAmount.style.cssText = "color: green; font-weight: bold;";
+        tdAmount.textContent = '₹' + inst.amount;
+        tr.appendChild(tdAmount);
+
+        let tdOp = document.createElement('td');
+        tdOp.textContent = inst.operator || 'Staff';
+        tr.appendChild(tdOp);
+
+        let tdAction = document.createElement('td');
+        tdAction.className = 'no-print';
+        let delBtn = document.createElement('button');
+        delBtn.className = 'btn-sm btn-del';
+        delBtn.textContent = 'Delete';
+        delBtn.onclick = () => deleteInstallment(d.id, index);
+        tdAction.appendChild(delBtn);
+        tr.appendChild(tdAction);
+
+        tbody.appendChild(tr);
       });
-      tableHtml += `</tbody></table>`;
-      historyContainer.innerHTML = tableHtml;
+      table.appendChild(tbody);
+      historyContainer.appendChild(table);
     }
 
     document.getElementById('detailsModal').style.display = 'flex';
@@ -1437,27 +1547,27 @@
     if (!activeSelectedRecord) return;
     const d = activeSelectedRecord;
 
-    document.getElementById('rSchoolName').innerText = d.schoolUnit || 'Tej Singh Motor Training School';
-    document.getElementById('rPrintDate').innerText = formatDateToDMY(d.paymentDate);
-    document.getElementById('rCustomerName').innerText = d.customerName || '-';
-    document.getElementById('rFatherName').innerText = d.fatherName || '-';
-    document.getElementById('rMobile').innerText = d.mobile || '-';
-    document.getElementById('rVehicleType').innerText = d.vehicleType || '-';
-    document.getElementById('rLlAppNo').innerText = d.llAppNo || '-';
-    document.getElementById('rDlAppNo').innerText = d.dlAppNo || '-';
-    document.getElementById('rTotalFee').innerText = d.totalFee || 0;
-    document.getElementById('rDiscountAmount').innerText = d.discountAmount || 0;
-    document.getElementById('rPaidAmount').innerText = d.advancePayment || 0;
-    document.getElementById('rBalanceAmount').innerText = d.balanceAmount || 0;
-    document.getElementById('rStaffName').innerText = d.addedBy || activeStaffName || 'Staff';
+    document.getElementById('rSchoolName').textContent = d.schoolUnit || 'Tej Singh Motor Training School';
+    document.getElementById('rPrintDate').textContent = formatDateToDMY(d.paymentDate);
+    document.getElementById('rCustomerName').textContent = d.customerName || '-';
+    document.getElementById('rFatherName').textContent = d.fatherName || '-';
+    document.getElementById('rMobile').textContent = d.mobile || '-';
+    document.getElementById('rVehicleType').textContent = d.vehicleType || '-';
+    document.getElementById('rLlAppNo').textContent = d.llAppNo || '-';
+    document.getElementById('rDlAppNo').textContent = d.dlAppNo || '-';
+    document.getElementById('rTotalFee').textContent = d.totalFee || 0;
+    document.getElementById('rDiscountAmount').textContent = d.discountAmount || 0;
+    document.getElementById('rPaidAmount').textContent = d.advancePayment || 0;
+    document.getElementById('rBalanceAmount').textContent = d.balanceAmount || 0;
+    document.getElementById('rStaffName').textContent = d.addedBy || activeStaffName || 'Staff';
 
     window.print();
   }
 
   function openPayModal(id, name, balance) {
     document.getElementById('payRecordId').value = id;
-    document.getElementById('payCustomerName').innerText = name;
-    document.getElementById('payCurrentBalance').innerText = '₹' + balance;
+    document.getElementById('payCustomerName').textContent = name;
+    document.getElementById('payCurrentBalance').textContent = '₹' + balance;
     document.getElementById('payAmountInput').value = '';
     document.getElementById('payDateInput').valueAsDate = new Date();
     document.getElementById('payModal').style.display = 'flex';
@@ -1549,7 +1659,13 @@
     db.collection("audit_logs").limit(150).get().then(snapshot => {
       tbody.innerHTML = "";
       if (snapshot.empty) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">No activity logs found.</td></tr>`;
+        let tr = document.createElement('tr');
+        let td = document.createElement('td');
+        td.colSpan = 5;
+        td.style.textAlign = 'center';
+        td.textContent = "No activity logs found.";
+        tr.appendChild(td);
+        tbody.appendChild(tr);
         return;
       }
       let logsArray = [];
@@ -1562,18 +1678,43 @@
         if (log.action === 'PAYMENT_ADDED') badgeClass = 'badge-pay';
         if (log.action === 'ENTRY_DELETED' || log.action === 'INSTALLMENT_DELETED') badgeClass = 'badge-delete';
 
-        tbody.innerHTML += `
-          <tr>
-            <td>${log.formattedTime || 'N/A'}</td>
-            <td><b>${log.performedBy || 'Staff'}</b><br><small>${log.staffEmail || ''}</small></td>
-            <td><span class="badge ${badgeClass}">${log.action}</span></td>
-            <td><b>${log.customerName || '-'}</b></td>
-            <td>${log.details || '-'}</td>
-          </tr>
-        `;
+        let tr = document.createElement('tr');
+
+        let tdTime = document.createElement('td');
+        tdTime.textContent = log.formattedTime || 'N/A';
+        tr.appendChild(tdTime);
+
+        let tdStaff = document.createElement('td');
+        let bStaff = document.createElement('b');
+        bStaff.textContent = log.performedBy || 'Staff';
+        tdStaff.appendChild(bStaff);
+        tdStaff.appendChild(document.createElement('br'));
+        let smEmail = document.createElement('small');
+        smEmail.textContent = log.staffEmail || '';
+        tdStaff.appendChild(smEmail);
+        tr.appendChild(tdStaff);
+
+        let tdAction = document.createElement('td');
+        let spanBadge = document.createElement('span');
+        spanBadge.className = `badge ${badgeClass}`;
+        spanBadge.textContent = log.action;
+        tdAction.appendChild(spanBadge);
+        tr.appendChild(tdAction);
+
+        let tdCust = document.createElement('td');
+        let bCust = document.createElement('b');
+        bCust.textContent = log.customerName || '-';
+        tdCust.appendChild(bCust);
+        tr.appendChild(tdCust);
+
+        let tdDetails = document.createElement('td');
+        tdDetails.textContent = log.details || '-';
+        tr.appendChild(tdDetails);
+
+        tbody.appendChild(tr);
       });
     }).catch(err => {
-      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Error loading logs: ${err.message}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Error loading logs: ${escapeHtml(err.message)}</td></tr>`;
     });
   }
 
