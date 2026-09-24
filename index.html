@@ -1048,7 +1048,6 @@
     pageRecords.forEach(d => {
       let tr = document.createElement('tr');
 
-      // Helper function to create table cells securely
       function addCell(text, isHtml = false, styleObj = {}) {
         let td = document.createElement('td');
         if (isHtml) {
@@ -1079,7 +1078,6 @@
       addCell('₹' + d.balanceAmount, false, { color: d.balanceAmount > 0 ? 'red' : 'green', fontWeight: 'bold' });
       addCell(d.addedBy);
 
-      // Actions cell
       let actionTd = document.createElement('td');
       
       let viewBtn = document.createElement('button');
