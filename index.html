@@ -110,7 +110,7 @@
 
     /* Profile Details Layout */
     .details-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; font-size: 14px; }
-    .details-item { background: #f8f9fa; padding: 10px; border-radius: 5px; border-left: 3px solid #1d70b8; }
+    .details-item { background: #f8f9fa; padding: 10px; border-radius: 5px; border-left: 3px solid #1d70b8; position: relative; }
     .details-item label { display: block; font-size: 11px; color: #666; font-weight: bold; text-transform: uppercase; }
     .details-item span { font-size: 14px; font-weight: 600; color: #222; }
 
@@ -533,18 +533,45 @@
       <div class="details-item"><label>LL Number</label><span id="kLlNo">-</span></div>
       <div class="details-item"><label>DL Application No.</label><span id="kDlAppNo">-</span></div>
       
-      <div class="details-item"><label>Total Fee</label><span id="kTotal">₹0</span></div>
-      <div class="details-item"><label>Discount Amount</label><span id="kDiscount">₹0</span></div>
+      <!-- Payment Details with Direct Quick Edit Options -->
+      <div class="details-item">
+        <label>Total Fee 
+          <button class="btn-sm btn-edit no-print" onclick="quickEditField('totalFee')" style="margin-left:5px; padding:1px 5px; font-size:10px;">✏️ Edit</button>
+        </label>
+        <span id="kTotal">₹0</span>
+      </div>
+      
+      <div class="details-item">
+        <label>Discount Amount 
+          <button class="btn-sm btn-edit no-print" onclick="quickEditField('discountAmount')" style="margin-left:5px; padding:1px 5px; font-size:10px;">✏️ Edit</button>
+        </label>
+        <span id="kDiscount">₹0</span>
+      </div>
+      
       <div class="details-item"><label>Discount Note</label><span id="kDiscountNote">-</span></div>
-      <div class="details-item"><label>Paid Amount</label><span id="kPaid">₹0</span></div>
+      
+      <div class="details-item">
+        <label>Initial Paid / Advance
+          <button class="btn-sm btn-edit no-print" onclick="quickEditField('advancePayment')" style="margin-left:5px; padding:1px 5px; font-size:10px;">✏️ Edit</button>
+        </label>
+        <span id="kPaid">₹0</span>
+      </div>
+      
       <div class="details-item"><label>Balance Amount</label><span id="kBalance" style="color:red;">₹0</span></div>
-      <div class="details-item"><label>Initial Payment Date</label><span id="kPayDate">-</span></div>
+      
+      <div class="details-item">
+        <label>Initial Payment Date
+          <button class="btn-sm btn-edit no-print" onclick="quickEditField('paymentDate')" style="margin-left:5px; padding:1px 5px; font-size:10px;">✏️ Edit</button>
+        </label>
+        <span id="kPayDate">-</span>
+      </div>
+      
       <div class="details-item"><label>Added / Updated By</label><span id="kOperator">-</span></div>
       
       <div class="details-item full-width" style="grid-column: 1 / -1;">
         <label>Detailed Payment & Installment History</label>
         <div id="kInstallmentHistoryContainer" style="margin-top: 5px;">
-          <!-- Populated dynamically with table and delete buttons -->
+          <!-- Populated dynamically with table, edit, and delete buttons -->
         </div>
       </div>
 
@@ -844,64 +871,100 @@
     const selectedVehicles = getSelectedVehicles();
     if (!selectedVehicles) { alert("Please select at least one vehicle type!"); return; }
 
-    const recordData = {
-      schoolUnit: document.getElementById('schoolUnit').value,
-      customerName: document.getElementById('customerName').value,
-      fatherName: document.getElementById('fatherName').value,
-      mobile: mobileInput,
-      dob: document.getElementById('dob').value,
-      vehicleType: selectedVehicles,
-      reference: document.getElementById('reference').value || '-',
-      llOutside: document.getElementById('llOutside').value,
-      address: document.getElementById('address').value || '-',
-      llAppNo: document.getElementById('llAppNo').value || '-',
-      llNo: document.getElementById('llNo').value || '-',
-      dlAppNo: document.getElementById('dlAppNo').value || '-',
-      remarks: document.getElementById('remarks').value || '-',
-      discountNote: document.getElementById('discountNote').value || '-',
-      discountAmount: parseFloat(document.getElementById('discountAmount').value) || 0,
-      totalFee: parseFloat(document.getElementById('totalFee').value) || 0,
-      advancePayment: parseFloat(document.getElementById('advancePayment').value) || 0,
-      balanceAmount: parseFloat(document.getElementById('balanceAmount').value) || 0,
-      paymentDate: newPaymentDate,
-      addedBy: activeStaffName || 'Staff',
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    };
+    const inputTotal = parseFloat(document.getElementById('totalFee').value) || 0;
+    const inputDiscount = parseFloat(document.getElementById('discountAmount').value) || 0;
+    const inputAdvance = parseFloat(document.getElementById('advancePayment').value) || 0;
 
     if (editId) {
       const oldRec = globalRecords.find(r => r.id === editId);
-      
+      pushToUndoStack('EDIT_RECORD', editId, JSON.parse(JSON.stringify(oldRec)));
+
       let installments = oldRec && oldRec.installmentsList ? JSON.parse(JSON.stringify(oldRec.installmentsList)) : [];
       if (installments.length > 0) {
         installments[0].date = newPaymentDate;
-        installments[0].amount = recordData.advancePayment;
+        installments[0].amount = inputAdvance;
       } else {
         installments = [{
           type: 'Initial Admission Payment',
-          amount: recordData.advancePayment,
+          amount: inputAdvance,
           date: newPaymentDate,
           operator: activeStaffName
         }];
       }
-      recordData.installmentsList = installments;
 
-      pushToUndoStack('EDIT_RECORD', editId, oldRec);
-      
+      let totalPaidAllInst = 0;
+      installments.forEach(inst => totalPaidAllInst += parseFloat(inst.amount) || 0);
+
+      const netFee = inputTotal - inputDiscount;
+      let calculatedBalance = netFee - totalPaidAllInst;
+      if (calculatedBalance < 0) calculatedBalance = 0;
+
+      const recordData = {
+        schoolUnit: document.getElementById('schoolUnit').value,
+        customerName: document.getElementById('customerName').value,
+        fatherName: document.getElementById('fatherName').value,
+        mobile: mobileInput,
+        dob: document.getElementById('dob').value,
+        vehicleType: selectedVehicles,
+        reference: document.getElementById('reference').value || '-',
+        llOutside: document.getElementById('llOutside').value,
+        address: document.getElementById('address').value || '-',
+        llAppNo: document.getElementById('llAppNo').value || '-',
+        llNo: document.getElementById('llNo').value || '-',
+        dlAppNo: document.getElementById('dlAppNo').value || '-',
+        remarks: document.getElementById('remarks').value || '-',
+        discountNote: document.getElementById('discountNote').value || '-',
+        discountAmount: inputDiscount,
+        totalFee: inputTotal,
+        advancePayment: totalPaidAllInst,
+        balanceAmount: calculatedBalance,
+        paymentDate: newPaymentDate,
+        installmentsList: installments,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
+
       db.collection("dl_records").doc(editId).update(recordData)
         .then(() => {
-          logActivity('ENTRY_EDITED', recordData.customerName, `Updated record details for unit [${recordData.schoolUnit}] by ${activeStaffName}.`);
+          logActivity('ENTRY_EDITED', recordData.customerName, `Updated record details & recalculated payments for [${recordData.schoolUnit}] by ${activeStaffName}.`);
           alert("Entry Successfully Updated!");
           resetForm();
         })
         .catch(err => alert("Update Error: " + err.message));
     } else {
-      recordData.installmentsList = [{
-        type: 'Initial Admission Payment',
-        amount: recordData.advancePayment,
-        date: newPaymentDate,
-        operator: activeStaffName
-      }];
-      recordData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+      const netFee = inputTotal - inputDiscount;
+      let calculatedBalance = netFee - inputAdvance;
+      if (calculatedBalance < 0) calculatedBalance = 0;
+
+      const recordData = {
+        schoolUnit: document.getElementById('schoolUnit').value,
+        customerName: document.getElementById('customerName').value,
+        fatherName: document.getElementById('fatherName').value,
+        mobile: mobileInput,
+        dob: document.getElementById('dob').value,
+        vehicleType: selectedVehicles,
+        reference: document.getElementById('reference').value || '-',
+        llOutside: document.getElementById('llOutside').value,
+        address: document.getElementById('address').value || '-',
+        llAppNo: document.getElementById('llAppNo').value || '-',
+        llNo: document.getElementById('llNo').value || '-',
+        dlAppNo: document.getElementById('dlAppNo').value || '-',
+        remarks: document.getElementById('remarks').value || '-',
+        discountNote: document.getElementById('discountNote').value || '-',
+        discountAmount: inputDiscount,
+        totalFee: inputTotal,
+        advancePayment: inputAdvance,
+        balanceAmount: calculatedBalance,
+        paymentDate: newPaymentDate,
+        addedBy: activeStaffName || 'Staff',
+        installmentsList: [{
+          type: 'Initial Admission Payment',
+          amount: inputAdvance,
+          date: newPaymentDate,
+          operator: activeStaffName
+        }],
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      };
       
       db.collection("dl_records").add(recordData)
         .then(() => {
@@ -922,23 +985,25 @@
 
         d.totalFee = parseFloat(d.totalFee) || 0;
         d.discountAmount = parseFloat(d.discountAmount) || 0;
-        d.advancePayment = parseFloat(d.advancePayment) || 0;
-        
-        let netFee = d.totalFee - d.discountAmount;
-        d.balanceAmount = netFee - d.advancePayment;
-        if (d.balanceAmount < 0) d.balanceAmount = 0;
-
-        if (!d.schoolUnit) d.schoolUnit = 'Tej Singh Motor Training School';
 
         if (!d.installmentsList || !Array.isArray(d.installmentsList) || d.installmentsList.length === 0) {
           d.installmentsList = [{
             type: 'Initial Admission Payment',
-            amount: d.advancePayment || 0,
+            amount: parseFloat(d.advancePayment) || 0,
             date: d.paymentDate || '-',
             operator: d.addedBy || 'Staff'
           }];
         }
 
+        let calculatedPaid = 0;
+        d.installmentsList.forEach(inst => calculatedPaid += parseFloat(inst.amount) || 0);
+        d.advancePayment = calculatedPaid;
+
+        let netFee = d.totalFee - d.discountAmount;
+        d.balanceAmount = netFee - d.advancePayment;
+        if (d.balanceAmount < 0) d.balanceAmount = 0;
+
+        if (!d.schoolUnit) d.schoolUnit = 'Tej Singh Motor Training School';
         if (!d.vehicleType) d.vehicleType = 'Uncategorized';
         if (!d.reference) d.reference = '-';
         if (!d.llOutside) d.llOutside = 'No (Made Here)';
@@ -954,6 +1019,13 @@
         globalRecords.push(d);
       });
       applyFilters();
+
+      if (activeSelectedRecord) {
+        let updatedActive = globalRecords.find(r => r.id === activeSelectedRecord.id);
+        if (updatedActive && document.getElementById('detailsModal').style.display === 'flex') {
+          openDetailsModal(updatedActive.id);
+        }
+      }
     });
   }
 
@@ -1150,9 +1222,17 @@
     document.getElementById('discountNote').value = rec.discountNote === '-' ? '' : rec.discountNote;
     document.getElementById('discountAmount').value = rec.discountAmount || 0;
     document.getElementById('totalFee').value = rec.totalFee || 0;
-    document.getElementById('advancePayment').value = rec.advancePayment || 0;
-    document.getElementById('balanceAmount').value = rec.balanceAmount || 0;
+    
+    let initialAmt = 0;
+    if (rec.installmentsList && rec.installmentsList.length > 0) {
+      initialAmt = parseFloat(rec.installmentsList[0].amount) || 0;
+    } else {
+      initialAmt = rec.advancePayment || 0;
+    }
+    document.getElementById('advancePayment').value = initialAmt;
     document.getElementById('paymentDate').value = rec.paymentDate || '';
+
+    calculateBalance();
 
     document.getElementById('saveBtn').style.display = 'none';
     document.getElementById('updateBtn').style.display = 'inline-block';
@@ -1521,10 +1601,18 @@
 
         let tdAction = document.createElement('td');
         tdAction.className = 'no-print';
+
+        let editInstBtn = document.createElement('button');
+        editInstBtn.className = 'btn-sm btn-edit';
+        editInstBtn.textContent = 'Edit';
+        editInstBtn.onclick = () => editInstallment(d.id, index);
+
         let delBtn = document.createElement('button');
         delBtn.className = 'btn-sm btn-del';
         delBtn.textContent = 'Delete';
         delBtn.onclick = () => deleteInstallment(d.id, index);
+
+        tdAction.appendChild(editInstBtn);
         tdAction.appendChild(delBtn);
         tr.appendChild(tdAction);
 
@@ -1535,6 +1623,110 @@
     }
 
     document.getElementById('detailsModal').style.display = 'flex';
+  }
+
+  /* Quick Edit Option inside View Details Modal */
+  function quickEditField(fieldName) {
+    if (!activeSelectedRecord) return;
+    const d = activeSelectedRecord;
+
+    let fieldTitle = "";
+    let currentValue = "";
+
+    if (fieldName === 'totalFee') { fieldTitle = "Total Fee Amount (₹)"; currentValue = d.totalFee; }
+    else if (fieldName === 'discountAmount') { fieldTitle = "Discount Amount (₹)"; currentValue = d.discountAmount; }
+    else if (fieldName === 'advancePayment') { fieldTitle = "Initial Advance Paid Amount (₹)"; currentValue = d.installmentsList && d.installmentsList[0] ? d.installmentsList[0].amount : d.advancePayment; }
+    else if (fieldName === 'paymentDate') { fieldTitle = "Initial Payment Date (YYYY-MM-DD)"; currentValue = d.paymentDate; }
+
+    let newValue = prompt(`Edit ${fieldTitle}:`, currentValue);
+    if (newValue === null || newValue.trim() === "") return;
+
+    pushToUndoStack('EDIT_RECORD', d.id, JSON.parse(JSON.stringify(d)));
+
+    let updateData = {};
+    let installments = d.installmentsList ? JSON.parse(JSON.stringify(d.installmentsList)) : [];
+
+    if (fieldName === 'totalFee') {
+      updateData.totalFee = parseFloat(newValue) || 0;
+    } else if (fieldName === 'discountAmount') {
+      updateData.discountAmount = parseFloat(newValue) || 0;
+    } else if (fieldName === 'advancePayment') {
+      let newAdv = parseFloat(newValue) || 0;
+      if (installments.length > 0) {
+        installments[0].amount = newAdv;
+      } else {
+        installments = [{ type: 'Initial Admission Payment', amount: newAdv, date: d.paymentDate, operator: activeStaffName }];
+      }
+      updateData.installmentsList = installments;
+    } else if (fieldName === 'paymentDate') {
+      updateData.paymentDate = newValue.trim();
+      if (installments.length > 0) {
+        installments[0].date = newValue.trim();
+        updateData.installmentsList = installments;
+      }
+    }
+
+    let tot = updateData.totalFee !== undefined ? updateData.totalFee : d.totalFee;
+    let disc = updateData.discountAmount !== undefined ? updateData.discountAmount : d.discountAmount;
+    
+    let totalPaid = 0;
+    let targetInstList = updateData.installmentsList || installments;
+    targetInstList.forEach(i => totalPaid += parseFloat(i.amount) || 0);
+
+    updateData.advancePayment = totalPaid;
+    let net = tot - disc;
+    let bal = net - totalPaid;
+    updateData.balanceAmount = bal >= 0 ? bal : 0;
+    updateData.updatedAt = firebase.firestore.FieldValue.serverTimestamp();
+
+    db.collection("dl_records").doc(d.id).update(updateData).then(() => {
+      logActivity('PAYMENT_EDITED', d.customerName, `Updated ${fieldName} to ${newValue} via View Modal Quick Edit by ${activeStaffName}`);
+      alert("Updated and recalculated successfully!");
+    }).catch(err => alert("Quick Edit Error: " + err.message));
+  }
+
+  /* Edit Installment Entry inside View Modal Table */
+  function editInstallment(recordId, index) {
+    const d = globalRecords.find(r => r.id === recordId);
+    if (!d || !d.installmentsList || !d.installmentsList[index]) return;
+
+    let targetInst = d.installmentsList[index];
+    let newAmountStr = prompt(`Edit Payment Amount for (${targetInst.type}):`, targetInst.amount);
+    if (newAmountStr === null) return;
+
+    let newDateStr = prompt(`Edit Payment Date (YYYY-MM-DD):`, targetInst.date);
+    if (newDateStr === null) return;
+
+    let newAmt = parseFloat(newAmountStr) || 0;
+    if (newAmt <= 0) { alert("Amount must be greater than 0!"); return; }
+
+    pushToUndoStack('PAYMENT_UPDATE', recordId, JSON.parse(JSON.stringify(d)));
+
+    d.installmentsList[index].amount = newAmt;
+    d.installmentsList[index].date = newDateStr.trim();
+    d.installmentsList[index].operator = activeStaffName;
+
+    if (index === 0) {
+      d.paymentDate = newDateStr.trim();
+    }
+
+    let totalPaid = 0;
+    d.installmentsList.forEach(i => totalPaid += parseFloat(i.amount) || 0);
+
+    let netFee = (parseFloat(d.totalFee) || 0) - (parseFloat(d.discountAmount) || 0);
+    let newBal = netFee - totalPaid;
+    if (newBal < 0) newBal = 0;
+
+    db.collection("dl_records").doc(recordId).update({
+      advancePayment: totalPaid,
+      balanceAmount: newBal,
+      paymentDate: d.paymentDate,
+      installmentsList: d.installmentsList,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }).then(() => {
+      logActivity('INSTALLMENT_EDITED', d.customerName, `Edited installment #${index+1} to ₹${newAmt} on ${newDateStr} by ${activeStaffName}`);
+      alert("Installment updated and balance recalculated!");
+    }).catch(err => alert("Error updating installment: " + err.message));
   }
 
   function closeDetailsModal() {
@@ -1644,7 +1836,6 @@
       }).then(() => {
         logActivity('INSTALLMENT_DELETED', d.customerName, `Deleted payment entry of ₹${removedInst.amount} by ${activeStaffName}`);
         alert("Installment deleted and balance recalculated!");
-        openDetailsModal(recordId);
       }).catch(err => alert("Error deleting installment: " + err.message));
     }
   }
