@@ -19,10 +19,19 @@
     .header { background-color: #0b3c5d; color: white; text-align: center; padding: 20px; position: relative; }
     .header h1 { margin: 0; color: #ff3b30; font-size: 26px; text-transform: uppercase; font-weight: 800; }
     .header p { margin: 5px 0 0; font-size: 15px; font-weight: 500; }
-    .header-btns { position: absolute; right: 20px; top: 15px; display: flex; flex-direction: column; gap: 5px; align-items: flex-end; }
-    .log-btn, .collection-btn { background: #ff9800; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; display: none; width: 150px; text-align: center; }
+    .header-btns { display: none; }
+    .menu-toggle { position: absolute; right: 20px; top: 18px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.5); color: #fff; font-size: 20px; width: 42px; height: 42px; border-radius: 6px; cursor: pointer; line-height: 1; }
+    .menu-toggle:hover { background: rgba(255,255,255,0.25); }
+    .side-ribbon-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 999; }
+    .side-ribbon-overlay.open { display: block; }
+    .side-ribbon { position: fixed; top: 0; right: -260px; width: 230px; height: 100%; background: #0b3c5d; box-shadow: -3px 0 12px rgba(0,0,0,0.3); transition: right 0.28s ease; z-index: 1000; padding: 65px 16px 20px; display: flex; flex-direction: column; gap: 10px; }
+    .side-ribbon.open { right: 0; }
+    .side-ribbon-close { position: absolute; top: 14px; right: 14px; background: transparent; border: none; color: #fff; font-size: 24px; cursor: pointer; line-height: 1; }
+    .side-ribbon-title { color: #cfe3f2; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 6px; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 8px; }
+    .log-btn, .collection-btn { background: #ff9800; color: white; border: none; padding: 10px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 13px; display: none; width: 100%; text-align: left; }
     .collection-btn { background: #28a745; display: none; }
-    .logout-btn { background: #d9534f; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 12px; width: 150px; text-align: center; }
+    .logout-btn { background: #d9534f; color: white; border: none; padding: 10px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 13px; }
+    .side-ribbon .logout-btn { width: 100%; text-align: left; margin-top: auto; }
 
     /* Form Design */
     .form-container { padding: 25px; }
@@ -165,11 +174,17 @@
   <div class="header">
     <h1>Tej Singh Motor Training School & Allied Units</h1>
     <p>Customer Register & Multi-School Accounting | Welcome, <span id="userGreeting" style="text-decoration: underline;">Staff</span></p>
-    <div class="header-btns">
-      <button class="log-btn" id="auditLogBtn" onclick="openAuditLogModal()">📜 Activity Logs</button>
-      <button class="collection-btn" onclick="openCollectionModal()" title="Shortcut: Shift + C">💰 Collections (Shift+C)</button>
-      <button class="logout-btn" onclick="logoutUser()">Logout 🔒</button>
-    </div>
+    <button class="menu-toggle" onclick="toggleMenu()" title="Menu">☰</button>
+  </div>
+
+  <div class="side-ribbon-overlay" id="ribbonOverlay" onclick="closeMenu()"></div>
+  <div class="side-ribbon" id="sideRibbon">
+    <button class="side-ribbon-close" onclick="closeMenu()">✕</button>
+    <p class="side-ribbon-title">Menu</p>
+    <button class="log-btn" id="auditLogBtn" onclick="closeMenu(); openAuditLogModal()">📜 Activity Logs</button>
+    <button class="log-btn" id="passingFundBtn" onclick="closeMenu(); openPassingFundModal()">🛂 Passing Fund Report</button>
+    <button class="collection-btn" onclick="closeMenu(); openCollectionModal()" title="Shortcut: Shift + C">💰 Collections (Shift+C)</button>
+    <button class="logout-btn" onclick="closeMenu(); logoutUser()">Logout 🔒</button>
   </div>
 
   <div class="form-container">
@@ -200,12 +215,12 @@
         </div>
         <div class="form-group">
           <label>Mobile Number *</label>
-          <input type="tel" id="mobile" placeholder="xxxxxxxxxx" required onblur="checkDuplicateMobile()">
+          <input type="tel" id="mobile" placeholder="xxxxxxxxxx" inputmode="numeric" maxlength="10" pattern="\d{10}" required oninput="this.value = this.value.replace(/\D/g,'').slice(0,10);" onblur="checkDuplicateMobile()">
           <small id="duplicateWarning" style="color: #d9534f; font-weight: bold; display: none; margin-top: 3px;">⚠️ Warning: Mobile number already exists!</small>
         </div>
         <div class="form-group">
           <label>Date of Birth (DOB) *</label>
-          <input type="date" id="dob" required>
+          <input type="text" id="dob" placeholder="DD/MM/YYYY" inputmode="numeric" maxlength="10" oninput="autoFormatDateInput(this)" required>
         </div>
         
         <!-- Multi-Select Vehicle Checkbox Box -->
@@ -285,7 +300,7 @@
         
         <div class="form-group">
           <label>Payment Date *</label>
-          <input type="date" id="paymentDate" required>
+          <input type="text" id="paymentDate" placeholder="DD/MM/YYYY" inputmode="numeric" maxlength="10" oninput="autoFormatDateInput(this)" required>
         </div>
       </div>
 
@@ -500,7 +515,18 @@
 
       <div class="form-group" style="margin-bottom:15px;">
         <label>Payment Date *</label>
-        <input type="date" id="payDateInput" required>
+        <input type="text" id="payDateInput" placeholder="DD/MM/YYYY" inputmode="numeric" maxlength="10" oninput="autoFormatDateInput(this)" required>
+      </div>
+
+      <div class="form-group" style="margin-bottom:12px; background:#fff8e6; border:1px solid #f0d98c; border-radius:6px; padding:8px;">
+        <label style="display:flex; align-items:center; gap:6px; font-weight:normal; cursor:pointer;">
+          <input type="checkbox" id="payIsPassing" onchange="document.getElementById('payPassingNoteWrap').style.display = this.checked ? 'block' : 'none';">
+          PASS
+        </label>
+        <div id="payPassingNoteWrap" style="display:none; margin-top:8px;">
+          <label>Passing Note (optional)</label>
+          <input type="text" id="payPassingNote" placeholder="e.g. LL Test Fee, DL Test Fee">
+        </div>
       </div>
 
       <div style="display:flex; justify-content:flex-end; gap:10px;">
@@ -614,6 +640,35 @@
   </div>
 </div>
 
+<!-- PASSING FUND REPORT MODAL -->
+<div id="passingFundModal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 900px;">
+    <div class="modal-header">
+      <h2>🛂 Passing Fund Collective Report</h2>
+      <button class="close-modal" onclick="closePassingFundModal()">X</button>
+    </div>
+    <p style="font-size: 13px; color: #555; margin-top: 0;">" ":</p>
+    <div id="passingFundTotals" style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:12px;"></div>
+    <div class="table-container" style="max-height: 400px; overflow-y: auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>School Unit</th>
+            <th>Customer</th>
+            <th>Amount (₹)</th>
+            <th>Note</th>
+            <th>Added By</th>
+          </tr>
+        </thead>
+        <tbody id="passingFundTableBody">
+          <!-- Dynamically populated from globalRecords -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
 <!-- PRINT RECEIPT TEMPLATE -->
 <div id="receiptPrintArea">
   <div style="text-align: center; border-bottom: 2px dashed #000; padding-bottom: 10px; margin-bottom: 10px;">
@@ -678,7 +733,7 @@
 
   const ADMIN_EMAILS = ["singharvind1082@gmail.com", "shlok44066@gmail.com"];
 
-  document.getElementById('paymentDate').valueAsDate = new Date();
+  document.getElementById('paymentDate').value = todayDDMMYYYY();
 
   // KEYBOARD SHORTCUTS: Ctrl + Z for Undo, Shift + C for Collections Modal
   document.addEventListener('keydown', function(e) {
@@ -714,6 +769,7 @@
       } else {
         document.getElementById('userGreeting').innerText = activeStaffName;
         document.getElementById('auditLogBtn').style.display = ADMIN_EMAILS.includes(activeStaffEmail.toLowerCase()) ? 'block' : 'none';
+        document.getElementById('passingFundBtn').style.display = 'block';
         document.getElementById('mainDashboard').style.display = 'block';
         loadLiveEntries();
       }
@@ -770,6 +826,16 @@
   }
 
   function logoutUser() { auth.signOut(); }
+
+  function toggleMenu() {
+    document.getElementById('sideRibbon').classList.toggle('open');
+    document.getElementById('ribbonOverlay').classList.toggle('open');
+  }
+
+  function closeMenu() {
+    document.getElementById('sideRibbon').classList.remove('open');
+    document.getElementById('ribbonOverlay').classList.remove('open');
+  }
 
   function logActivity(actionType, customerName, details) {
     db.collection("audit_logs").add({
@@ -839,7 +905,41 @@
   function formatDateToDMY(dateString) {
     if (!dateString || dateString === '-') return '-';
     const parts = dateString.split('-');
-    return parts.length === 3 ? `${parts[2]}-${parts[1]}-${parts[0]}` : dateString;
+    return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : dateString;
+  }
+
+  // Converts a DD/MM/YYYY string (as typed by staff) into ISO YYYY-MM-DD for storage/sorting.
+  // Returns '' if the text isn't a valid, complete date.
+  function ddmmyyyyToISO(str) {
+    if (!str) return '';
+    const m = str.trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (!m) return '';
+    const day = parseInt(m[1], 10), month = parseInt(m[2], 10), year = parseInt(m[3], 10);
+    if (month < 1 || month > 12) return '';
+    const daysInMonth = new Date(year, month, 0).getDate();
+    if (day < 1 || day > daysInMonth) return '';
+    return `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+  }
+
+  // Converts a stored ISO YYYY-MM-DD date into DD/MM/YYYY for populating entry fields.
+  function isoToDDMMYYYY(iso) {
+    if (!iso) return '';
+    const parts = iso.split('-');
+    return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : '';
+  }
+
+  // Auto-inserts "/" as the user types digits into a DD/MM/YYYY text field, and blocks non-digits.
+  function autoFormatDateInput(el) {
+    let digits = el.value.replace(/\D/g, '').slice(0, 8);
+    let out = digits;
+    if (digits.length > 4) out = `${digits.slice(0,2)}/${digits.slice(2,4)}/${digits.slice(4)}`;
+    else if (digits.length > 2) out = `${digits.slice(0,2)}/${digits.slice(2)}`;
+    el.value = out;
+  }
+
+  function todayDDMMYYYY() {
+    const d = new Date();
+    return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`;
   }
 
   function getSelectedVehicles() {
@@ -861,7 +961,13 @@
     e.preventDefault();
     const editId = document.getElementById('editRecordId').value;
     const mobileInput = document.getElementById('mobile').value.trim();
-    const newPaymentDate = document.getElementById('paymentDate').value;
+
+    const newPaymentDate = ddmmyyyyToISO(document.getElementById('paymentDate').value);
+    const newDob = ddmmyyyyToISO(document.getElementById('dob').value);
+    if (!newPaymentDate) { alert("Payment Date galat hai. Kripya DD/MM/YYYY format mein sahi date daalein."); return; }
+    if (!newDob) { alert("Date of Birth galat hai. Kripya DD/MM/YYYY format mein sahi date daalein."); return; }
+
+    if (!/^\d{10}$/.test(mobileInput)) { alert("Mobile number sirf 10 digit ka number hona chahiye."); return; }
 
     const duplicateCheck = globalRecords.find(r => r.mobile === mobileInput && r.id !== editId);
     if (duplicateCheck && !editId) {
@@ -904,7 +1010,7 @@
         customerName: document.getElementById('customerName').value,
         fatherName: document.getElementById('fatherName').value,
         mobile: mobileInput,
-        dob: document.getElementById('dob').value,
+        dob: newDob,
         vehicleType: selectedVehicles,
         reference: document.getElementById('reference').value || '-',
         llOutside: document.getElementById('llOutside').value,
@@ -940,7 +1046,7 @@
         customerName: document.getElementById('customerName').value,
         fatherName: document.getElementById('fatherName').value,
         mobile: mobileInput,
-        dob: document.getElementById('dob').value,
+        dob: newDob,
         vehicleType: selectedVehicles,
         reference: document.getElementById('reference').value || '-',
         llOutside: document.getElementById('llOutside').value,
@@ -1138,7 +1244,7 @@
       addCell(d.customerName, false, { fontWeight: 'bold' });
       addCell(d.fatherName || '-');
       addCell(d.mobile);
-      addCell(d.dob);
+      addCell(formatDateToDMY(d.dob));
       addCell(d.reference);
       addCell(d.llAppNo);
       addCell(d.llNo);
@@ -1210,7 +1316,7 @@
     document.getElementById('customerName').value = rec.customerName || '';
     document.getElementById('fatherName').value = rec.fatherName || '';
     document.getElementById('mobile').value = rec.mobile || '';
-    document.getElementById('dob').value = rec.dob || '';
+    document.getElementById('dob').value = isoToDDMMYYYY(rec.dob);
     setSelectedVehicles(rec.vehicleType || '');
     document.getElementById('reference').value = rec.reference === '-' ? '' : rec.reference;
     document.getElementById('llOutside').value = rec.llOutside || 'No (Made Here)';
@@ -1230,7 +1336,7 @@
       initialAmt = rec.advancePayment || 0;
     }
     document.getElementById('advancePayment').value = initialAmt;
-    document.getElementById('paymentDate').value = rec.paymentDate || '';
+    document.getElementById('paymentDate').value = isoToDDMMYYYY(rec.paymentDate);
 
     calculateBalance();
 
@@ -1256,10 +1362,12 @@
   }
 
   function resetForm() {
+    const lastSchoolUnit = document.getElementById('schoolUnit').value;
     document.getElementById('admissionForm').reset();
     document.getElementById('editRecordId').value = '';
     document.getElementById('duplicateWarning').style.display = 'none';
-    document.getElementById('paymentDate').valueAsDate = new Date();
+    document.getElementById('schoolUnit').value = lastSchoolUnit || 'Tej Singh Motor Training School';
+    document.getElementById('paymentDate').value = todayDDMMYYYY();
     document.getElementById('saveBtn').style.display = 'inline-block';
     document.getElementById('updateBtn').style.display = 'none';
     document.getElementById('cancelBtn').style.display = 'none';
@@ -1636,10 +1744,16 @@
     if (fieldName === 'totalFee') { fieldTitle = "Total Fee Amount (₹)"; currentValue = d.totalFee; }
     else if (fieldName === 'discountAmount') { fieldTitle = "Discount Amount (₹)"; currentValue = d.discountAmount; }
     else if (fieldName === 'advancePayment') { fieldTitle = "Initial Advance Paid Amount (₹)"; currentValue = d.installmentsList && d.installmentsList[0] ? d.installmentsList[0].amount : d.advancePayment; }
-    else if (fieldName === 'paymentDate') { fieldTitle = "Initial Payment Date (YYYY-MM-DD)"; currentValue = d.paymentDate; }
+    else if (fieldName === 'paymentDate') { fieldTitle = "Initial Payment Date (DD/MM/YYYY)"; currentValue = isoToDDMMYYYY(d.paymentDate); }
 
     let newValue = prompt(`Edit ${fieldTitle}:`, currentValue);
     if (newValue === null || newValue.trim() === "") return;
+
+    if (fieldName === 'paymentDate') {
+      const isoCheck = ddmmyyyyToISO(newValue.trim());
+      if (!isoCheck) { alert("Date galat hai. Kripya DD/MM/YYYY format mein daalein (jaise 29/09/2026)."); return; }
+      newValue = isoCheck;
+    }
 
     pushToUndoStack('EDIT_RECORD', d.id, JSON.parse(JSON.stringify(d)));
 
@@ -1694,8 +1808,11 @@
     let newAmountStr = prompt(`Edit Payment Amount for (${targetInst.type}):`, targetInst.amount);
     if (newAmountStr === null) return;
 
-    let newDateStr = prompt(`Edit Payment Date (YYYY-MM-DD):`, targetInst.date);
+    let newDateStr = prompt(`Edit Payment Date (DD/MM/YYYY):`, isoToDDMMYYYY(targetInst.date));
     if (newDateStr === null) return;
+    const isoDate = ddmmyyyyToISO(newDateStr.trim());
+    if (!isoDate) { alert("Date galat hai. Kripya DD/MM/YYYY format mein daalein (jaise 29/09/2026)."); return; }
+    newDateStr = isoDate;
 
     let newAmt = parseFloat(newAmountStr) || 0;
     if (newAmt <= 0) { alert("Amount must be greater than 0!"); return; }
@@ -1759,7 +1876,10 @@
     document.getElementById('payCustomerName').textContent = name;
     document.getElementById('payCurrentBalance').textContent = '₹' + balance;
     document.getElementById('payAmountInput').value = '';
-    document.getElementById('payDateInput').valueAsDate = new Date();
+    document.getElementById('payDateInput').value = todayDDMMYYYY();
+    document.getElementById('payIsPassing').checked = false;
+    document.getElementById('payPassingNote').value = '';
+    document.getElementById('payPassingNoteWrap').style.display = 'none';
     document.getElementById('payModal').style.display = 'flex';
   }
 
@@ -1771,7 +1891,8 @@
     e.preventDefault();
     const id = document.getElementById('payRecordId').value;
     const payAmt = parseFloat(document.getElementById('payAmountInput').value) || 0;
-    const payDate = document.getElementById('payDateInput').value;
+    const payDate = ddmmyyyyToISO(document.getElementById('payDateInput').value);
+    if (!payDate) { alert("Payment Date galat hai. Kripya DD/MM/YYYY format mein sahi date daalein."); return; }
 
     const d = globalRecords.find(r => r.id === id);
     if (!d) return;
@@ -1785,11 +1906,16 @@
     let installments = d.installmentsList || [];
     let installmentNum = installments.length + 1;
 
+    const isPassing = document.getElementById('payIsPassing').checked;
+    const passingNote = document.getElementById('payPassingNote').value.trim();
+
     installments.push({
       type: `Installment #${installmentNum}`,
       amount: payAmt,
       date: payDate,
-      operator: activeStaffName
+      operator: activeStaffName,
+      category: isPassing ? 'passing' : 'regular',
+      passingNote: isPassing ? passingNote : ''
     });
 
     db.collection("dl_records").doc(id).update({
@@ -1798,7 +1924,8 @@
       installmentsList: installments,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     }).then(() => {
-      logActivity('PAYMENT_ADDED', d.customerName, `Added installment #${installmentNum} of ₹${payAmt} on ${formatDateToDMY(payDate)} by ${activeStaffName}. New balance: ₹${finalBalance}`);
+      const passingTag = isPassing ? ` [PASSING${passingNote ? ': ' + passingNote : ''}]` : '';
+      logActivity('PAYMENT_ADDED', d.customerName, `Added installment #${installmentNum} of ₹${payAmt} on ${formatDateToDMY(payDate)} by ${activeStaffName}.${passingTag} New balance: ₹${finalBalance}`);
       alert("Installment payment successfully saved!");
       closePayModal();
     }).catch(err => alert("Payment Error: " + err.message));
@@ -1909,6 +2036,73 @@
 
   function closeAuditLogModal() {
     document.getElementById('auditLogModal').style.display = 'none';
+  }
+
+  function openPassingFundModal() {
+    const tbody = document.getElementById('passingFundTableBody');
+    const totalsDiv = document.getElementById('passingFundTotals');
+    tbody.innerHTML = '';
+    totalsDiv.innerHTML = '';
+
+    let rows = [];
+    globalRecords.forEach(d => {
+      if (!d.installmentsList) return;
+      d.installmentsList.forEach(inst => {
+        if (inst.category === 'passing') {
+          rows.push({
+            date: inst.date || d.paymentDate || '-',
+            schoolUnit: d.schoolUnit || 'Tej Singh Motor Training School',
+            customerName: d.customerName || '-',
+            amount: parseFloat(inst.amount) || 0,
+            note: inst.passingNote || '-',
+            operator: inst.operator || '-'
+          });
+        }
+      });
+    });
+
+    if (rows.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#666;">NO RECORD FOUND.</td></tr>`;
+      document.getElementById('passingFundModal').style.display = 'flex';
+      return;
+    }
+
+    rows.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+    let unitTotals = {};
+    let grandTotal = 0;
+    rows.forEach(r => {
+      unitTotals[r.schoolUnit] = (unitTotals[r.schoolUnit] || 0) + r.amount;
+      grandTotal += r.amount;
+
+      let tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${escapeHtml(formatDateToDMY(r.date))}</td>
+        <td><b style="color:#0b3c5d;">${escapeHtml(r.schoolUnit)}</b></td>
+        <td>${escapeHtml(r.customerName)}</td>
+        <td>₹${escapeHtml(String(r.amount))}</td>
+        <td>${escapeHtml(r.note)}</td>
+        <td>${escapeHtml(r.operator)}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    Object.keys(unitTotals).forEach(unit => {
+      let badge = document.createElement('div');
+      badge.style.cssText = 'background:#eaf3fb; border:1px solid #b8d8ef; border-radius:6px; padding:6px 12px; font-size:13px;';
+      badge.innerHTML = `<b>${escapeHtml(unit)}:</b> ₹${unitTotals[unit]}`;
+      totalsDiv.appendChild(badge);
+    });
+    let grandBadge = document.createElement('div');
+    grandBadge.style.cssText = 'background:#0b3c5d; color:#fff; border-radius:6px; padding:6px 12px; font-size:13px; font-weight:bold;';
+    grandBadge.innerHTML = `Grand Total: ₹${grandTotal}`;
+    totalsDiv.appendChild(grandBadge);
+
+    document.getElementById('passingFundModal').style.display = 'flex';
+  }
+
+  function closePassingFundModal() {
+    document.getElementById('passingFundModal').style.display = 'none';
   }
 
   function exportToExcel() {
