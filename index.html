@@ -1900,14 +1900,15 @@
     const id = document.getElementById('payRecordId').value;
     const payAmt = parseFloat(document.getElementById('payAmountInput').value) || 0;
     const payDate = ddmmyyyyToISO(document.getElementById('payDateInput').value);
-    if (!payDate) { alert("Payment Date galat hai. Kripya DD/MM/YYYY format mein sahi date daalein."); return; }
+    if (!payDate) { alert("wrong date DD/MM/YYYY."); return; }
 
     const d = globalRecords.find(r => r.id === id);
     if (!d) return;
 
-    if (payAmt <= 0) { alert("Payment amount 0 se zyada hona chahiye."); return; }
+    if (payAmt <= 0) { alert(" "); return; }
     if (payAmt > (d.balanceAmount || 0)) {
-      alert("Ye payment (₹" + payAmt + ") baaki balance (₹" + (d.balanceAmount || 0) + ") se zyada hai. Total Fee se zyada paisa receive nahi ho sakta. Agar Total Fee galat hai to pehle use edit karein.");
+      alert("`⚠️ Warning: Payment (₹${payAmt}) exceeds remaining balance (₹${d.balanceAmount || 0}). Cannot exceed Total Fee. Update Total Fee first if incorrect.
+");
       return;
     }
 
