@@ -964,10 +964,10 @@
 
     const newPaymentDate = ddmmyyyyToISO(document.getElementById('paymentDate').value);
     const newDob = ddmmyyyyToISO(document.getElementById('dob').value);
-    if (!newPaymentDate) { alert("Wrong Payment DD/MM/YYYY."); return; }
-    if (!newDob) { alert(" Wrong DOB DD/MM/YYYY."); return; }
+    if (!newPaymentDate) { alert("Payment Date galat hai. Kripya DD/MM/YYYY format mein sahi date daalein."); return; }
+    if (!newDob) { alert("Date of Birth galat hai. Kripya DD/MM/YYYY format mein sahi date daalein."); return; }
 
-    if (!/^\d{10}$/.test(mobileInput)) { alert("Wrong Mobile Number."); return; }
+    if (!/^\d{10}$/.test(mobileInput)) { alert("Mobile number sirf 10 digit ka number hona chahiye."); return; }
 
     const duplicateCheck = globalRecords.find(r => r.mobile === mobileInput && r.id !== editId);
     if (duplicateCheck && !editId) {
