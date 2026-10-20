@@ -1907,7 +1907,7 @@
 
     if (payAmt <= 0) { alert(" "); return; }
     if (payAmt > (d.balanceAmount || 0)) {
-      alert("`⚠️ Warning: Payment (₹${payAmt}) exceeds remaining balance (₹${d.balanceAmount || 0}). Cannot exceed Total Fee. Update Total Fee first if incorrect.
+      alert("`⚠️ Warning:The entered balance is too high.")
 ");
       return;
     }
