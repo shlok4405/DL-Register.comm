@@ -981,6 +981,11 @@
     const inputDiscount = parseFloat(document.getElementById('discountAmount').value) || 0;
     const inputAdvance = parseFloat(document.getElementById('advancePayment').value) || 0;
 
+    if (inputAdvance > Math.max(inputTotal - inputDiscount, 0)) {
+      alert("Advance/Initial payment (₹" + inputAdvance + ") Total Fee minus Discount (₹" + Math.max(inputTotal - inputDiscount, 0) + ") se zyada nahi ho sakta. Kripya Total Fee ya Advance sahi karein.");
+      return;
+    }
+
     if (editId) {
       const oldRec = globalRecords.find(r => r.id === editId);
       pushToUndoStack('EDIT_RECORD', editId, JSON.parse(JSON.stringify(oldRec)));
@@ -1103,11 +1108,14 @@
 
         let calculatedPaid = 0;
         d.installmentsList.forEach(inst => calculatedPaid += parseFloat(inst.amount) || 0);
-        d.advancePayment = calculatedPaid;
 
-        let netFee = d.totalFee - d.discountAmount;
+        // Total Fee is the master: received can never exceed (Total Fee - Discount).
+        // Any extra entered amount is ignored in all totals; shortfall shows as pending.
+        let netFee = Math.max(d.totalFee - d.discountAmount, 0);
+        d.rawPaid = calculatedPaid;
+        d.advancePayment = Math.min(calculatedPaid, netFee);
+        d.excessPaid = Math.max(calculatedPaid - netFee, 0);
         d.balanceAmount = netFee - d.advancePayment;
-        if (d.balanceAmount < 0) d.balanceAmount = 0;
 
         if (!d.schoolUnit) d.schoolUnit = 'Tej Singh Motor Training School';
         if (!d.vehicleType) d.vehicleType = 'Uncategorized';
@@ -1896,6 +1904,12 @@
 
     const d = globalRecords.find(r => r.id === id);
     if (!d) return;
+
+    if (payAmt <= 0) { alert("Payment amount 0 se zyada hona chahiye."); return; }
+    if (payAmt > (d.balanceAmount || 0)) {
+      alert("Ye payment (₹" + payAmt + ") baaki balance (₹" + (d.balanceAmount || 0) + ") se zyada hai. Total Fee se zyada paisa receive nahi ho sakta. Agar Total Fee galat hai to pehle use edit karein.");
+      return;
+    }
 
     pushToUndoStack('PAYMENT_UPDATE', id, JSON.parse(JSON.stringify(d)));
 
