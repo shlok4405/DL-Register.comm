@@ -183,7 +183,8 @@
     <p class="side-ribbon-title">Menu</p>
     <button class="log-btn" id="auditLogBtn" onclick="closeMenu(); openAuditLogModal()">📜 Activity Logs</button>
     <button class="log-btn" id="passingFundBtn" onclick="closeMenu(); openPassingFundModal()">🛂 Passing Fund Report</button>
-    <button class="collection-btn" onclick="closeMenu(); openCollectionModal()" title="Shortcut: Shift + C">💰 Collections (Shift+C)</button>
+    <button class="collection-btn" id="collectionMenuBtn" onclick="closeMenu(); openCollectionModal()" title="Shortcut: Shift + C">💰 Collections (Shift+C)</button>
+    <button class="log-btn" id="expenseBtn" style="background:#8e44ad;" onclick="closeMenu(); openExpenseModal()">💸 Expenses &amp; Profit</button>
     <button class="logout-btn" onclick="closeMenu(); logoutUser()">Logout 🔒</button>
   </div>
 
@@ -640,6 +641,78 @@
   </div>
 </div>
 
+<!-- EXPENSES & PROFIT MODAL -->
+<div id="expenseModal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 1100px;">
+    <div class="modal-header">
+      <h2>💸 Expenses &amp; Profit</h2>
+      <button class="close-modal" onclick="closeExpenseModal()">X</button>
+    </div>
+
+    <form id="expenseForm" onsubmit="saveExpense(event)" style="background:#f6f0fb; border:1px solid #d9c3ee; border-radius:8px; padding:12px; margin-bottom:14px;">
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap:10px;">
+        <div class="form-group"><label>Date *</label>
+          <input type="text" id="expDate" placeholder="DD/MM/YYYY" inputmode="numeric" maxlength="10" oninput="autoFormatDateInput(this)" required></div>
+        <div class="form-group"><label>Unit *</label>
+          <select id="expUnit">
+            <option value="Tej Singh Motor Training School">Tej Singh (Main)</option>
+            <option value="CF">CF Unit</option>
+            <option value="STSMTS">STSMTS Unit</option>
+            <option value="Common">Common / Sabke liye</option>
+          </select></div>
+        <div class="form-group"><label>Category *</label>
+          <select id="expCategory">
+            <option>Salary</option><option>Rent</option><option>Fuel / Petrol</option>
+            <option>Vehicle Repair / Maintenance</option><option>RTO / Passing Fee</option>
+            <option>Electricity / Bill</option><option>Insurance</option>
+            <option>Office / Stationery</option><option>Marketing / Ads</option>
+            <option>Tea / Refreshment</option><option>Other</option>
+          </select></div>
+        <div class="form-group"><label>Amount (₹) *</label>
+          <input type="number" id="expAmount" min="1" step="any" placeholder="0" required></div>
+        <div class="form-group"><label>Paid To</label>
+          <input type="text" id="expPaidTo" placeholder="Naam (optional)"></div>
+        <div class="form-group"><label>Mode</label>
+          <select id="expMode"><option>Cash</option><option>UPI</option><option>Bank</option></select></div>
+        <div class="form-group" style="grid-column: span 2;"><label>Note</label>
+          <input type="text" id="expNote" placeholder="Kis kaam ke liye (optional)"></div>
+      </div>
+      <div style="text-align:right; margin-top:8px;">
+        <button type="submit" class="btn btn-save" style="display:inline-block; width:auto;">Save Expense 💾</button>
+      </div>
+    </form>
+
+    <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:flex-end; margin-bottom:12px;">
+      <div class="form-group" style="margin:0;"><label>From</label><input type="date" id="expFrom" onchange="renderExpenses()"></div>
+      <div class="form-group" style="margin:0;"><label>To</label><input type="date" id="expTo" onchange="renderExpenses()"></div>
+      <div class="form-group" style="margin:0;"><label>Unit</label>
+        <select id="expFilterUnit" onchange="renderExpenses()">
+          <option value="">All Units</option>
+          <option value="Tej Singh Motor Training School">Tej Singh</option>
+          <option value="CF">CF</option><option value="STSMTS">STSMTS</option><option value="Common">Common</option>
+        </select></div>
+      <div class="form-group" style="margin:0;"><label>Category</label>
+        <select id="expFilterCat" onchange="renderExpenses()"><option value="">All</option></select></div>
+      <button type="button" class="btn" style="width:auto; display:inline-block; padding:8px 12px;" onclick="setExpenseThisMonth()">Is Mahine</button>
+      <button type="button" class="btn" style="width:auto; display:inline-block; padding:8px 12px;" onclick="clearExpenseFilters()">Clear</button>
+      <button type="button" class="btn btn-save" style="width:auto; display:inline-block; padding:8px 12px;" onclick="exportExpensesToExcel()">⬇ Excel</button>
+    </div>
+
+    <div id="expSummary" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:10px; margin-bottom:12px;"></div>
+    <div id="expBreakdown" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px;"></div>
+
+    <div class="table-container" style="max-height: 340px; overflow-y: auto;">
+      <table id="expenseTable">
+        <thead><tr>
+          <th>Date</th><th>Unit</th><th>Category</th><th>Amount (₹)</th><th>Paid To</th><th>Mode</th><th>Note</th><th>Added By</th><th>Action</th>
+        </tr></thead>
+        <tbody id="expenseTableBody"></tbody>
+      </table>
+    </div>
+    <p style="font-size:12px; color:#666; margin-bottom:0;">Income = is date range mein asli mili hui installments ka jod (cash basis). Profit = Income − Expenses. From/To khali ho to saari entries judti hain.</p>
+  </div>
+</div>
+
 <!-- PASSING FUND REPORT MODAL -->
 <div id="passingFundModal" class="modal-overlay">
   <div class="modal-content" style="max-width: 900px;">
@@ -770,6 +843,9 @@
         document.getElementById('userGreeting').innerText = activeStaffName;
         document.getElementById('auditLogBtn').style.display = ADMIN_EMAILS.includes(activeStaffEmail.toLowerCase()) ? 'block' : 'none';
         document.getElementById('passingFundBtn').style.display = 'block';
+        const isAdminUser = ADMIN_EMAILS.includes(activeStaffEmail.toLowerCase());
+        document.getElementById('expenseBtn').style.display = isAdminUser ? 'block' : 'none';
+        if (isAdminUser) loadExpenses();
         document.getElementById('mainDashboard').style.display = 'block';
         loadLiveEntries();
       }
@@ -2114,6 +2190,193 @@
 
     document.getElementById('passingFundModal').style.display = 'flex';
   }
+
+
+  // ================= EXPENSES & PROFIT =================
+  let globalExpenses = [];
+  let expensesUnsub = null;
+  const EXP_UNIT_LABEL = { 'Tej Singh Motor Training School': 'Tej Singh', 'CF': 'CF', 'STSMTS': 'STSMTS', 'Common': 'Common' };
+
+  function loadExpenses() {
+    if (expensesUnsub) return;
+    expensesUnsub = db.collection("expenses").orderBy("date", "desc").onSnapshot(snap => {
+      globalExpenses = [];
+      snap.forEach(doc => { let e = doc.data(); e.id = doc.id; e.amount = parseFloat(e.amount) || 0; globalExpenses.push(e); });
+      if (document.getElementById('expenseModal').style.display === 'flex') renderExpenses();
+    }, err => {
+      console.error("Expenses load failed:", err);
+      globalExpenses = [];
+      window.expensesLoadError = err.message;
+      if (document.getElementById('expenseModal').style.display === 'flex') renderExpenses();
+    });
+  }
+
+  function openExpenseModal() {
+    document.getElementById('expDate').value = todayDDMMYYYY();
+    const catSel = document.getElementById('expCategory');
+    const filt = document.getElementById('expFilterCat');
+    if (filt.options.length <= 1) {
+      Array.from(catSel.options).forEach(o => { const n = document.createElement('option'); n.value = o.value; n.textContent = o.value; filt.appendChild(n); });
+    }
+    document.getElementById('expenseModal').style.display = 'flex';
+    renderExpenses();
+  }
+  function closeExpenseModal() { document.getElementById('expenseModal').style.display = 'none'; }
+
+  function saveExpense(e) {
+    e.preventDefault();
+    const iso = ddmmyyyyToISO(document.getElementById('expDate').value);
+    if (!iso) { alert("Date galat hai. Kripya DD/MM/YYYY format mein sahi date daalein."); return; }
+    const amount = parseFloat(document.getElementById('expAmount').value) || 0;
+    if (amount <= 0) { alert("Amount 0 se zyada hona chahiye."); return; }
+    const data = {
+      date: iso,
+      unit: document.getElementById('expUnit').value,
+      category: document.getElementById('expCategory').value,
+      amount: amount,
+      paidTo: document.getElementById('expPaidTo').value.trim(),
+      mode: document.getElementById('expMode').value,
+      note: document.getElementById('expNote').value.trim(),
+      addedBy: activeStaffName || 'Staff',
+      addedByEmail: activeStaffEmail || '',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    db.collection("expenses").add(data).then(() => {
+      logActivity('EXPENSE_ADDED', data.paidTo || data.category, `₹${amount} ${data.category} (${EXP_UNIT_LABEL[data.unit] || data.unit}) on ${formatDateToDMY(iso)}${data.note ? ' - ' + data.note : ''}`);
+      document.getElementById('expAmount').value = '';
+      document.getElementById('expPaidTo').value = '';
+      document.getElementById('expNote').value = '';
+    }).catch(err => alert("Expense save nahi hua: " + err.message + "\n(Firestore Rules mein 'expenses' ka rule publish kiya hai?)"));
+  }
+
+  function deleteExpense(id) {
+    const ex = globalExpenses.find(x => x.id === id);
+    if (!ex) return;
+    if (!confirm(`Ye expense delete karein?\n${formatDateToDMY(ex.date)} | ${ex.category} | ₹${ex.amount}`)) return;
+    db.collection("expenses").doc(id).delete().then(() => {
+      logActivity('EXPENSE_DELETED', ex.paidTo || ex.category, `Deleted ₹${ex.amount} ${ex.category} (${EXP_UNIT_LABEL[ex.unit] || ex.unit}) dated ${formatDateToDMY(ex.date)}`);
+    }).catch(err => alert("Delete error: " + err.message));
+  }
+
+  function setExpenseThisMonth() {
+    const d = new Date();
+    const first = new Date(d.getFullYear(), d.getMonth(), 1);
+    const last = new Date(d.getFullYear(), d.getMonth() + 1, 0);
+    const f = x => `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`;
+    document.getElementById('expFrom').value = f(first);
+    document.getElementById('expTo').value = f(last);
+    renderExpenses();
+  }
+  function clearExpenseFilters() {
+    ['expFrom','expTo','expFilterUnit','expFilterCat'].forEach(id => document.getElementById(id).value = '');
+    renderExpenses();
+  }
+
+  function getFilteredExpenses() {
+    const from = document.getElementById('expFrom').value;
+    const to = document.getElementById('expTo').value;
+    const unit = document.getElementById('expFilterUnit').value;
+    const cat = document.getElementById('expFilterCat').value;
+    return globalExpenses.filter(x =>
+      (!from || x.date >= from) && (!to || x.date <= to) && (!unit || x.unit === unit) && (!cat || x.category === cat));
+  }
+
+  function getIncomeInRange() {
+    const from = document.getElementById('expFrom').value;
+    const to = document.getElementById('expTo').value;
+    const unit = document.getElementById('expFilterUnit').value;
+    let total = 0;
+    globalRecords.forEach(d => {
+      const u = d.schoolUnit || "Tej Singh Motor Training School";
+      if (unit && unit !== 'Common' && u !== unit) return;
+      if (unit === 'Common') return;
+      (d.installmentsList || []).forEach(inst => {
+        const dt = inst.date || d.paymentDate || '';
+        if ((!from || dt >= from) && (!to || dt <= to)) total += parseFloat(inst.amount) || 0;
+      });
+    });
+    return total;
+  }
+
+  function fmtINR(n) { return '₹' + (Math.round(n * 100) / 100).toLocaleString('en-IN'); }
+
+  function renderExpenses() {
+    const tbody = document.getElementById('expenseTableBody');
+    const sumDiv = document.getElementById('expSummary');
+    const bdDiv = document.getElementById('expBreakdown');
+    tbody.innerHTML = ''; sumDiv.innerHTML = ''; bdDiv.innerHTML = '';
+
+    if (window.expensesLoadError) {
+      tbody.innerHTML = `<tr><td colspan="9" style="color:#c00; text-align:center;">Expenses load nahi hue: ${escapeHtml(window.expensesLoadError)}<br>Firestore Rules mein 'expenses' ka rule add karke Publish karein.</td></tr>`;
+      return;
+    }
+
+    const rows = getFilteredExpenses();
+    const totalExp = rows.reduce((a, x) => a + x.amount, 0);
+    const income = getIncomeInRange();
+    const profit = income - totalExp;
+
+    const card = (label, val, bg, fg) => {
+      const el = document.createElement('div');
+      el.style.cssText = `background:${bg}; color:${fg}; border-radius:8px; padding:10px 14px;`;
+      el.innerHTML = `<div style="font-size:12px; opacity:.85;">${label}</div><div style="font-size:20px; font-weight:800;">${val}</div>`;
+      sumDiv.appendChild(el);
+    };
+    card('Income (Received)', fmtINR(income), '#e6f6ec', '#1e7e34');
+    card('Total Expenses', fmtINR(totalExp), '#fdeaea', '#c0392b');
+    card(profit >= 0 ? 'Net Profit' : 'Net Loss', fmtINR(Math.abs(profit)), profit >= 0 ? '#0b3c5d' : '#7b1d1d', '#fff');
+
+    const byCat = {}, byUnit = {};
+    rows.forEach(x => { byCat[x.category] = (byCat[x.category] || 0) + x.amount; byUnit[x.unit] = (byUnit[x.unit] || 0) + x.amount; });
+    const chip = (t, bg) => { const c = document.createElement('div'); c.style.cssText = `background:${bg}; border-radius:6px; padding:5px 10px; font-size:12px;`; c.innerHTML = t; bdDiv.appendChild(c); };
+    Object.keys(byUnit).forEach(u => chip(`<b>${escapeHtml(EXP_UNIT_LABEL[u] || u)}:</b> ${fmtINR(byUnit[u])}`, '#eaf3fb'));
+    Object.keys(byCat).sort((a, b) => byCat[b] - byCat[a]).forEach(c => chip(`${escapeHtml(c)}: <b>${fmtINR(byCat[c])}</b>`, '#f3eefa'));
+
+    if (rows.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:#666;">Koi expense entry nahi mili.</td></tr>`;
+      return;
+    }
+    rows.forEach(x => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${escapeHtml(formatDateToDMY(x.date))}</td>
+        <td>${escapeHtml(EXP_UNIT_LABEL[x.unit] || x.unit)}</td>
+        <td>${escapeHtml(x.category)}</td>
+        <td style="color:#c0392b; font-weight:bold;">₹${escapeHtml(String(x.amount))}</td>
+        <td>${escapeHtml(x.paidTo || '-')}</td>
+        <td>${escapeHtml(x.mode || '-')}</td>
+        <td>${escapeHtml(x.note || '-')}</td>
+        <td>${escapeHtml(x.addedBy || '-')}</td>`;
+      const btn = document.createElement('button');
+      btn.textContent = 'Del'; btn.className = 'close-modal'; btn.style.padding = '3px 8px';
+      btn.onclick = () => deleteExpense(x.id);
+      const actionTd = document.createElement('td');
+      actionTd.appendChild(btn);
+      tr.appendChild(actionTd);
+      tbody.appendChild(tr);
+    });
+  }
+
+  function exportExpensesToExcel() {
+    const rows = getFilteredExpenses();
+    if (rows.length === 0) { alert("Export ke liye koi entry nahi."); return; }
+    const data = rows.map(x => ({
+      Date: formatDateToDMY(x.date), Unit: EXP_UNIT_LABEL[x.unit] || x.unit, Category: x.category,
+      Amount: x.amount, 'Paid To': x.paidTo || '', Mode: x.mode || '', Note: x.note || '', 'Added By': x.addedBy || ''
+    }));
+    const doExport = () => {
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data), "Expenses");
+      XLSX.writeFile(wb, "TejSingh_Expenses.xlsx");
+    };
+    if (window.XLSX) { doExport(); return; }
+    const script = document.createElement('script');
+    script.src = "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";
+    script.onload = doExport;
+    script.onerror = () => alert("Excel library load nahi hui. Internet check karein.");
+    document.head.appendChild(script);
+  }
+  // ================= END EXPENSES =================
 
   function closePassingFundModal() {
     document.getElementById('passingFundModal').style.display = 'none';
