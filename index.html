@@ -433,7 +433,7 @@
     <div style="background: #eef5fc; padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #1d70b8;">
       <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
         <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-          <label style="color: #0b3c5d; font-weight: bold; font-size: 14px;">📅 Select Date for Daily Hisab:</label>
+          <label style="color: #0b3c5d; font-weight: bold; font-size: 14px;">📅 Select Date for Daily Accounts:</label>
           <input type="date" id="collectionFilterDate" onchange="updateCollectionDateFilter()" style="padding: 8px; border: 1px solid #1d70b8; border-radius: 4px; font-size: 14px;">
           
           <label style="color: #0b3c5d; font-weight: bold; font-size: 14px; margin-left: 10px;">🏫 School Unit:</label>
@@ -701,7 +701,7 @@
     </div>
 
     <!-- ALL EXPENSES -->
-    <h3 style="margin:0 0 8px; color:#0b3c5d;">🧾 Saare Expenses</h3>
+    <h3 style="margin:0 0 8px; color:#0b3c5d;">🧾 All Expenses</h3>
     <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:flex-end; margin-bottom:10px;">
       <div class="form-group" style="margin:0;"><label>From</label><input type="date" id="expFrom" onchange="renderExpenses()"></div>
       <div class="form-group" style="margin:0;"><label>To</label><input type="date" id="expTo" onchange="renderExpenses()"></div>
@@ -732,7 +732,7 @@
       <h2>🛂 Passing Fund Collective Report</h2>
       <button class="close-modal" onclick="closePassingFundModal()">X</button>
     </div>
-    <p style="font-size: 13px; color: #555; margin-top: 0;">" ":</p>
+    <p style="font-size: 13px; color: #555; margin-top: 0;">All payments marked as "Passing (RTO Test Fee)", with unit-wise totals:</p>
     <div id="passingFundTotals" style="display:flex; flex-wrap:wrap; gap:10px; margin-bottom:12px;"></div>
     <div class="table-container" style="max-height: 400px; overflow-y: auto;">
       <table>
@@ -818,6 +818,13 @@
 
   const ADMIN_EMAILS = ["singharvind1082@gmail.com", "shlok44066@gmail.com"];
 
+  // Only these people will see the "Expenses" button. (The same emails must also be in the Firestore Rules.)
+  const EXPENSE_VIEWERS = [
+    "singharvind1082@gmail.com",   // Arvind Singh
+    "shlok44066@gmail.com",        // Shlok
+    "aishnaaz29791mah@gmail.com"   // Aish Naaz
+  ];
+
   document.getElementById('paymentDate').value = todayDDMMYYYY();
 
   // KEYBOARD SHORTCUTS: Ctrl + Z for Undo, Shift + C for Collections Modal
@@ -855,9 +862,9 @@
         document.getElementById('userGreeting').innerText = activeStaffName;
         document.getElementById('auditLogBtn').style.display = ADMIN_EMAILS.includes(activeStaffEmail.toLowerCase()) ? 'block' : 'none';
         document.getElementById('passingFundBtn').style.display = 'block';
-        const isAdminUser = ADMIN_EMAILS.includes(activeStaffEmail.toLowerCase());
-        document.getElementById('expenseBtn').style.display = isAdminUser ? 'block' : 'none';
-        if (isAdminUser) loadExpenses();
+        const canSeeExpenses = EXPENSE_VIEWERS.map(e => e.toLowerCase()).includes(activeStaffEmail.toLowerCase());
+        document.getElementById('expenseBtn').style.display = canSeeExpenses ? 'block' : 'none';
+        if (canSeeExpenses) loadExpenses();
         document.getElementById('mainDashboard').style.display = 'block';
         loadLiveEntries();
       }
@@ -1052,10 +1059,10 @@
 
     const newPaymentDate = ddmmyyyyToISO(document.getElementById('paymentDate').value);
     const newDob = ddmmyyyyToISO(document.getElementById('dob').value);
-    if (!newPaymentDate) { alert("Payment Date galat hai. Kripya DD/MM/YYYY format mein sahi date daalein."); return; }
-    if (!newDob) { alert("Date of Birth galat hai. Kripya DD/MM/YYYY format mein sahi date daalein."); return; }
+    if (!newPaymentDate) { alert("Invalid Payment Date. Please enter a valid date in DD/MM/YYYY format."); return; }
+    if (!newDob) { alert("Invalid Date of Birth. Please enter a valid date in DD/MM/YYYY format."); return; }
 
-    if (!/^\d{10}$/.test(mobileInput)) { alert("Mobile number sirf 10 digit ka number hona chahiye."); return; }
+    if (!/^\d{10}$/.test(mobileInput)) { alert("Mobile number must be exactly 10 digits."); return; }
 
     const duplicateCheck = globalRecords.find(r => r.mobile === mobileInput && r.id !== editId);
     if (duplicateCheck && !editId) {
@@ -1070,7 +1077,7 @@
     const inputAdvance = parseFloat(document.getElementById('advancePayment').value) || 0;
 
     if (inputAdvance > Math.max(inputTotal - inputDiscount, 0)) {
-      alert("Advance/Initial payment (₹" + inputAdvance + ") Total Fee minus Discount (₹" + Math.max(inputTotal - inputDiscount, 0) + ") se zyada nahi ho sakta. Kripya Total Fee ya Advance sahi karein.");
+      alert("The Advance/Initial payment (₹" + inputAdvance + ") cannot be more than Total Fee minus Discount (₹" + Math.max(inputTotal - inputDiscount, 0) + "). Please correct the Total Fee or the Advance.");
       return;
     }
 
@@ -1618,7 +1625,7 @@
       let titleEl = document.createElement('h3');
       titleEl.className = 'school-title';
       titleEl.style.color = '#0b3c5d';
-      titleEl.textContent = `🏫 ${schoolName} (SEPARATE OVERALL HISAB)`;
+      titleEl.textContent = `🏫 ${schoolName} (SEPARATE OVERALL ACCOUNTS)`;
       schoolBlock.appendChild(titleEl);
 
       let statsContainer = document.createElement('div');
@@ -1848,7 +1855,7 @@
 
     if (fieldName === 'paymentDate') {
       const isoCheck = ddmmyyyyToISO(newValue.trim());
-      if (!isoCheck) { alert("Date galat hai. Kripya DD/MM/YYYY format mein daalein (jaise 29/09/2026)."); return; }
+      if (!isoCheck) { alert("Invalid date. Please enter it in DD/MM/YYYY format (e.g. 29/09/2026)."); return; }
       newValue = isoCheck;
     }
 
@@ -1908,7 +1915,7 @@
     let newDateStr = prompt(`Edit Payment Date (DD/MM/YYYY):`, isoToDDMMYYYY(targetInst.date));
     if (newDateStr === null) return;
     const isoDate = ddmmyyyyToISO(newDateStr.trim());
-    if (!isoDate) { alert("Date galat hai. Kripya DD/MM/YYYY format mein daalein (jaise 29/09/2026)."); return; }
+    if (!isoDate) { alert("Invalid date. Please enter it in DD/MM/YYYY format (e.g. 29/09/2026)."); return; }
     newDateStr = isoDate;
 
     let newAmt = parseFloat(newAmountStr) || 0;
@@ -1989,14 +1996,14 @@
     const id = document.getElementById('payRecordId').value;
     const payAmt = parseFloat(document.getElementById('payAmountInput').value) || 0;
     const payDate = ddmmyyyyToISO(document.getElementById('payDateInput').value);
-    if (!payDate) { alert("wrong date DD/MM/YYYY."); return; }
+    if (!payDate) { alert("Invalid Payment Date. Please enter a valid date in DD/MM/YYYY format."); return; }
 
     const d = globalRecords.find(r => r.id === id);
     if (!d) return;
 
-    if (payAmt <= 0) { alert(" "); return; }
+    if (payAmt <= 0) { alert("Payment amount must be greater than 0."); return; }
     if (payAmt > (d.balanceAmount || 0)) {
-      alert("⚠️ Warning: The entered balance is too high.");
+      alert("⚠️ The entered amount (₹" + payAmt + ") is more than the pending balance (₹" + (d.balanceAmount || 0) + "). Total received cannot exceed the Total Fee. If the Total Fee is wrong, please edit it first.");
       return;
     }
 
@@ -2255,9 +2262,9 @@
   function saveExpense(e) {
     e.preventDefault();
     const iso = ddmmyyyyToISO(document.getElementById('expDate').value);
-    if (!iso) { alert("Date galat hai. Kripya DD/MM/YYYY format mein sahi date daalein."); return; }
+    if (!iso) { alert("Invalid date. Please enter a valid date in DD/MM/YYYY format."); return; }
     const amount = parseFloat(document.getElementById('expAmount').value) || 0;
-    if (amount <= 0) { alert("Amount 0 se zyada hona chahiye."); return; }
+    if (amount <= 0) { alert("Amount must be greater than 0."); return; }
     const data = {
       date: iso,
       category: document.getElementById('expCategory').value,
@@ -2274,13 +2281,13 @@
       document.getElementById('expAmount').value = '';
       document.getElementById('expPaidTo').value = '';
       document.getElementById('expNote').value = '';
-    }).catch(err => alert("Expense not save: " + err.message + "\n(Firestore Rules mein 'expenses' ka rule publish kiya hai?)"));
+    }).catch(err => alert("Expense could not be saved: " + err.message + "\n(Have you published the 'expenses' rule in Firestore Rules?)"));
   }
 
   function deleteExpense(id) {
     const ex = globalExpenses.find(x => x.id === id);
     if (!ex) return;
-    if (!confirm(`Delete This Expenses\n${formatDateToDMY(ex.date)} | ${ex.category} | ₹${ex.amount}`)) return;
+    if (!confirm(`Delete this expense?\n${formatDateToDMY(ex.date)} | ${ex.category} | ₹${ex.amount}`)) return;
     db.collection("expenses").doc(id).delete().then(() => {
       logActivity('EXPENSE_DELETED', ex.paidTo || ex.category, `Deleted ₹${ex.amount} ${ex.category} dated ${formatDateToDMY(ex.date)}`);
     }).catch(err => alert("Delete error: " + err.message));
@@ -2335,7 +2342,7 @@
     const expBody = document.getElementById('todayExpenseBody');
     expBody.innerHTML = '';
     if (window.expensesLoadError) {
-      expBody.innerHTML = `<tr><td colspan="7" style="color:#c00; text-align:center;">Loading Expenses: ${escapeHtml(window.expensesLoadError)}</td></tr>`;
+      expBody.innerHTML = `<tr><td colspan="7" style="color:#c00; text-align:center;">Could not load expenses: ${escapeHtml(window.expensesLoadError)}</td></tr>`;
     } else if (exp.length === 0) {
       expBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#666;">No expenses recorded Today.</td></tr>`;
     }
@@ -2361,7 +2368,7 @@
       `<span>today Net Balance: <b style="color:${net >= 0 ? '#1e7e34' : '#c0392b'};">${net < 0 ? '−' : ''}${fmtINR(Math.abs(net))}</b></span>`;
   }
 
-  // ---------- SAARE EXPENSES (filtered list) ----------
+  // ---------- ALL EXPENSES (filtered list) ----------
   function setExpenseThisMonth() {
     const d = new Date();
     const first = new Date(d.getFullYear(), d.getMonth(), 1);
@@ -2390,7 +2397,7 @@
     document.getElementById('expTotalLine').innerHTML = '';
 
     if (window.expensesLoadError) {
-      tbody.innerHTML = `<tr><td colspan="8" style="color:#c00; text-align:center;">Expenses Loading...: ${escapeHtml(window.expensesLoadError)}<br>Firestore Rules mein 'expenses' ka rule add karke Publish karein.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8" style="color:#c00; text-align:center;">Could not load expenses: ${escapeHtml(window.expensesLoadError)}<br>Please add the 'expenses' rule in Firestore Rules and Publish it.</td></tr>`;
       return;
     }
 
@@ -2431,7 +2438,7 @@
 
   function exportExpensesToExcel() {
     const rows = getFilteredExpenses();
-    if (rows.length === 0) { alert("Export ke liye koi entry nahi."); return; }
+    if (rows.length === 0) { alert("No entries to export."); return; }
     const data = rows.map(x => ({
       Date: formatDateToDMY(x.date), Category: x.category, Amount: x.amount,
       'Paid To': x.paidTo || '', Mode: x.mode || '', Note: x.note || '', 'Added By': x.addedBy || ''
@@ -2445,7 +2452,7 @@
     const script = document.createElement('script');
     script.src = "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js";
     script.onload = doExport;
-    script.onerror = () => alert("Excel library load nahi hui. Internet check karein.");
+    script.onerror = () => alert("Could not load the Excel library. Please check your internet connection.");
     document.head.appendChild(script);
   }
   // ================= END EXPENSES =================
