@@ -88,6 +88,7 @@
     .breakdown-table tfoot td { font-weight: bold; background-color: #eef5fc; }
 
     /* Modal Popup Styling */
+    #detailsModal, #payModal { z-index: 1100; }
     .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; }
     .modal-content { background: white; width: 95%; max-width: 1100px; max-height: 92vh; overflow-y: auto; border-radius: 8px; padding: 25px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); position: relative; }
     .modal-header { border-bottom: 2px solid #0b3c5d; padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
@@ -641,11 +642,11 @@
   </div>
 </div>
 
-<!-- EXPENSES & PROFIT MODAL -->
+<!-- EXPENSES MODAL -->
 <div id="expenseModal" class="modal-overlay">
   <div class="modal-content" style="max-width: 1100px;">
     <div class="modal-header">
-      <h2>💸 Expenses &amp; Profit</h2>
+      <h2>💸 Expenses</h2>
       <button class="close-modal" onclick="closeExpenseModal()">X</button>
     </div>
 
@@ -653,13 +654,6 @@
       <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap:10px;">
         <div class="form-group"><label>Date *</label>
           <input type="text" id="expDate" placeholder="DD/MM/YYYY" inputmode="numeric" maxlength="10" oninput="autoFormatDateInput(this)" required></div>
-        <div class="form-group"><label>Unit *</label>
-          <select id="expUnit">
-            <option value="Tej Singh Motor Training School">Tej Singh (Main)</option>
-            <option value="CF">CF Unit</option>
-            <option value="STSMTS">STSMTS Unit</option>
-            <option value="Common">Common / Sabke liye</option>
-          </select></div>
         <div class="form-group"><label>Category *</label>
           <select id="expCategory">
             <option>Salary</option><option>Rent</option><option>Fuel / Petrol</option>
@@ -671,79 +665,63 @@
         <div class="form-group"><label>Amount (₹) *</label>
           <input type="number" id="expAmount" min="1" step="any" placeholder="0" required></div>
         <div class="form-group"><label>Paid To</label>
-          <input type="text" id="expPaidTo" placeholder="Naam (optional)"></div>
+          <input type="text" id="expPaidTo" placeholder="Name (optional)"></div>
         <div class="form-group"><label>Mode</label>
           <select id="expMode"><option>Cash</option><option>UPI</option><option>Bank</option></select></div>
         <div class="form-group" style="grid-column: span 2;"><label>Note</label>
-          <input type="text" id="expNote" placeholder="Kis kaam ke liye (optional)"></div>
+          <input type="text" id="expNote" placeholder="(optional)"></div>
       </div>
       <div style="text-align:right; margin-top:8px;">
         <button type="submit" class="btn btn-save" style="display:inline-block; width:auto;">Save Expense 💾</button>
       </div>
     </form>
 
-    <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:flex-end; margin-bottom:12px;">
+    <!-- Today Entry -->
+    <div style="border:2px solid #0b3c5d; border-radius:10px; padding:12px; margin-bottom:16px; background:#f4f9fd;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
+        <h3 style="margin:0; color:#0b3c5d;">📅 <span id="todayLabel" style="font-weight:normal; font-size:14px; color:#555;"></span></h3>
+        <div id="todayTotals" style="font-size:13px; display:flex; gap:12px; flex-wrap:wrap;"></div>
+      </div>
+
+      <p style="font-size:12px; color:#555; margin:6px 0 4px;"><b>Today Income</b> </p>
+      <div class="table-container" style="margin-top:0; max-height:260px; overflow-y:auto;">
+        <table>
+          <thead><tr><th>Customer</th><th>Unit</th><th>Type</th><th>Amount (₹)</th><th>Balance (₹)</th><th>Added By</th><th>Action</th></tr></thead>
+          <tbody id="todayIncomeBody"></tbody>
+        </table>
+      </div>
+
+      <p style="font-size:12px; color:#555; margin:12px 0 4px;"><b>Today Expenses</b>:</p>
+      <div class="table-container" style="margin-top:0; max-height:200px; overflow-y:auto;">
+        <table>
+          <thead><tr><th>Category</th><th>Amount (₹)</th><th>Paid To</th><th>Mode</th><th>Note</th><th>Added By</th><th>Action</th></tr></thead>
+          <tbody id="todayExpenseBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ALL EXPENSES -->
+    <h3 style="margin:0 0 8px; color:#0b3c5d;">🧾 Saare Expenses</h3>
+    <div style="display:flex; flex-wrap:wrap; gap:8px; align-items:flex-end; margin-bottom:10px;">
       <div class="form-group" style="margin:0;"><label>From</label><input type="date" id="expFrom" onchange="renderExpenses()"></div>
       <div class="form-group" style="margin:0;"><label>To</label><input type="date" id="expTo" onchange="renderExpenses()"></div>
-      <div class="form-group" style="margin:0;"><label>Unit</label>
-        <select id="expFilterUnit" onchange="renderExpenses()">
-          <option value="">All Units</option>
-          <option value="Tej Singh Motor Training School">Tej Singh</option>
-          <option value="CF">CF</option><option value="STSMTS">STSMTS</option><option value="Common">Common</option>
-        </select></div>
       <div class="form-group" style="margin:0;"><label>Category</label>
         <select id="expFilterCat" onchange="renderExpenses()"><option value="">All</option></select></div>
-      <button type="button" class="btn" style="width:auto; display:inline-block; padding:8px 12px;" onclick="setExpenseThisMonth()">Is Mahine</button>
-      <button type="button" class="btn" style="width:auto; display:inline-block; padding:8px 12px;" onclick="clearExpenseFilters()">Clear</button>
-      <button type="button" class="btn btn-save" style="width:auto; display:inline-block; padding:8px 12px;" onclick="exportExpensesToExcel()">⬇ Excel</button>
+      <button type="button" class="btn" style="width:auto; min-width:0; display:inline-block; padding:8px 12px; background:#6c3483;" onclick="setExpenseThisMonth()">This Month</button>
+      <button type="button" class="btn" style="width:auto; min-width:0; display:inline-block; padding:8px 12px; background:#6c757d;" onclick="clearExpenseFilters()">Clear</button>
+      <button type="button" class="btn btn-save" style="width:auto; min-width:0; display:inline-block; padding:8px 12px;" onclick="exportExpensesToExcel()">⬇ Excel</button>
     </div>
+    <div id="expTotalLine" style="font-size:14px; margin-bottom:8px;"></div>
+    <div id="expBreakdown" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px;"></div>
 
-    <div style="background:linear-gradient(135deg,#0b3c5d,#1d70b8); border-radius:10px; padding:12px 14px; margin-bottom:14px;">
-      <div style="color:#fff; font-size:13px; font-weight:bold; letter-spacing:.5px; margin-bottom:8px;">📈 NET PROFIT (Income − Expenses)</div>
-      <div id="expSummary" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:10px;"></div>
-    </div>
-    <div id="expBreakdown" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px;"></div>
-
-    <!-- NET PROFIT SECTION -->
-    <div style="border:2px solid #0b3c5d; border-radius:10px; padding:12px; margin-bottom:16px; background:#f4f9fd;">
-      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
-        <h3 style="margin:0; color:#0b3c5d;">📊 Net Profit (Income − Expenses)</h3>
-        <div id="netHeadline" style="font-size:20px; font-weight:800;"></div>
-      </div>
-      <p style="font-size:12px; color:#555; margin:0 0 6px;"><b>Unit-wise</b> (saare units, date filter ke hisaab se):</p>
-      <div class="table-container" style="margin-top:0;">
-        <table>
-          <thead><tr><th>Unit</th><th>Income (₹)</th><th>Expenses (₹)</th><th>Net Profit (₹)</th></tr></thead>
-          <tbody id="netUnitBody"></tbody>
-        </table>
-      </div>
-      <p style="font-size:12px; color:#555; margin:12px 0 6px;"><b>Din-wise</b> (har din ki income mein se usi din ka kharch minus):</p>
-      <div class="table-container" style="margin-top:0; max-height:280px; overflow-y:auto;">
-        <table>
-          <thead><tr><th>Date</th><th>Income (₹)</th><th>Expenses (₹)</th><th>Daily Net (₹)</th><th>Running Net (₹)</th></tr></thead>
-          <tbody id="netDayBody"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <h3 style="color:#0b3c5d; margin:6px 0;">📅 Daily Profit (Roz ki Income − Roz ka Kharch)</h3>
-    <div class="table-container" style="max-height: 260px; overflow-y: auto; margin-top:0; margin-bottom:14px;">
-      <table>
-        <thead><tr><th>Date</th><th>Income (₹)</th><th>Expenses (₹)</th><th>Daily Profit (₹)</th><th>Cumulative (₹)</th></tr></thead>
-        <tbody id="expDailyBody"></tbody>
-      </table>
-    </div>
-
-    <h3 style="color:#0b3c5d; margin:6px 0;">🧾 Expense Entries</h3>
-    <div class="table-container" style="max-height: 300px; overflow-y: auto; margin-top:0;">
+    <div class="table-container" style="max-height: 320px; overflow-y: auto; margin-top:0;">
       <table id="expenseTable">
         <thead><tr>
-          <th>Date</th><th>Unit</th><th>Category</th><th>Amount (₹)</th><th>Paid To</th><th>Mode</th><th>Note</th><th>Added By</th><th>Action</th>
+          <th>Date</th><th>Category</th><th>Amount (₹)</th><th>Paid To</th><th>Mode</th><th>Note</th><th>Added By</th><th>Action</th>
         </tr></thead>
         <tbody id="expenseTableBody"></tbody>
       </table>
     </div>
-    <p style="font-size:12px; color:#666; margin-bottom:0;">Daily Profit = us din ki mili hui installments − us din ka kharch. Net Profit = poore range ka Income − Expenses. Cumulative = ab tak ka running profit. From/To khali ho to saari entries judti hain.</p>
   </div>
 </div>
 
@@ -1243,6 +1221,7 @@
         globalRecords.push(d);
       });
       applyFilters();
+      if (typeof refreshExpensePanel === 'function') refreshExpensePanel();
 
       if (activeSelectedRecord) {
         let updatedActive = globalRecords.find(r => r.id === activeSelectedRecord.id);
@@ -2226,23 +2205,38 @@
   }
 
 
-  // ================= EXPENSES & PROFIT =================
+  // ================= EXPENSES =================
   let globalExpenses = [];
   let expensesUnsub = null;
-  const EXP_UNIT_LABEL = { 'Tej Singh Motor Training School': 'Tej Singh', 'CF': 'CF', 'STSMTS': 'STSMTS', 'Common': 'Common' };
+  const EXP_UNIT_LABEL = { 'Tej Singh Motor Training School': 'Tej Singh', 'CF': 'CF', 'STSMTS': 'STSMTS' };
+
+  function fmtINR(n) { return '₹' + (Math.round(n * 100) / 100).toLocaleString('en-IN'); }
+
+  function todayISO() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
 
   function loadExpenses() {
     if (expensesUnsub) return;
     expensesUnsub = db.collection("expenses").orderBy("date", "desc").onSnapshot(snap => {
       globalExpenses = [];
+      window.expensesLoadError = '';
       snap.forEach(doc => { let e = doc.data(); e.id = doc.id; e.amount = parseFloat(e.amount) || 0; globalExpenses.push(e); });
-      if (document.getElementById('expenseModal').style.display === 'flex') renderExpenses();
+      refreshExpensePanel();
     }, err => {
       console.error("Expenses load failed:", err);
       globalExpenses = [];
       window.expensesLoadError = err.message;
-      if (document.getElementById('expenseModal').style.display === 'flex') renderExpenses();
+      refreshExpensePanel();
     });
+  }
+
+  function refreshExpensePanel() {
+    if (document.getElementById('expenseModal').style.display === 'flex') {
+      renderTodayEntries();
+      renderExpenses();
+    }
   }
 
   function openExpenseModal() {
@@ -2253,6 +2247,7 @@
       Array.from(catSel.options).forEach(o => { const n = document.createElement('option'); n.value = o.value; n.textContent = o.value; filt.appendChild(n); });
     }
     document.getElementById('expenseModal').style.display = 'flex';
+    renderTodayEntries();
     renderExpenses();
   }
   function closeExpenseModal() { document.getElementById('expenseModal').style.display = 'none'; }
@@ -2265,7 +2260,6 @@
     if (amount <= 0) { alert("Amount 0 se zyada hona chahiye."); return; }
     const data = {
       date: iso,
-      unit: document.getElementById('expUnit').value,
       category: document.getElementById('expCategory').value,
       amount: amount,
       paidTo: document.getElementById('expPaidTo').value.trim(),
@@ -2276,22 +2270,98 @@
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     };
     db.collection("expenses").add(data).then(() => {
-      logActivity('EXPENSE_ADDED', data.paidTo || data.category, `₹${amount} ${data.category} (${EXP_UNIT_LABEL[data.unit] || data.unit}) on ${formatDateToDMY(iso)}${data.note ? ' - ' + data.note : ''}`);
+      logActivity('EXPENSE_ADDED', data.paidTo || data.category, `₹${amount} ${data.category} on ${formatDateToDMY(iso)}${data.note ? ' - ' + data.note : ''}`);
       document.getElementById('expAmount').value = '';
       document.getElementById('expPaidTo').value = '';
       document.getElementById('expNote').value = '';
-    }).catch(err => alert("Expense save nahi hua: " + err.message + "\n(Firestore Rules mein 'expenses' ka rule publish kiya hai?)"));
+    }).catch(err => alert("Expense not save: " + err.message + "\n(Firestore Rules mein 'expenses' ka rule publish kiya hai?)"));
   }
 
   function deleteExpense(id) {
     const ex = globalExpenses.find(x => x.id === id);
     if (!ex) return;
-    if (!confirm(`Ye expense delete karein?\n${formatDateToDMY(ex.date)} | ${ex.category} | ₹${ex.amount}`)) return;
+    if (!confirm(`Delete This Expenses\n${formatDateToDMY(ex.date)} | ${ex.category} | ₹${ex.amount}`)) return;
     db.collection("expenses").doc(id).delete().then(() => {
-      logActivity('EXPENSE_DELETED', ex.paidTo || ex.category, `Deleted ₹${ex.amount} ${ex.category} (${EXP_UNIT_LABEL[ex.unit] || ex.unit}) dated ${formatDateToDMY(ex.date)}`);
+      logActivity('EXPENSE_DELETED', ex.paidTo || ex.category, `Deleted ₹${ex.amount} ${ex.category} dated ${formatDateToDMY(ex.date)}`);
     }).catch(err => alert("Delete error: " + err.message));
   }
 
+  function makeBtn(label, cls, handler) {
+    const b = document.createElement('button');
+    b.textContent = label; b.className = cls; b.onclick = handler;
+    return b;
+  }
+
+  // ---------- Today Entry's (today, detail-wise) ----------
+  function renderTodayEntries() {
+    const today = todayISO();
+    document.getElementById('todayLabel').textContent = '(' + formatDateToDMY(today) + ')';
+
+    // Income: every installment dated today
+    const inc = [];
+    globalRecords.forEach(d => {
+      (d.installmentsList || []).forEach(inst => {
+        if ((inst.date || d.paymentDate || '') === today) {
+          inc.push({ id: d.id, name: d.customerName || '-', unit: d.schoolUnit || 'Tej Singh Motor Training School',
+            type: (inst.type || 'Payment') + (inst.category === 'passing' ? ' 🛂 Passing' : ''),
+            amount: parseFloat(inst.amount) || 0, balance: d.balanceAmount || 0, by: inst.operator || '-' });
+        }
+      });
+    });
+    inc.sort((a, b) => (a.unit + a.name).localeCompare(b.unit + b.name));
+
+    const incBody = document.getElementById('todayIncomeBody');
+    incBody.innerHTML = '';
+    if (inc.length === 0) {
+      incBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#666;">No Record.</td></tr>`;
+    }
+    inc.forEach(x => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td><b>${escapeHtml(x.name)}</b></td>
+        <td>${escapeHtml(EXP_UNIT_LABEL[x.unit] || x.unit)}</td>
+        <td>${escapeHtml(x.type)}</td>
+        <td style="color:#1e7e34; font-weight:bold;">₹${escapeHtml(String(x.amount))}</td>
+        <td style="color:${x.balance > 0 ? '#c0392b' : '#1e7e34'}; font-weight:bold;">₹${escapeHtml(String(x.balance))}</td>
+        <td>${escapeHtml(x.by)}</td>`;
+      const td = document.createElement('td');
+      td.appendChild(makeBtn('View', 'btn-sm btn-details', () => openDetailsModal(x.id)));
+      td.appendChild(makeBtn('Pay', 'btn-sm btn-pay', () => openPayModal(x.id, x.name, x.balance)));
+      tr.appendChild(td);
+      incBody.appendChild(tr);
+    });
+
+    // Expenses: dated today
+    const exp = globalExpenses.filter(x => x.date === today);
+    const expBody = document.getElementById('todayExpenseBody');
+    expBody.innerHTML = '';
+    if (window.expensesLoadError) {
+      expBody.innerHTML = `<tr><td colspan="7" style="color:#c00; text-align:center;">Loading Expenses: ${escapeHtml(window.expensesLoadError)}</td></tr>`;
+    } else if (exp.length === 0) {
+      expBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#666;">No expenses recorded Today.</td></tr>`;
+    }
+    exp.forEach(x => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${escapeHtml(x.category)}</td>
+        <td style="color:#c0392b; font-weight:bold;">₹${escapeHtml(String(x.amount))}</td>
+        <td>${escapeHtml(x.paidTo || '-')}</td><td>${escapeHtml(x.mode || '-')}</td>
+        <td>${escapeHtml(x.note || '-')}</td><td>${escapeHtml(x.addedBy || '-')}</td>`;
+      const td = document.createElement('td');
+      td.appendChild(makeBtn('Del', 'close-modal', () => deleteExpense(x.id)));
+      td.firstChild.style.padding = '3px 8px';
+      tr.appendChild(td);
+      expBody.appendChild(tr);
+    });
+
+    const tInc = inc.reduce((a, x) => a + x.amount, 0);
+    const tExp = exp.reduce((a, x) => a + x.amount, 0);
+    const net = tInc - tExp;
+    document.getElementById('todayTotals').innerHTML =
+      `<span>Income: <b style="color:#1e7e34;">${fmtINR(tInc)}</b></span>` +
+      `<span>Expenses: <b style="color:#c0392b;">${fmtINR(tExp)}</b></span>` +
+      `<span>today Net Balance: <b style="color:${net >= 0 ? '#1e7e34' : '#c0392b'};">${net < 0 ? '−' : ''}${fmtINR(Math.abs(net))}</b></span>`;
+  }
+
+  // ---------- SAARE EXPENSES (filtered list) ----------
   function setExpenseThisMonth() {
     const d = new Date();
     const first = new Date(d.getFullYear(), d.getMonth(), 1);
@@ -2302,217 +2372,69 @@
     renderExpenses();
   }
   function clearExpenseFilters() {
-    ['expFrom','expTo','expFilterUnit','expFilterCat'].forEach(id => document.getElementById(id).value = '');
+    ['expFrom','expTo','expFilterCat'].forEach(id => document.getElementById(id).value = '');
     renderExpenses();
   }
 
   function getFilteredExpenses() {
     const from = document.getElementById('expFrom').value;
     const to = document.getElementById('expTo').value;
-    const unit = document.getElementById('expFilterUnit').value;
     const cat = document.getElementById('expFilterCat').value;
-    return globalExpenses.filter(x =>
-      (!from || x.date >= from) && (!to || x.date <= to) && (!unit || x.unit === unit) && (!cat || x.category === cat));
+    return globalExpenses.filter(x => (!from || x.date >= from) && (!to || x.date <= to) && (!cat || x.category === cat));
   }
-
-  // Returns { 'YYYY-MM-DD': incomeThatDay } for current filters (date range + unit)
-  function getDailyIncomeMap() {
-    const from = document.getElementById('expFrom').value;
-    const to = document.getElementById('expTo').value;
-    const unit = document.getElementById('expFilterUnit').value;
-    const map = {};
-    if (unit === 'Common') return map;
-    globalRecords.forEach(d => {
-      const u = d.schoolUnit || "Tej Singh Motor Training School";
-      if (unit && u !== unit) return;
-      (d.installmentsList || []).forEach(inst => {
-        const dt = inst.date || d.paymentDate || '';
-        if (!dt || dt === '-') return;
-        if ((!from || dt >= from) && (!to || dt <= to)) map[dt] = (map[dt] || 0) + (parseFloat(inst.amount) || 0);
-      });
-    });
-    return map;
-  }
-
-  function fmtINR(n) { return '₹' + (Math.round(n * 100) / 100).toLocaleString('en-IN'); }
 
   function renderExpenses() {
     const tbody = document.getElementById('expenseTableBody');
-    const sumDiv = document.getElementById('expSummary');
     const bdDiv = document.getElementById('expBreakdown');
-    tbody.innerHTML = ''; sumDiv.innerHTML = ''; bdDiv.innerHTML = '';
+    tbody.innerHTML = ''; bdDiv.innerHTML = '';
+    document.getElementById('expTotalLine').innerHTML = '';
 
     if (window.expensesLoadError) {
-      tbody.innerHTML = `<tr><td colspan="9" style="color:#c00; text-align:center;">Expenses load nahi hue: ${escapeHtml(window.expensesLoadError)}<br>Firestore Rules mein 'expenses' ka rule add karke Publish karein.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8" style="color:#c00; text-align:center;">Expenses Loading...: ${escapeHtml(window.expensesLoadError)}<br>Firestore Rules mein 'expenses' ka rule add karke Publish karein.</td></tr>`;
       return;
     }
 
     const rows = getFilteredExpenses();
-    const incomeMap = getDailyIncomeMap();
-    const expMap = {};
-    rows.forEach(x => { expMap[x.date] = (expMap[x.date] || 0) + x.amount; });
+    const total = rows.reduce((a, x) => a + x.amount, 0);
+    document.getElementById('expTotalLine').innerHTML = `Total Expenses (${rows.length} entry): <b style="color:#c0392b;">${fmtINR(total)}</b>`;
 
-    const totalExp = rows.reduce((a, x) => a + x.amount, 0);
-    const income = Object.values(incomeMap).reduce((a, v) => a + v, 0);
-    const profit = income - totalExp;
-
-    const card = (label, val, bg, fg, big) => {
-      const el = document.createElement('div');
-      el.style.cssText = `background:${bg}; color:${fg}; border-radius:8px; padding:10px 14px;`;
-      el.innerHTML = `<div style="font-size:12px; opacity:.85;">${label}</div><div style="font-size:${big ? 24 : 20}px; font-weight:800;">${val}</div>`;
-      sumDiv.appendChild(el);
-    };
-    card('Total Income (Received)', fmtINR(income), '#e6f6ec', '#1e7e34');
-    card('Total Expenses', '− ' + fmtINR(totalExp), '#fdeaea', '#c0392b');
-    card(profit >= 0 ? 'NET PROFIT' : 'NET LOSS', (profit < 0 ? '− ' : '') + fmtINR(Math.abs(profit)), '#ffffff', profit >= 0 ? '#1e7e34' : '#c0392b', true);
-    if (income > 0) card('Profit Margin', (Math.round((profit / income) * 1000) / 10) + '%', '#fff8e6', '#8a6d00');
-
-    // Daily Profit table (every date that has income or expense), newest first
-    const dailyBody = document.getElementById('expDailyBody');
-    dailyBody.innerHTML = '';
-    const allDates = Array.from(new Set([...Object.keys(incomeMap), ...Object.keys(expMap)])).sort();
-    let cum = 0;
-    const dailyRows = allDates.map(dt => {
-      const inc = incomeMap[dt] || 0, ex = expMap[dt] || 0;
-      cum += inc - ex;
-      return { dt, inc, ex, net: inc - ex, cum };
-    }).reverse();
-    if (dailyRows.length === 0) {
-      dailyBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#666;">Is range mein koi income ya expense nahi.</td></tr>`;
-    }
-    dailyRows.forEach(r => {
-      const tr = document.createElement('tr');
-      const col = v => v >= 0 ? '#1e7e34' : '#c0392b';
-      tr.innerHTML = `
-        <td>${escapeHtml(formatDateToDMY(r.dt))}</td>
-        <td style="color:#1e7e34;">${fmtINR(r.inc)}</td>
-        <td style="color:#c0392b;">${r.ex ? '− ' + fmtINR(r.ex) : '₹0'}</td>
-        <td style="font-weight:bold; color:${col(r.net)};">${r.net < 0 ? '− ' : ''}${fmtINR(Math.abs(r.net))}</td>
-        <td style="color:${col(r.cum)};">${r.cum < 0 ? '− ' : ''}${fmtINR(Math.abs(r.cum))}</td>`;
-      dailyBody.appendChild(tr);
+    const byCat = {};
+    rows.forEach(x => { byCat[x.category] = (byCat[x.category] || 0) + x.amount; });
+    Object.keys(byCat).sort((a, b) => byCat[b] - byCat[a]).forEach(c => {
+      const chip = document.createElement('div');
+      chip.style.cssText = 'background:#f3eefa; border-radius:6px; padding:5px 10px; font-size:12px;';
+      chip.innerHTML = `${escapeHtml(c)}: <b>${fmtINR(byCat[c])}</b>`;
+      bdDiv.appendChild(chip);
     });
 
-    const byCat = {}, byUnit = {};
-    rows.forEach(x => { byCat[x.category] = (byCat[x.category] || 0) + x.amount; byUnit[x.unit] = (byUnit[x.unit] || 0) + x.amount; });
-    const chip = (t, bg) => { const c = document.createElement('div'); c.style.cssText = `background:${bg}; border-radius:6px; padding:5px 10px; font-size:12px;`; c.innerHTML = t; bdDiv.appendChild(c); };
-    Object.keys(byUnit).forEach(u => chip(`<b>${escapeHtml(EXP_UNIT_LABEL[u] || u)}:</b> ${fmtINR(byUnit[u])}`, '#eaf3fb'));
-    Object.keys(byCat).sort((a, b) => byCat[b] - byCat[a]).forEach(c => chip(`${escapeHtml(c)}: <b>${fmtINR(byCat[c])}</b>`, '#f3eefa'));
-
-    renderNetProfit();
-
     if (rows.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:#666;">Koi expense entry nahi mili.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#666;">No Record Found.</td></tr>`;
       return;
     }
     rows.forEach(x => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td>${escapeHtml(formatDateToDMY(x.date))}</td>
-        <td>${escapeHtml(EXP_UNIT_LABEL[x.unit] || x.unit)}</td>
         <td>${escapeHtml(x.category)}</td>
         <td style="color:#c0392b; font-weight:bold;">₹${escapeHtml(String(x.amount))}</td>
         <td>${escapeHtml(x.paidTo || '-')}</td>
         <td>${escapeHtml(x.mode || '-')}</td>
         <td>${escapeHtml(x.note || '-')}</td>
         <td>${escapeHtml(x.addedBy || '-')}</td>`;
-      const btn = document.createElement('button');
-      btn.textContent = 'Del'; btn.className = 'close-modal'; btn.style.padding = '3px 8px';
-      btn.onclick = () => deleteExpense(x.id);
-      const actionTd = document.createElement('td');
-      actionTd.appendChild(btn);
-      tr.appendChild(actionTd);
+      const td = document.createElement('td');
+      td.appendChild(makeBtn('Del', 'close-modal', () => deleteExpense(x.id)));
+      td.firstChild.style.padding = '3px 8px';
+      tr.appendChild(td);
       tbody.appendChild(tr);
     });
-  }
-
-
-  function expInRange(dt, from, to) { return (!from || dt >= from) && (!to || dt <= to); }
-
-  function computeNetProfit() {
-    const from = document.getElementById('expFrom').value;
-    const to = document.getElementById('expTo').value;
-    const fUnit = document.getElementById('expFilterUnit').value;
-    const fCat = document.getElementById('expFilterCat').value;
-    const MAIN = 'Tej Singh Motor Training School';
-
-    // Unit-wise (ignores unit filter)
-    const unitMap = {};
-    [MAIN, 'CF', 'STSMTS', 'Common'].forEach(u => unitMap[u] = { income: 0, exp: 0 });
-    // Day-wise (respects unit filter)
-    const dayMap = {};
-    const day = dt => dayMap[dt] || (dayMap[dt] = { income: 0, exp: 0 });
-
-    globalRecords.forEach(d => {
-      const u = d.schoolUnit || MAIN;
-      (d.installmentsList || []).forEach(inst => {
-        const dt = inst.date || d.paymentDate || '';
-        if (!dt || !expInRange(dt, from, to)) return;
-        const amt = parseFloat(inst.amount) || 0;
-        if (!unitMap[u]) unitMap[u] = { income: 0, exp: 0 };
-        unitMap[u].income += amt;
-        if (!fUnit || (fUnit !== 'Common' && u === fUnit)) day(dt).income += amt;
-      });
-    });
-    globalExpenses.forEach(x => {
-      if (!expInRange(x.date, from, to) || (fCat && x.category !== fCat)) return;
-      if (!unitMap[x.unit]) unitMap[x.unit] = { income: 0, exp: 0 };
-      unitMap[x.unit].exp += x.amount;
-      if (!fUnit || x.unit === fUnit) day(x.date).exp += x.amount;
-    });
-
-    const unitRows = Object.keys(unitMap).map(u => ({ unit: u, income: unitMap[u].income, exp: unitMap[u].exp, net: unitMap[u].income - unitMap[u].exp }));
-    const dates = Object.keys(dayMap).sort();
-    let running = 0;
-    const dayRowsAsc = dates.map(dt => {
-      const net = dayMap[dt].income - dayMap[dt].exp;
-      running += net;
-      return { date: dt, income: dayMap[dt].income, exp: dayMap[dt].exp, net: net, running: running };
-    });
-    return { unitRows: unitRows, dayRows: dayRowsAsc.reverse() };
-  }
-
-  function renderNetProfit() {
-    const r = computeNetProfit();
-    const col = n => n >= 0 ? '#1e7e34' : '#c0392b';
-
-    let tInc = 0, tExp = 0;
-    let unitHtml = '';
-    r.unitRows.forEach(u => {
-      tInc += u.income; tExp += u.exp;
-      unitHtml += `<tr><td><b>${escapeHtml(EXP_UNIT_LABEL[u.unit] || u.unit)}</b></td>
-        <td>${fmtINR(u.income)}</td><td style="color:#c0392b;">${fmtINR(u.exp)}</td>
-        <td style="font-weight:bold; color:${col(u.net)};">${u.net < 0 ? '−' : ''}${fmtINR(Math.abs(u.net))}</td></tr>`;
-    });
-    const tNet = tInc - tExp;
-    unitHtml += `<tr style="background:#eaf3fb; font-weight:bold;"><td>TOTAL</td><td>${fmtINR(tInc)}</td>
-      <td style="color:#c0392b;">${fmtINR(tExp)}</td>
-      <td style="color:${col(tNet)};">${tNet < 0 ? '−' : ''}${fmtINR(Math.abs(tNet))}</td></tr>`;
-    document.getElementById('netUnitBody').innerHTML = unitHtml;
-
-    const head = document.getElementById('netHeadline');
-    head.style.color = col(tNet);
-    head.textContent = (tNet >= 0 ? 'Net Profit: ' : 'Net Loss: ') + fmtINR(Math.abs(tNet));
-
-    let dayHtml = '';
-    if (r.dayRows.length === 0) {
-      dayHtml = `<tr><td colspan="5" style="text-align:center; color:#666;">Is range mein koi income ya expense nahi.</td></tr>`;
-    } else {
-      r.dayRows.forEach(d => {
-        dayHtml += `<tr><td>${escapeHtml(formatDateToDMY(d.date))}</td>
-          <td>${fmtINR(d.income)}</td><td style="color:#c0392b;">${fmtINR(d.exp)}</td>
-          <td style="font-weight:bold; color:${col(d.net)};">${d.net < 0 ? '−' : ''}${fmtINR(Math.abs(d.net))}</td>
-          <td style="color:${col(d.running)};">${d.running < 0 ? '−' : ''}${fmtINR(Math.abs(d.running))}</td></tr>`;
-      });
-    }
-    document.getElementById('netDayBody').innerHTML = dayHtml;
   }
 
   function exportExpensesToExcel() {
     const rows = getFilteredExpenses();
     if (rows.length === 0) { alert("Export ke liye koi entry nahi."); return; }
     const data = rows.map(x => ({
-      Date: formatDateToDMY(x.date), Unit: EXP_UNIT_LABEL[x.unit] || x.unit, Category: x.category,
-      Amount: x.amount, 'Paid To': x.paidTo || '', Mode: x.mode || '', Note: x.note || '', 'Added By': x.addedBy || ''
+      Date: formatDateToDMY(x.date), Category: x.category, Amount: x.amount,
+      'Paid To': x.paidTo || '', Mode: x.mode || '', Note: x.note || '', 'Added By': x.addedBy || ''
     }));
     const doExport = () => {
       const wb = XLSX.utils.book_new();
