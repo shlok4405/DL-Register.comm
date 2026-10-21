@@ -2482,21 +2482,43 @@
     document.head.appendChild(script);
   }
 
+  function userCanSeeExpenses() {
+    return EXPENSE_VIEWERS.map(e => e.toLowerCase()).includes((activeStaffEmail || '').toLowerCase());
+  }
+
   function backupData() {
-    db.collection("dl_records").get().then(snapshot => {
-      let data = [];
-      snapshot.forEach(doc => {
-        let obj = doc.data();
-        obj.firebaseId = doc.id;
-        data.push(obj);
-      });
-      let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
+    const includeExpenses = userCanSeeExpenses();
+    const jobs = [db.collection("dl_records").get()];
+    if (includeExpenses) jobs.push(db.collection("expenses").get());
+
+    Promise.all(jobs).then(results => {
+      const records = [];
+      results[0].forEach(doc => { let obj = doc.data(); obj.firebaseId = doc.id; records.push(obj); });
+
+      const expenses = [];
+      if (includeExpenses) {
+        results[1].forEach(doc => { let obj = doc.data(); obj.firebaseId = doc.id; expenses.push(obj); });
+      }
+
+      const backup = {
+        backupVersion: 2,
+        createdOn: todayISO(),
+        expensesIncluded: includeExpenses,
+        records: records,
+        expenses: expenses
+      };
+
+      let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backup, null, 2));
       let dlAnchor = document.createElement('a');
       dlAnchor.setAttribute("href", dataStr);
-      dlAnchor.setAttribute("download", "TejSingh_Backup_" + new Date().toISOString().slice(0,10) + ".json");
+      dlAnchor.setAttribute("download", "TejSingh_Backup_" + todayISO() + ".json");
       document.body.appendChild(dlAnchor);
       dlAnchor.click();
       dlAnchor.remove();
+
+      if (!includeExpenses) {
+        alert("Backup downloaded with customer records only. Your account does not have access to Expenses, so they are not included.");
+      }
     }).catch(err => alert("Backup error: " + err.message));
   }
 
@@ -2506,29 +2528,59 @@
     }
   }
 
+  // Firestore Timestamps are saved in the backup as {seconds, nanoseconds}; turn them back into real Timestamps.
+  function reviveTimestamps(obj) {
+    ['createdAt', 'updatedAt'].forEach(k => {
+      const v = obj[k];
+      if (v && typeof v === 'object' && typeof v.seconds === 'number') {
+        obj[k] = new firebase.firestore.Timestamp(v.seconds, v.nanoseconds || 0);
+      }
+    });
+    return obj;
+  }
+
   function restoreData(event) {
     let file = event.target.files[0];
     if (!file) return;
     let reader = new FileReader();
     reader.onload = function(e) {
-      try {
-        let records = JSON.parse(e.target.result);
-        let batchCount = 0;
-        records.forEach(rec => {
-          let id = rec.firebaseId;
-          delete rec.firebaseId;
-          if (id) {
-            db.collection("dl_records").doc(id).set(rec, { merge: true });
-          } else {
-            db.collection("dl_records").add(rec);
-          }
-          batchCount++;
+      let parsed;
+      try { parsed = JSON.parse(e.target.result); }
+      catch (err) { alert("Invalid JSON file format!"); return; }
+
+      // Old backups are a plain list of customer records; new backups hold { records, expenses }.
+      const records = Array.isArray(parsed) ? parsed : (parsed.records || []);
+      const expenses = Array.isArray(parsed) ? [] : (parsed.expenses || []);
+      if (!Array.isArray(records) || !Array.isArray(expenses)) { alert("Invalid JSON file format!"); return; }
+
+      const canRestoreExpenses = userCanSeeExpenses();
+      const writes = [];
+
+      records.forEach(rec => {
+        let id = rec.firebaseId;
+        delete rec.firebaseId;
+        writes.push(id ? db.collection("dl_records").doc(id).set(rec, { merge: true }) : db.collection("dl_records").add(rec));
+      });
+
+      let expenseCount = 0;
+      if (canRestoreExpenses) {
+        expenses.forEach(exp => {
+          let id = exp.firebaseId;
+          delete exp.firebaseId;
+          reviveTimestamps(exp);
+          writes.push(id ? db.collection("expenses").doc(id).set(exp, { merge: true }) : db.collection("expenses").add(exp));
+          expenseCount++;
         });
-        alert(`Successfully restored ${batchCount} records!`);
-        location.reload();
-      } catch (err) {
-        alert("Invalid JSON file format!");
       }
+
+      Promise.all(writes).then(() => {
+        let msg = `Successfully restored ${records.length} customer records`;
+        if (canRestoreExpenses) msg += ` and ${expenseCount} expenses`;
+        msg += "!";
+        if (!canRestoreExpenses && expenses.length > 0) msg += `\n(${expenses.length} expenses in the file were skipped because your account does not have access to Expenses.)`;
+        alert(msg);
+        location.reload();
+      }).catch(err => alert("Restore error: " + err.message));
     };
     reader.readAsText(file);
   }
