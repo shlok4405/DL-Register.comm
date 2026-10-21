@@ -185,7 +185,7 @@
     <button class="log-btn" id="auditLogBtn" onclick="closeMenu(); openAuditLogModal()">📜 Activity Logs</button>
     <button class="log-btn" id="passingFundBtn" onclick="closeMenu(); openPassingFundModal()">🛂 Passing Fund Report</button>
     <button class="collection-btn" id="collectionMenuBtn" onclick="closeMenu(); openCollectionModal()" title="Shortcut: Shift + C">💰 Collections (Shift+C)</button>
-    <button class="log-btn" id="expenseBtn" style="background:#8e44ad;" onclick="closeMenu(); openExpenseModal()">💸 Expenses &amp; Profit</button>
+    <button class="log-btn" id="expenseBtn" style="background:#8e44ad;" onclick="closeMenu(); openExpenseModal()">💸 Expenses (Tej Singh)</button>
     <button class="logout-btn" onclick="closeMenu(); logoutUser()">Logout 🔒</button>
   </div>
 
@@ -646,7 +646,7 @@
 <div id="expenseModal" class="modal-overlay">
   <div class="modal-content" style="max-width: 1100px;">
     <div class="modal-header">
-      <h2>💸 Expenses</h2>
+      <h2>💸 Expenses <span style="font-size:14px; font-weight:normal; color:#555;">— Tej Singh Motor Training School only</span></h2>
       <button class="close-modal" onclick="closeExpenseModal()">X</button>
     </div>
 
@@ -686,7 +686,7 @@
       <p style="font-size:12px; color:#555; margin:6px 0 4px;"><b>Today Income</b> </p>
       <div class="table-container" style="margin-top:0; max-height:260px; overflow-y:auto;">
         <table>
-          <thead><tr><th>Customer</th><th>Unit</th><th>Type</th><th>Amount (₹)</th><th>Balance (₹)</th><th>Added By</th><th>Action</th></tr></thead>
+          <thead><tr><th>Customer</th><th>Type</th><th>Amount (₹)</th><th>Balance (₹)</th><th>Added By</th><th>Action</th></tr></thead>
           <tbody id="todayIncomeBody"></tbody>
         </table>
       </div>
@@ -2216,6 +2216,9 @@
   let globalExpenses = [];
   let expensesUnsub = null;
   const EXP_UNIT_LABEL = { 'Tej Singh Motor Training School': 'Tej Singh', 'CF': 'CF', 'STSMTS': 'STSMTS' };
+  // The Expenses section is ONLY for the Tej Singh unit.
+  const TEJ_UNIT = 'Tej Singh Motor Training School';
+  const isTejExpense = e => !e.unit || e.unit === TEJ_UNIT;   // old entries without a unit count as Tej Singh
 
   function fmtINR(n) { return '₹' + (Math.round(n * 100) / 100).toLocaleString('en-IN'); }
 
@@ -2229,7 +2232,7 @@
     expensesUnsub = db.collection("expenses").orderBy("date", "desc").onSnapshot(snap => {
       globalExpenses = [];
       window.expensesLoadError = '';
-      snap.forEach(doc => { let e = doc.data(); e.id = doc.id; e.amount = parseFloat(e.amount) || 0; globalExpenses.push(e); });
+      snap.forEach(doc => { let e = doc.data(); e.id = doc.id; e.amount = parseFloat(e.amount) || 0; if (isTejExpense(e)) globalExpenses.push(e); });
       refreshExpensePanel();
     }, err => {
       console.error("Expenses load failed:", err);
@@ -2267,6 +2270,7 @@
     if (amount <= 0) { alert("Amount must be greater than 0."); return; }
     const data = {
       date: iso,
+      unit: TEJ_UNIT,
       category: document.getElementById('expCategory').value,
       amount: amount,
       paidTo: document.getElementById('expPaidTo').value.trim(),
@@ -2307,6 +2311,7 @@
     // Income: every installment dated today
     const inc = [];
     globalRecords.forEach(d => {
+      if ((d.schoolUnit || TEJ_UNIT) !== TEJ_UNIT) return;   // Tej Singh unit only
       (d.installmentsList || []).forEach(inst => {
         if ((inst.date || d.paymentDate || '') === today) {
           inc.push({ id: d.id, name: d.customerName || '-', unit: d.schoolUnit || 'Tej Singh Motor Training School',
@@ -2320,12 +2325,11 @@
     const incBody = document.getElementById('todayIncomeBody');
     incBody.innerHTML = '';
     if (inc.length === 0) {
-      incBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#666;">No Record.</td></tr>`;
+      incBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#666;">No Record.</td></tr>`;
     }
     inc.forEach(x => {
       const tr = document.createElement('tr');
       tr.innerHTML = `<td><b>${escapeHtml(x.name)}</b></td>
-        <td>${escapeHtml(EXP_UNIT_LABEL[x.unit] || x.unit)}</td>
         <td>${escapeHtml(x.type)}</td>
         <td style="color:#1e7e34; font-weight:bold;">₹${escapeHtml(String(x.amount))}</td>
         <td style="color:${x.balance > 0 ? '#c0392b' : '#1e7e34'}; font-weight:bold;">₹${escapeHtml(String(x.balance))}</td>
