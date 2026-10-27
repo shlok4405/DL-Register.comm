@@ -64,6 +64,16 @@
     .btn-del { background-color: #dc3545; }
     .btn-pay { background-color: #28a745; }
     .btn-details { background-color: #17a2b8; }
+    .btn-wa { background-color: #25D366; }
+    .quick-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 4px; }
+    .chip { border: 1px solid #1d70b8; background: #fff; color: #1d70b8; padding: 6px 14px; border-radius: 16px; cursor: pointer; font-size: 13px; font-weight: bold; }
+    .chip.active { background: #1d70b8; color: #fff; }
+    .more-toggle { background: #fff; border: 1px dashed #1d70b8; color: #1d70b8; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; margin: 6px 0 10px; }
+    #customerTable.compact .col-extra { display: none; }
+    #customerTable tbody tr { cursor: pointer; }
+    #customerTable tbody tr:hover { background: #f1f8ff; }
+    .fee-hint { font-size: 12px; color: #1d70b8; margin-top: 3px; cursor: pointer; font-weight: bold; display: none; }
+    .existing-hint { font-size: 12px; margin-top: 3px; display: none; }
     .btn-print { background-color: #6f42c1; }
 
     /* Filter Box */
@@ -137,6 +147,39 @@
       #receiptPrintArea { display: block !important; position: absolute; left: 0; top: 0; width: 100%; max-width: 600px; padding: 20px; background: white; font-size: 13px; color: #000; border: 1px solid #000; }
       .no-print { display: none !important; }
     }
+      /* ===== DIWALI THEME (only applies while <body> has the "diwali" class; removed automatically after 11 Nov 2026) ===== */
+    body.diwali { background: radial-gradient(circle at 20% 0%, #ffe9b8 0%, #fff4dc 35%, #fff9ee 100%) fixed; padding-top: 34px; }
+    body.diwali .container { border: 2px solid #f0b429; box-shadow: 0 6px 22px rgba(176,87,0,0.28); }
+    body.diwali .header { background: linear-gradient(135deg, #5a0f0f 0%, #a31d1d 35%, #e8590c 75%, #f59f00 100%); border-bottom: 4px solid #ffd84d; }
+    body.diwali .header h1 { color: #ffe27a; text-shadow: 0 2px 6px rgba(0,0,0,0.5); }
+    body.diwali .header h1::before { content: '🪔 '; }
+    body.diwali .header h1::after { content: ' 🪔'; }
+    body.diwali .header p { color: #fff1cf; }
+    body.diwali .diwali-greeting { display: inline-block; margin: 6px 0 2px; background: rgba(255,226,122,0.18); border: 1px solid #ffd84d; color: #ffe27a; border-radius: 16px; padding: 3px 14px; font-size: 13px; font-weight: bold; animation: diwaliGlow 2.2s ease-in-out infinite alternate; }
+    body.diwali .auth-card .diwali-greeting { color: #a31d1d; background: #fff1cf; border-color: #f0b429; }
+    body.diwali .section-title { color: #a31d1d; border-bottom: 2px solid #f0b429; }
+    body.diwali th { background: linear-gradient(#a31d1d, #7a1313); color: #ffe27a; }
+    body.diwali .filter-box { background: #fff6df; border-color: #f0b429; }
+    body.diwali .modal-header { border-bottom-color: #f0b429; }
+    body.diwali .modal-header h2 { color: #a31d1d; }
+    body.diwali .side-ribbon { background: linear-gradient(180deg, #5a0f0f, #a31d1d); }
+    body.diwali .menu-toggle { border-color: #ffd84d; }
+    body.diwali .auth-card { border-top: 6px solid #f0b429; }
+    body.diwali .auth-card h2 { color: #a31d1d !important; }
+    body.diwali .auth-card button:not(.secondary-btn) { background: #c0392b; }
+    body.diwali .chip { border-color: #c0392b; color: #c0392b; }
+    body.diwali .chip.active { background: #c0392b; color: #fff; }
+    body.diwali .more-toggle { border-color: #c0392b; color: #c0392b; }
+    body.diwali #customerTable tbody tr:hover { background: #fff1cf; }
+    #diwaliLights { position: fixed; top: 0; left: 0; right: 0; height: 30px; z-index: 900; pointer-events: none; display: flex; justify-content: space-around; align-items: flex-start; overflow: hidden; border-top: 3px solid #7a4b12; }
+    #diwaliLights .bulb { width: 9px; height: 13px; border-radius: 50% 50% 55% 55%; box-shadow: 0 0 8px 2px currentColor; animation: bulbTwinkle 1.6s infinite ease-in-out; }
+    #diwaliFall { position: fixed; inset: 0; pointer-events: none; z-index: 5; overflow: hidden; }
+    #diwaliFall span { position: absolute; top: -40px; opacity: 0.5; animation: diwaliFall linear infinite; }
+    @keyframes bulbTwinkle { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.35; transform: scale(0.85); } }
+    @keyframes diwaliFall { 0% { transform: translateY(-40px) rotate(0deg); } 100% { transform: translateY(110vh) rotate(360deg); } }
+    @keyframes diwaliGlow { from { box-shadow: 0 0 2px rgba(255,216,77,0.3); } to { box-shadow: 0 0 12px rgba(255,216,77,0.9); } }
+    @media (prefers-reduced-motion: reduce) { #diwaliFall { display: none; } #diwaliLights .bulb, body.diwali .diwali-greeting { animation: none; } }
+    @media print { #diwaliLights, #diwaliFall, .diwali-greeting { display: none !important; } }
   </style>
 </head>
 <body>
@@ -182,6 +225,7 @@
   <div class="side-ribbon" id="sideRibbon">
     <button class="side-ribbon-close" onclick="closeMenu()">✕</button>
     <p class="side-ribbon-title">Menu</p>
+    <button class="log-btn" id="needsAttentionBtn" style="background:#e67e22;" onclick="closeMenu(); openAttentionModal()">⚠️ Needs Attention</button>
     <button class="log-btn" id="auditLogBtn" onclick="closeMenu(); openAuditLogModal()">📜 Activity Logs</button>
     <button class="log-btn" id="passingFundBtn" onclick="closeMenu(); openPassingFundModal()">🛂 Passing Fund Report</button>
     <button class="collection-btn" id="collectionMenuBtn" onclick="closeMenu(); openCollectionModal()" title="Shortcut: Shift + C">💰 Collections (Shift+C)</button>
@@ -200,7 +244,7 @@
         <!-- School / Entity Selection Field -->
         <div class="form-group" style="background: #eef5fc; padding: 8px; border-radius: 4px; border: 1px solid #1d70b8;">
           <label style="color: #0b3c5d; font-size: 14px;">School / Entity Unit *</label>
-          <select id="schoolUnit" required style="font-weight: bold; color: #0b3c5d;">
+          <select id="schoolUnit" required style="font-weight: bold; color: #0b3c5d;" onchange="updateFeeHint()">
             <option value="Tej Singh Motor Training School">Tej Singh Motor Training School (Main)</option>
             <option value="CF">CF Unit</option>
             <option value="STSMTS">STSMTS Unit</option>
@@ -217,8 +261,9 @@
         </div>
         <div class="form-group">
           <label>Mobile Number *</label>
-          <input type="tel" id="mobile" placeholder="xxxxxxxxxx" inputmode="numeric" maxlength="10" pattern="\d{10}" required oninput="this.value = this.value.replace(/\D/g,'').slice(0,10);" onblur="checkDuplicateMobile()">
+          <input type="tel" id="mobile" placeholder="xxxxxxxxxx" inputmode="numeric" maxlength="10" pattern="\d{10}" required oninput="this.value = this.value.replace(/\D/g,'').slice(0,10); checkDuplicateMobile();" onblur="checkDuplicateMobile()">
           <small id="duplicateWarning" style="color: #d9534f; font-weight: bold; display: none; margin-top: 3px;">⚠️ Warning: Mobile number already exists!</small>
+          <div class="existing-hint" id="existingHint"></div>
         </div>
         <div class="form-group">
           <label>Date of Birth (DOB) *</label>
@@ -228,7 +273,7 @@
         <!-- Multi-Select Vehicle Checkbox Box -->
         <div class="form-group full-width">
           <label>Vehicle Type (Select Multiple) *</label>
-          <div class="checkbox-group" id="vehicleCheckboxGroup">
+          <div class="checkbox-group" id="vehicleCheckboxGroup" onchange="updateFeeHint()">
             <label><input type="checkbox" value="Two Wheeler"> Two Wheeler</label>
             <label><input type="checkbox" value="Four Wheeler"> Four Wheeler</label>
             <label><input type="checkbox" value="AD"> AD</label>
@@ -240,6 +285,10 @@
           </div>
         </div>
 
+      </div>
+
+      <button type="button" class="more-toggle" id="moreBtn" onclick="toggleMoreDetails()">➕ More details (Reference, Address, LL / DL numbers, Remarks)</button>
+      <div class="form-grid" id="moreDetails" style="display:none;">
         <div class="form-group">
           <label>Referred By / Reference Name:</label>
           <input type="text" id="reference" placeholder="e.g. Self, Friend Name, Other">
@@ -273,23 +322,24 @@
           <label>Internal Comments / Remarks (Private - Web Only):</label>
           <textarea id="remarks" rows="2" placeholder="Any internal notes..."></textarea>
         </div>
-      </div>
+            </div>
 
       <!-- Section 2 -->
       <h3 class="section-title">2. Payment Details</h3>
       <div class="form-grid">
         <div class="form-group">
-          <label>Discount Reference Note:</label>
-          <input type="text" id="discountNote" placeholder="e.g. Offered by Sir">
-        </div>
-        <div class="form-group">
           <label>Discount Amount (₹):</label>
           <input type="number" id="discountAmount" value="0" oninput="calculateBalance()">
+        </div>
+        <div class="form-group" id="discountNoteGroup" style="display:none;">
+          <label>Discount Reference Note:</label>
+          <input type="text" id="discountNote" placeholder="e.g. Offered by Sir">
         </div>
         
         <div class="form-group">
           <label>Total Fee / Amount (₹) *</label>
           <input type="number" id="totalFee" placeholder="Enter total fee" required oninput="calculateBalance()">
+          <div class="fee-hint" id="feeHint" onclick="applySuggestedFee()"></div>
         </div>
         <div class="form-group">
           <label>Advance / Initial Payment (₹) *</label>
@@ -321,6 +371,12 @@
     <!-- FILTER SECTION -->
     <div class="filter-box">
       <label style="color: #0b3c5d;"><strong>🔍 Advanced Register Search & Filters:</strong> <span style="font-size: 12px; color: #666; font-weight: normal;">(Default showing last 7 days entries)</span></label>
+      <div class="quick-chips" id="quickChips">
+        <button type="button" class="chip" data-q="pending" onclick="quickFilter('pending')">💰 Pending Only</button>
+        <button type="button" class="chip" data-q="today" onclick="quickFilter('today')">📅 Today</button>
+        <button type="button" class="chip" data-q="month" onclick="quickFilter('month')">🗓️ This Month</button>
+        <button type="button" class="chip" data-q="all" onclick="quickFilter('all')">📚 All Entries</button>
+      </div>
       <div class="filter-grid">
         <input type="text" id="searchInput" onkeyup="debouncedApplyFilters()" placeholder="Search Name, Mobile, App No...">
         
@@ -366,27 +422,30 @@
     </div>
 
     <!-- Table List -->
-    <h3 style="margin-top: 25px; color: #0b3c5d;">Saved Customer Register</h3>
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-top:25px;">
+      <h3 style="margin:0; color: #0b3c5d;">Saved Customer Register <span style="font-size:12px; font-weight:normal; color:#666;">(click any row to open its details)</span></h3>
+      <button type="button" class="chip" id="viewToggleBtn" onclick="toggleTableColumns()">Show All Columns</button>
+    </div>
     <div class="table-container">
-      <table id="customerTable">
+      <table id="customerTable" class="compact">
         <thead>
           <tr>
             <th>Entry Date</th>
             <th>School / Unit</th>
             <th>Name</th>
-            <th>Father's Name</th>
+            <th class="col-extra">Father's Name</th>
             <th>Mobile</th>
-            <th>DOB</th>
-            <th>Reference</th>
-            <th>LL App No.</th>
-            <th>LL Number</th>
-            <th>DL App No.</th>
+            <th class="col-extra">DOB</th>
+            <th class="col-extra">Reference</th>
+            <th class="col-extra">LL App No.</th>
+            <th class="col-extra">LL Number</th>
+            <th class="col-extra">DL App No.</th>
             <th>Vehicle Type</th>
             <th>Total Fee</th>
-            <th>Discount</th>
+            <th class="col-extra">Discount</th>
             <th>Paid Amount</th>
             <th>Balance Amount</th>
-            <th>Added By</th>
+            <th class="col-extra">Added By</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -642,8 +701,31 @@
   </div>
 </div>
 
+<!-- NEEDS ATTENTION MODAL -->
+<div id="attentionModal" class="modal-overlay">
+  <div class="modal-content" style="max-width: 1000px;">
+    <div class="modal-header">
+      <h2>⚠️ Needs Attention <span style="font-size:14px; font-weight:normal; color:#555;">— entries that probably have a mistake</span></h2>
+      <button class="close-modal" onclick="closeAttentionModal()">X</button>
+    </div>
+    <div class="quick-chips" id="attentionChips"></div>
+    <p id="attentionNote" style="font-size:12px; color:#666; margin:4px 0 8px;"></p>
+    <div class="table-container" style="margin-top:0; max-height:420px; overflow-y:auto;">
+      <table>
+        <thead><tr><th>Name</th><th>Unit</th><th>Mobile</th><th>Problem</th><th>Action</th></tr></thead>
+        <tbody id="attentionBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
 <!-- EXPENSES MODAL -->
 <div id="expenseModal" class="modal-overlay">
+  <!-- Small corner box: where today's money went -->
+  <div id="spendCorner" style="position:fixed; right:22px; bottom:16px; z-index:5; font-size:12px; max-width:260px;">
+    <div id="spendCornerPanel" style="display:none; background:#fff; border:1px solid #c0392b; border-radius:8px; padding:8px 10px; margin-bottom:6px; box-shadow:0 3px 10px rgba(0,0,0,0.25); max-height:240px; overflow-y:auto;"></div>
+    <button type="button" id="spendCornerBtn" onclick="toggleSpendCorner()" style="background:#c0392b; color:#fff; border:none; border-radius:16px; padding:7px 12px; font-size:12px; font-weight:bold; cursor:pointer; box-shadow:0 3px 8px rgba(0,0,0,0.3); float:right;">💸 Spent today: ₹0</button>
+  </div>
   <div class="modal-content" style="max-width: 1100px;">
     <div class="modal-header">
       <h2>💸 Expenses <span style="font-size:14px; font-weight:normal; color:#555;">— Tej Singh Motor Training School only</span></h2>
@@ -676,14 +758,22 @@
       </div>
     </form>
 
-    <!-- Today Entry -->
-    <div style="border:2px solid #0b3c5d; border-radius:10px; padding:12px; margin-bottom:16px; background:#f4f9fd;">
+    <!-- DAY ENTRIES (any day) -->
+    <div id="dayEntriesSection" style="border:2px solid #0b3c5d; border-radius:10px; padding:12px; margin-bottom:16px; background:#f4f9fd;">
       <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:8px;">
-        <h3 style="margin:0; color:#0b3c5d;">📅 <span id="todayLabel" style="font-weight:normal; font-size:14px; color:#555;"></span></h3>
+        <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+          <h3 style="margin:0 6px 0 0; color:#0b3c5d;">📅 Day Entries</h3>
+          <button type="button" class="btn-sm btn-details" title="Previous day" onclick="shiftExpViewDate(-1)">◀</button>
+          <input type="text" id="expViewDate" placeholder="DD/MM/YYYY" inputmode="numeric" maxlength="10" oninput="autoFormatDateInput(this); onExpViewDateTyped()" style="width:120px; padding:6px 8px; border:1px solid #ccc; border-radius:4px; font-size:14px;">
+          <button type="button" class="btn-sm btn-details" title="Next day" onclick="shiftExpViewDate(1)">▶</button>
+          <button type="button" class="btn-sm btn-pay" onclick="setExpViewDate(todayISO())">Today</button>
+          <span id="todayLabel" style="font-size:13px; color:#555;"></span>
+        </div>
         <div id="todayTotals" style="font-size:13px; display:flex; gap:12px; flex-wrap:wrap;"></div>
       </div>
+      <div id="dayCategoryLine" style="font-size:13px; background:#fff; border:1px dashed #9db8d2; border-radius:6px; padding:6px 10px; margin-bottom:8px; display:flex; flex-wrap:wrap; align-items:center; gap:8px;"></div>
 
-      <p style="font-size:12px; color:#555; margin:6px 0 4px;"><b>Today Income</b> </p>
+      <p style="font-size:12px; color:#555; margin:6px 0 4px;"><b>Payments received on this day</b> (use View / Pay to open the customer):</p>
       <div class="table-container" style="margin-top:0; max-height:260px; overflow-y:auto;">
         <table>
           <thead><tr><th>Customer</th><th>Type</th><th>Amount (₹)</th><th>Balance (₹)</th><th>Added By</th><th>Action</th></tr></thead>
@@ -691,11 +781,44 @@
         </table>
       </div>
 
-      <p style="font-size:12px; color:#555; margin:12px 0 4px;"><b>Today Expenses</b>:</p>
+      <p style="font-size:12px; color:#555; margin:12px 0 4px;"><b>Expenses on this day</b>:</p>
       <div class="table-container" style="margin-top:0; max-height:200px; overflow-y:auto;">
         <table>
           <thead><tr><th>Category</th><th>Amount (₹)</th><th>Paid To</th><th>Mode</th><th>Note</th><th>Added By</th><th>Action</th></tr></thead>
           <tbody id="todayExpenseBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PREVIOUS BALANCE -->
+    <div style="border:2px solid #b9770e; border-radius:10px; padding:12px; margin-bottom:16px; background:#fff9ee;">
+      <h3 style="margin:0 0 4px; color:#8a5a00;">💼 Previous Balance <span style="font-weight:normal; font-size:13px; color:#555;">(cash left over from the diary)</span></h3>
+      <form onsubmit="addPreviousBalance(event)" style="display:flex; flex-wrap:wrap; gap:8px; align-items:flex-end; margin:8px 0;">
+        <div class="form-group" style="margin:0;"><label>Balance As On *</label>
+          <input type="text" id="pbDate" placeholder="DD/MM/YYYY" inputmode="numeric" maxlength="10" oninput="autoFormatDateInput(this)" required style="width:140px;"></div>
+        <div class="form-group" style="margin:0;"><label>Amount (₹) *</label>
+          <input type="number" id="pbAmount" min="1" step="any" placeholder="0" required style="width:140px;"></div>
+        <div class="form-group" style="margin:0; flex:1; min-width:180px;"><label>Note</label>
+          <input type="text" id="pbNote" placeholder="e.g. Cash in hand from diary"></div>
+        <button type="submit" class="btn btn-save" style="width:auto; min-width:0; display:inline-block; padding:10px 14px;">Add Previous Balance ➕</button>
+      </form>
+      <div class="table-container" style="margin-top:0; max-height:170px; overflow-y:auto;">
+        <table>
+          <thead><tr><th>As On</th><th>Amount (₹)</th><th>Note</th><th>Added By</th><th>Action</th></tr></thead>
+          <tbody id="pbBody"></tbody>
+        </table>
+      </div>
+      <div id="pbSummary" style="font-size:13px; margin-top:8px; display:flex; flex-wrap:wrap; gap:12px;"></div>
+    </div>
+
+    <!-- DAY-BY-DAY LEDGER -->
+    <div style="border:2px solid #1e7e34; border-radius:10px; padding:12px; margin-bottom:16px; background:#f3fbf5;">
+      <h3 style="margin:0 0 4px; color:#1e7e34;">📒 Day-by-Day Ledger</h3>
+      <p id="ledgerNote" style="font-size:12px; color:#555; margin:0 0 8px;"></p>
+      <div class="table-container" style="margin-top:0; max-height:300px; overflow-y:auto;">
+        <table>
+          <thead><tr><th>Date</th><th>Opening (₹)</th><th>Previous Balance (₹)</th><th>Income (₹)</th><th>Expenses (₹)</th><th>Closing (₹)</th><th>Action</th></tr></thead>
+          <tbody id="ledgerBody"></tbody>
         </table>
       </div>
     </div>
@@ -863,6 +986,10 @@
         document.getElementById('auditLogBtn').style.display = ADMIN_EMAILS.includes(activeStaffEmail.toLowerCase()) ? 'block' : 'none';
         document.getElementById('passingFundBtn').style.display = 'block';
         const canSeeExpenses = EXPENSE_VIEWERS.map(e => e.toLowerCase()).includes(activeStaffEmail.toLowerCase());
+        document.getElementById('needsAttentionBtn').style.display = 'block';
+        let compactPref = true;
+        try { compactPref = localStorage.getItem('tsCompactTable') !== '0'; } catch (e) {}
+        applyTableColumnMode(compactPref);
         document.getElementById('expenseBtn').style.display = canSeeExpenses ? 'block' : 'none';
         if (canSeeExpenses) loadExpenses();
         document.getElementById('mainDashboard').style.display = 'block';
@@ -978,13 +1105,22 @@
     const editId = document.getElementById('editRecordId').value;
     const warningEl = document.getElementById('duplicateWarning');
 
-    if (!mobileInput || mobileInput.length < 10) { warningEl.style.display = 'none'; return; }
+    const hintEl = document.getElementById('existingHint');
+    if (!mobileInput || mobileInput.length < 10) { warningEl.style.display = 'none'; hintEl.style.display = 'none'; return; }
     const existingMatch = globalRecords.find(r => r.mobile === mobileInput && r.id !== editId);
     if (existingMatch && !editId) {
       warningEl.style.display = 'block';
-      warningEl.textContent = `⚠️ Warning: Mobile number already registered for customer "${existingMatch.customerName}"!`;
+      warningEl.textContent = `⚠️ Mobile number already registered for customer "${existingMatch.customerName}".`;
+      hintEl.style.display = 'block';
+      hintEl.innerHTML = '';
+      const link = document.createElement('a');
+      link.href = '#'; link.style.cssText = 'color:#1d70b8; font-weight:bold;';
+      link.textContent = "Existing customer? Tap to fill their name, father's name, DOB and address";
+      link.onclick = (ev) => { ev.preventDefault(); fillFromExisting(existingMatch.id); };
+      hintEl.appendChild(link);
     } else {
       warningEl.style.display = 'none';
+      hintEl.style.display = 'none';
     }
   }
 
@@ -995,6 +1131,7 @@
     const netFee = total - discount;
     const balance = netFee - advance;
     document.getElementById('balanceAmount').value = balance >= 0 ? balance : 0;
+    document.getElementById('discountNoteGroup').style.display = discount > 0 ? 'flex' : 'none';
   }
 
   function formatDateToDMY(dateString) {
@@ -1228,6 +1365,7 @@
         globalRecords.push(d);
       });
       applyFilters();
+      updateAttentionBadge();
       if (typeof refreshExpensePanel === 'function') refreshExpensePanel();
 
       if (activeSelectedRecord) {
@@ -1297,6 +1435,7 @@
 
     currentPage = 1;
     renderTablePage();
+    updateQuickChips();
   }
 
   function renderTablePage() {
@@ -1330,8 +1469,9 @@
     pageRecords.forEach(d => {
       let tr = document.createElement('tr');
 
-      function addCell(text, isHtml = false, styleObj = {}) {
+      function addCell(text, isHtml = false, styleObj = {}, cls = '') {
         let td = document.createElement('td');
+        if (cls) td.className = cls;
         if (isHtml) {
           td.innerHTML = text;
         } else {
@@ -1346,19 +1486,19 @@
       addCell(formatDateToDMY(d.paymentDate));
       addCell(`<b style="color:#0b3c5d;">${escapeHtml(d.schoolUnit)}</b>`, true);
       addCell(d.customerName, false, { fontWeight: 'bold' });
-      addCell(d.fatherName || '-');
+      addCell(d.fatherName || '-', false, {}, 'col-extra');
       addCell(d.mobile);
-      addCell(formatDateToDMY(d.dob));
-      addCell(d.reference);
-      addCell(d.llAppNo);
-      addCell(d.llNo);
-      addCell(d.dlAppNo);
+      addCell(formatDateToDMY(d.dob), false, {}, 'col-extra');
+      addCell(d.reference, false, {}, 'col-extra');
+      addCell(d.llAppNo, false, {}, 'col-extra');
+      addCell(d.llNo, false, {}, 'col-extra');
+      addCell(d.dlAppNo, false, {}, 'col-extra');
       addCell(d.vehicleType);
       addCell('₹' + d.totalFee);
-      addCell('₹' + d.discountAmount);
+      addCell('₹' + d.discountAmount, false, {}, 'col-extra');
       addCell('₹' + d.advancePayment);
       addCell('₹' + d.balanceAmount, false, { color: d.balanceAmount > 0 ? 'red' : 'green', fontWeight: 'bold' });
-      addCell(d.addedBy);
+      addCell(d.addedBy, false, {}, 'col-extra');
 
       let actionTd = document.createElement('td');
       
@@ -1384,10 +1524,19 @@
 
       actionTd.appendChild(viewBtn);
       actionTd.appendChild(payBtn);
+      if (d.balanceAmount > 0 && /^\d{10}$/.test(String(d.mobile || ''))) {
+        let waBtn = document.createElement('button');
+        waBtn.className = 'btn-sm btn-wa';
+        waBtn.textContent = 'WA';
+        waBtn.title = 'Send a pending-fee reminder on WhatsApp';
+        waBtn.onclick = () => sendWhatsAppReminder(d.id);
+        actionTd.appendChild(waBtn);
+      }
       actionTd.appendChild(editBtn);
       actionTd.appendChild(delBtn);
       tr.appendChild(actionTd);
 
+      tr.onclick = (ev) => { if (ev.target.closest('button')) return; openDetailsModal(d.id); };
       tbody.appendChild(tr);
     });
 
@@ -1443,6 +1592,8 @@
     document.getElementById('paymentDate').value = isoToDDMMYYYY(rec.paymentDate);
 
     calculateBalance();
+    openMoreDetails(true);
+    document.getElementById('feeHint').style.display = 'none';
 
     document.getElementById('saveBtn').style.display = 'none';
     document.getElementById('updateBtn').style.display = 'inline-block';
@@ -1472,6 +1623,10 @@
     document.getElementById('duplicateWarning').style.display = 'none';
     document.getElementById('schoolUnit').value = lastSchoolUnit || 'Tej Singh Motor Training School';
     document.getElementById('paymentDate').value = todayDDMMYYYY();
+    openMoreDetails(false);
+    document.getElementById('discountNoteGroup').style.display = 'none';
+    document.getElementById('feeHint').style.display = 'none';
+    document.getElementById('existingHint').style.display = 'none';
     document.getElementById('saveBtn').style.display = 'inline-block';
     document.getElementById('updateBtn').style.display = 'none';
     document.getElementById('cancelBtn').style.display = 'none';
@@ -2082,7 +2237,7 @@
     tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Loading logs...</td></tr>`;
     document.getElementById('auditLogModal').style.display = 'flex';
 
-    db.collection("audit_logs").limit(150).get().then(snapshot => {
+    db.collection("audit_logs").orderBy("timestamp", "desc").limit(200).get().then(snapshot => {
       tbody.innerHTML = "";
       if (snapshot.empty) {
         let tr = document.createElement('tr');
@@ -2102,7 +2257,8 @@
         let badgeClass = 'badge-edit';
         if (log.action === 'ENTRY_CREATED') badgeClass = 'badge-create';
         if (log.action === 'PAYMENT_ADDED') badgeClass = 'badge-pay';
-        if (log.action === 'ENTRY_DELETED' || log.action === 'INSTALLMENT_DELETED') badgeClass = 'badge-delete';
+        if (log.action === 'ENTRY_DELETED' || log.action === 'INSTALLMENT_DELETED' || log.action === 'EXPENSE_DELETED' || log.action === 'PREVIOUS_BALANCE_DELETED') badgeClass = 'badge-delete';
+        if (log.action === 'EXPENSE_ADDED' || log.action === 'PREVIOUS_BALANCE_ADDED') badgeClass = 'badge-create';
 
         let tr = document.createElement('tr');
 
@@ -2212,8 +2368,208 @@
   }
 
 
+  // ================= EASY-TO-USE HELPERS =================
+
+  // ---- More details toggle (shorter entry form) ----
+  function openMoreDetails(open) {
+    document.getElementById('moreDetails').style.display = open ? 'grid' : 'none';
+    document.getElementById('moreBtn').textContent = open
+      ? '➖ Hide details (Reference, Address, LL / DL numbers, Remarks)'
+      : '➕ More details (Reference, Address, LL / DL numbers, Remarks)';
+  }
+  function toggleMoreDetails() {
+    openMoreDetails(document.getElementById('moreDetails').style.display === 'none');
+  }
+
+  // ---- Compact / full table columns ----
+  function applyTableColumnMode(compact) {
+    document.getElementById('customerTable').classList.toggle('compact', compact);
+    document.getElementById('viewToggleBtn').textContent = compact ? 'Show All Columns' : 'Show Compact View';
+  }
+  function toggleTableColumns() {
+    const compact = !document.getElementById('customerTable').classList.contains('compact');
+    applyTableColumnMode(compact);
+    try { localStorage.setItem('tsCompactTable', compact ? '1' : '0'); } catch (e) {}
+  }
+
+  // ---- Quick filter chips ----
+  function quickFilter(name) {
+    ['searchInput', 'filterReference', 'fromDate', 'toDate'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('filterSchool').value = '';
+    document.getElementById('filterVehicle').selectedIndex = -1;
+    document.getElementById('filterPaymentStatus').value = '';
+    const today = todayISO();
+    if (name === 'pending') {
+      document.getElementById('filterPaymentStatus').value = 'due';
+    } else if (name === 'today') {
+      document.getElementById('fromDate').value = today;
+      document.getElementById('toDate').value = today;
+    } else if (name === 'month') {
+      const d = new Date();
+      const f = x => `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`;
+      document.getElementById('fromDate').value = f(new Date(d.getFullYear(), d.getMonth(), 1));
+      document.getElementById('toDate').value = f(new Date(d.getFullYear(), d.getMonth() + 1, 0));
+    } else if (name === 'all') {
+      // "All Entries": an old start date switches off the default 7-day view
+      document.getElementById('fromDate').value = '2000-01-01';
+    }
+    applyFilters();
+  }
+
+  function updateQuickChips() {
+    const v = id => document.getElementById(id).value;
+    const onlyPay = v('filterPaymentStatus');
+    const noOther = !v('searchInput') && !v('filterSchool') && !v('filterReference') && document.getElementById('filterVehicle').selectedOptions.length === 0;
+    const today = todayISO();
+    const d = new Date();
+    const f = x => `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`;
+    const active = {
+      pending: noOther && onlyPay === 'due' && !v('fromDate') && !v('toDate'),
+      today: noOther && !onlyPay && v('fromDate') === today && v('toDate') === today,
+      month: noOther && !onlyPay && v('fromDate') === f(new Date(d.getFullYear(), d.getMonth(), 1)) && v('toDate') === f(new Date(d.getFullYear(), d.getMonth() + 1, 0)),
+      all: noOther && !onlyPay && v('fromDate') === '2000-01-01' && !v('toDate')
+    };
+    document.querySelectorAll('#quickChips .chip').forEach(c => c.classList.toggle('active', !!active[c.dataset.q]));
+  }
+
+  // ---- WhatsApp pending-fee reminder ----
+  function sendWhatsAppReminder(id) {
+    const d = globalRecords.find(r => r.id === id);
+    if (!d || !/^\d{10}$/.test(String(d.mobile || ''))) { alert("This customer does not have a valid 10-digit mobile number."); return; }
+    const unitName = (d.schoolUnit && d.schoolUnit !== TEJ_UNIT) ? d.schoolUnit : 'Tej Singh Motor Training School';
+    const msg = `Hello ${d.customerName}, this is a reminder from ${unitName}. Your pending fee balance is ₹${d.balanceAmount}. Please clear it at the earliest. Thank you.`;
+    window.open('https://wa.me/91' + d.mobile + '?text=' + encodeURIComponent(msg), '_blank');
+    logActivity('REMINDER_SENT', d.customerName, `WhatsApp reminder opened for pending fee ₹${d.balanceAmount} by ${activeStaffName}`);
+  }
+
+  // ---- Existing customer: reuse their details ----
+  function fillFromExisting(id) {
+    const r = globalRecords.find(x => x.id === id);
+    if (!r) return;
+    const setIfEmpty = (el, val) => { const e = document.getElementById(el); if (!e.value.trim() && val && val !== '-') e.value = val; };
+    setIfEmpty('customerName', r.customerName);
+    setIfEmpty('fatherName', r.fatherName);
+    setIfEmpty('dob', isoToDDMMYYYY(r.dob));
+    setIfEmpty('address', r.address);
+    setIfEmpty('reference', r.reference);
+    if ((r.address && r.address !== '-') || (r.reference && r.reference !== '-')) openMoreDetails(true);
+    document.getElementById('existingHint').style.display = 'none';
+  }
+
+  // ---- Usual fee suggestion (most common recent fee for the same vehicle + unit) ----
+  let suggestedFee = 0;
+  function updateFeeHint() {
+    const hint = document.getElementById('feeHint');
+    suggestedFee = 0;
+    hint.style.display = 'none';
+    if (document.getElementById('editRecordId').value) return;
+    const vehicles = getSelectedVehicles();
+    if (!vehicles.length) return;
+    const key = vehicles.slice().sort().join(', ');
+    const unit = document.getElementById('schoolUnit').value;
+    const recent = globalRecords
+      .filter(r => (r.schoolUnit || TEJ_UNIT) === unit && r.totalFee > 0 &&
+                   String(r.vehicleType || '').split(',').map(x => x.trim()).sort().join(', ') === key)
+      .sort((a, b) => (b.paymentDate || '').localeCompare(a.paymentDate || ''))
+      .slice(0, 30);
+    if (recent.length < 3) return;
+    const counts = {};
+    recent.forEach(r => counts[r.totalFee] = (counts[r.totalFee] || 0) + 1);
+    const best = Object.keys(counts).sort((a, b) => counts[b] - counts[a])[0];
+    suggestedFee = parseFloat(best);
+    hint.textContent = `💡 Usual fee for ${key}: ₹${suggestedFee} — tap to use`;
+    hint.style.display = 'block';
+  }
+  function applySuggestedFee() {
+    if (!suggestedFee) return;
+    document.getElementById('totalFee').value = suggestedFee;
+    calculateBalance();
+    document.getElementById('feeHint').style.display = 'none';
+  }
+
+  // ---- Needs Attention ----
+  const ATTENTION_LABELS = {
+    fee0: 'Total Fee is 0', mobile: 'Invalid mobile number', excess: 'Received more than Total Fee',
+    discount: 'Discount is more than the fee', date: 'Wrong date'
+  };
+  let attentionFilter = '';
+
+  function findProblems(d) {
+    const p = [];
+    if (!(parseFloat(d.totalFee) > 0)) p.push({ k: 'fee0', t: 'Total Fee is 0' });
+    if (!/^\d{10}$/.test(String(d.mobile || ''))) p.push({ k: 'mobile', t: `Invalid mobile (${d.mobile || 'empty'})` });
+    if (d.excessPaid > 0) p.push({ k: 'excess', t: `Received ₹${d.excessPaid} more than Total Fee` });
+    if (parseFloat(d.discountAmount) > parseFloat(d.totalFee)) p.push({ k: 'discount', t: 'Discount is more than the fee' });
+    const yr = new Date().getFullYear();
+    const badDate = x => !/^\d{4}-\d{2}-\d{2}$/.test(String(x || '')) || +String(x).slice(0, 4) < 2020 || +String(x).slice(0, 4) > yr + 1;
+    if (badDate(d.paymentDate)) p.push({ k: 'date', t: `Wrong entry date (${d.paymentDate || 'empty'})` });
+    (d.installmentsList || []).forEach(i => { if (i.date && badDate(i.date)) p.push({ k: 'date', t: `Wrong payment date (${i.date})` }); });
+    return p;
+  }
+
+  function getAttentionList() {
+    const out = [];
+    globalRecords.forEach(d => { const p = findProblems(d); if (p.length) out.push({ d: d, problems: p }); });
+    return out;
+  }
+
+  function updateAttentionBadge() {
+    const btn = document.getElementById('needsAttentionBtn');
+    if (!btn) return;
+    const n = getAttentionList().length;
+    btn.textContent = '⚠️ Needs Attention' + (n ? ` (${n})` : '');
+  }
+
+  function openAttentionModal() {
+    attentionFilter = '';
+    document.getElementById('attentionModal').style.display = 'flex';
+    renderAttention();
+  }
+  function closeAttentionModal() { document.getElementById('attentionModal').style.display = 'none'; }
+
+  function renderAttention() {
+    const all = getAttentionList();
+    const counts = {};
+    all.forEach(x => new Set(x.problems.map(p => p.k)).forEach(k => counts[k] = (counts[k] || 0) + 1));
+
+    const chips = document.getElementById('attentionChips');
+    chips.innerHTML = '';
+    const mk = (label, key) => {
+      const b = document.createElement('button');
+      b.type = 'button'; b.className = 'chip' + (attentionFilter === key ? ' active' : '');
+      b.textContent = label; b.onclick = () => { attentionFilter = key; renderAttention(); };
+      chips.appendChild(b);
+    };
+    mk(`All (${all.length})`, '');
+    Object.keys(ATTENTION_LABELS).forEach(k => { if (counts[k]) mk(`${ATTENTION_LABELS[k]} (${counts[k]})`, k); });
+
+    const list = attentionFilter ? all.filter(x => x.problems.some(p => p.k === attentionFilter)) : all;
+    const body = document.getElementById('attentionBody');
+    body.innerHTML = '';
+    document.getElementById('attentionNote').textContent = list.length > 300 ? `Showing the first 300 of ${list.length}. Fix some and reopen this list.` : '';
+    if (list.length === 0) {
+      body.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#1e7e34; font-weight:bold;">✅ No problems found.</td></tr>`;
+      return;
+    }
+    list.slice(0, 300).forEach(x => {
+      const d = x.d;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td><b>${escapeHtml(d.customerName)}</b></td>
+        <td>${escapeHtml(EXP_UNIT_LABEL[d.schoolUnit] || d.schoolUnit || 'Tej Singh')}</td>
+        <td>${escapeHtml(String(d.mobile || '-'))}</td>
+        <td style="color:#c0392b;">${x.problems.map(p => escapeHtml(p.t)).join('<br>')}</td>`;
+      const td = document.createElement('td');
+      td.appendChild(makeBtn('Fix (Edit)', 'btn-sm btn-edit', () => { closeAttentionModal(); editRecord(d.id); }));
+      td.appendChild(makeBtn('View', 'btn-sm btn-details', () => openDetailsModal(d.id)));
+      tr.appendChild(td);
+      body.appendChild(tr);
+    });
+  }
+  // ================= END EASY-TO-USE HELPERS =================
+
   // ================= EXPENSES =================
   let globalExpenses = [];
+  let globalPrevBalances = [];   // 'Previous Balance' entries (stored in the same collection, type = opening_balance)
   let expensesUnsub = null;
   const EXP_UNIT_LABEL = { 'Tej Singh Motor Training School': 'Tej Singh', 'CF': 'CF', 'STSMTS': 'STSMTS' };
   // The Expenses section is ONLY for the Tej Singh unit.
@@ -2231,8 +2587,14 @@
     if (expensesUnsub) return;
     expensesUnsub = db.collection("expenses").orderBy("date", "desc").onSnapshot(snap => {
       globalExpenses = [];
+      globalPrevBalances = [];
       window.expensesLoadError = '';
-      snap.forEach(doc => { let e = doc.data(); e.id = doc.id; e.amount = parseFloat(e.amount) || 0; if (isTejExpense(e)) globalExpenses.push(e); });
+      snap.forEach(doc => {
+        let e = doc.data(); e.id = doc.id; e.amount = parseFloat(e.amount) || 0;
+        if (!isTejExpense(e)) return;
+        if (e.type === 'opening_balance') globalPrevBalances.push(e); else globalExpenses.push(e);
+      });
+      globalPrevBalances.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
       refreshExpensePanel();
     }, err => {
       console.error("Expenses load failed:", err);
@@ -2244,20 +2606,29 @@
 
   function refreshExpensePanel() {
     if (document.getElementById('expenseModal').style.display === 'flex') {
-      renderTodayEntries();
+      renderDayEntries();
+      renderLedger();
+      renderSpendCorner();
+      renderPrevBalance();
       renderExpenses();
     }
   }
 
   function openExpenseModal() {
     document.getElementById('expDate').value = todayDDMMYYYY();
+    document.getElementById('pbDate').value = todayDDMMYYYY();
     const catSel = document.getElementById('expCategory');
     const filt = document.getElementById('expFilterCat');
     if (filt.options.length <= 1) {
       Array.from(catSel.options).forEach(o => { const n = document.createElement('option'); n.value = o.value; n.textContent = o.value; filt.appendChild(n); });
     }
     document.getElementById('expenseModal').style.display = 'flex';
-    renderTodayEntries();
+    expViewDate = todayISO();
+    document.getElementById('expViewDate').value = isoToDDMMYYYY(expViewDate);
+    renderDayEntries();
+    renderLedger();
+    renderSpendCorner();
+    renderPrevBalance();
     renderExpenses();
   }
   function closeExpenseModal() { document.getElementById('expenseModal').style.display = 'none'; }
@@ -2304,17 +2675,75 @@
   }
 
   // ---------- Today Entry's (today, detail-wise) ----------
-  function renderTodayEntries() {
-    const today = todayISO();
-    document.getElementById('todayLabel').textContent = '(' + formatDateToDMY(today) + ')';
+  // ---------- LEDGER (cash book): Previous Balance + Income - Expenses, day by day ----------
+  let expViewDate = '';
 
-    // Income: every installment dated today
+  function buildLedger() {
+    const days = {};
+    const get = d => days[d] || (days[d] = { prev: 0, income: 0, exp: 0 });
+    const start = globalPrevBalances.length ? globalPrevBalances[0].date : '';   // earlier days are covered by the Previous Balance
+
+    globalRecords.forEach(d => {
+      if ((d.schoolUnit || TEJ_UNIT) !== TEJ_UNIT) return;
+      (d.installmentsList || []).forEach(inst => {
+        const dt = inst.date || d.paymentDate || '';
+        if (!dt || (start && dt < start)) return;
+        get(dt).income += parseFloat(inst.amount) || 0;
+      });
+    });
+    globalExpenses.forEach(x => { if (x.date && !(start && x.date < start)) get(x.date).exp += x.amount; });
+    globalPrevBalances.forEach(x => { if (x.date) get(x.date).prev += x.amount; });
+
+    let run = 0;
+    const rows = Object.keys(days).sort().map(dt => {
+      const opening = run;
+      run = opening + days[dt].prev + days[dt].income - days[dt].exp;
+      return { date: dt, opening: opening, prev: days[dt].prev, income: days[dt].income, exp: days[dt].exp, closing: run };
+    });
+    return { start: start, rows: rows };
+  }
+
+  function signedINR(n) { return (n < 0 ? '−' : '') + fmtINR(Math.abs(n)); }
+
+  function setExpViewDate(iso) {
+    expViewDate = iso || todayISO();
+    document.getElementById('expViewDate').value = isoToDDMMYYYY(expViewDate);
+    renderDayEntries();
+    renderLedger();
+  }
+
+  function shiftExpViewDate(delta) {
+    const p = (expViewDate || todayISO()).split('-').map(Number);
+    const d = new Date(p[0], p[1] - 1, p[2] + delta);
+    setExpViewDate(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`);
+  }
+
+  function onExpViewDateTyped() {
+    const v = document.getElementById('expViewDate').value;
+    if (v.length !== 10) return;
+    const iso = ddmmyyyyToISO(v);
+    if (!iso) return;
+    expViewDate = iso;
+    renderDayEntries();
+    renderLedger();
+  }
+
+  function renderDayEntries() {
+    const day = expViewDate || todayISO();
+    const isToday = day === todayISO();
+    const p = day.split('-').map(Number);
+    const weekday = new Date(p[0], p[1] - 1, p[2]).toLocaleDateString('en-IN', { weekday: 'long' });
+    document.getElementById('todayLabel').textContent = `${weekday}${isToday ? ' (Today)' : ''}`;
+    const dateInput = document.getElementById('expViewDate');
+    if (document.activeElement !== dateInput) dateInput.value = isoToDDMMYYYY(day);
+
+    // Income: every installment dated on the selected day (Tej Singh unit only)
     const inc = [];
     globalRecords.forEach(d => {
-      if ((d.schoolUnit || TEJ_UNIT) !== TEJ_UNIT) return;   // Tej Singh unit only
+      if ((d.schoolUnit || TEJ_UNIT) !== TEJ_UNIT) return;
       (d.installmentsList || []).forEach(inst => {
-        if ((inst.date || d.paymentDate || '') === today) {
-          inc.push({ id: d.id, name: d.customerName || '-', unit: d.schoolUnit || 'Tej Singh Motor Training School',
+        if ((inst.date || d.paymentDate || '') === day) {
+          inc.push({ id: d.id, name: d.customerName || '-', unit: d.schoolUnit || TEJ_UNIT,
             type: (inst.type || 'Payment') + (inst.category === 'passing' ? ' 🛂 Passing' : ''),
             amount: parseFloat(inst.amount) || 0, balance: d.balanceAmount || 0, by: inst.operator || '-' });
         }
@@ -2325,7 +2754,7 @@
     const incBody = document.getElementById('todayIncomeBody');
     incBody.innerHTML = '';
     if (inc.length === 0) {
-      incBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#666;">No Record.</td></tr>`;
+      incBody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#666;">No payments received on this day.</td></tr>`;
     }
     inc.forEach(x => {
       const tr = document.createElement('tr');
@@ -2341,14 +2770,14 @@
       incBody.appendChild(tr);
     });
 
-    // Expenses: dated today
-    const exp = globalExpenses.filter(x => x.date === today);
+    // Expenses on the selected day
+    const exp = globalExpenses.filter(x => x.date === day);
     const expBody = document.getElementById('todayExpenseBody');
     expBody.innerHTML = '';
     if (window.expensesLoadError) {
       expBody.innerHTML = `<tr><td colspan="7" style="color:#c00; text-align:center;">Could not load expenses: ${escapeHtml(window.expensesLoadError)}</td></tr>`;
     } else if (exp.length === 0) {
-      expBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#666;">No expenses recorded Today.</td></tr>`;
+      expBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#666;">No expenses recorded on this day.</td></tr>`;
     }
     exp.forEach(x => {
       const tr = document.createElement('tr');
@@ -2369,7 +2798,193 @@
     document.getElementById('todayTotals').innerHTML =
       `<span>Income: <b style="color:#1e7e34;">${fmtINR(tInc)}</b></span>` +
       `<span>Expenses: <b style="color:#c0392b;">${fmtINR(tExp)}</b></span>` +
-      `<span>today Net Balance: <b style="color:${net >= 0 ? '#1e7e34' : '#c0392b'};">${net < 0 ? '−' : ''}${fmtINR(Math.abs(net))}</b></span>`;
+      `<span>Net for the day: <b style="color:${net >= 0 ? '#1e7e34' : '#c0392b'};">${signedINR(net)}</b></span>`;
+
+    // Where the money went on this day: expenses grouped by category
+    const catLine = document.getElementById('dayCategoryLine');
+    if (window.expensesLoadError) {
+      catLine.innerHTML = '';
+    } else if (exp.length === 0) {
+      catLine.innerHTML = '<span style="color:#666;">💸 No money was spent on this day.</span>';
+    } else {
+      const byCat = {};
+      exp.forEach(x => {
+        const c = byCat[x.category] || (byCat[x.category] = { total: 0, count: 0 });
+        c.total += x.amount; c.count++;
+      });
+      let html = '<span style="font-weight:bold; color:#0b3c5d;">💸 Where the money went:</span>';
+      Object.keys(byCat).sort((a, b) => byCat[b].total - byCat[a].total).forEach(k => {
+        const c = byCat[k];
+        const pct = tExp > 0 ? Math.round(c.total * 100 / tExp) : 0;
+        html += `<span style="background:#fdeaea; border-radius:12px; padding:3px 10px;">${escapeHtml(k)}${c.count > 1 ? ' ×' + c.count : ''}: <b style="color:#c0392b;">${fmtINR(c.total)}</b> <small style="color:#777;">(${pct}%)</small></span>`;
+      });
+      html += `<span style="margin-left:auto;">Total spent: <b style="color:#c0392b;">${fmtINR(tExp)}</b></span>`;
+      catLine.innerHTML = html;
+    }
+  }
+
+  function renderLedger() {
+    const body = document.getElementById('ledgerBody');
+    const note = document.getElementById('ledgerNote');
+    body.innerHTML = '';
+    const ledger = buildLedger();
+    note.textContent = ledger.start
+      ? `Cash book: Previous Balance + Income − Expenses. It starts from the first Previous Balance date (${formatDateToDMY(ledger.start)}). Click "Open" to see the full details of any day.`
+      : 'Cash book: Income − Expenses. Add a Previous Balance above to start the running cash from your diary balance. Click "Open" to see the full details of any day.';
+
+    if (window.expensesLoadError) {
+      body.innerHTML = `<tr><td colspan="7" style="color:#c00; text-align:center;">Could not load expenses: ${escapeHtml(window.expensesLoadError)}</td></tr>`;
+      return;
+    }
+    if (ledger.rows.length === 0) {
+      body.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#666;">No entries yet.</td></tr>`;
+      return;
+    }
+    ledger.rows.slice().reverse().forEach(r => {
+      const tr = document.createElement('tr');
+      if (r.date === (expViewDate || todayISO())) tr.style.background = '#fff6d6';
+      tr.innerHTML = `<td><b>${escapeHtml(formatDateToDMY(r.date))}</b></td>
+        <td>${signedINR(r.opening)}</td>
+        <td style="color:#8a5a00;">${r.prev ? fmtINR(r.prev) : '-'}</td>
+        <td style="color:#1e7e34;">${fmtINR(r.income)}</td>
+        <td style="color:#c0392b;">${fmtINR(r.exp)}</td>
+        <td style="font-weight:bold; color:${r.closing >= 0 ? '#1e7e34' : '#c0392b'};">${signedINR(r.closing)}</td>`;
+      const td = document.createElement('td');
+      td.appendChild(makeBtn('Open', 'btn-sm btn-details', () => {
+        setExpViewDate(r.date);
+        document.getElementById('dayEntriesSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }));
+      tr.appendChild(td);
+      body.appendChild(tr);
+    });
+  }
+
+  // ---------- Small corner box: where today's money went ----------
+  function toggleSpendCorner() {
+    const panel = document.getElementById('spendCornerPanel');
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+  }
+
+  function renderSpendCorner() {
+    const today = todayISO();
+    const rows = globalExpenses.filter(x => x.date === today);
+    const total = rows.reduce((a, x) => a + x.amount, 0);
+    document.getElementById('spendCornerBtn').textContent = `💸 Spent today: ${fmtINR(total)}`;
+
+    const panel = document.getElementById('spendCornerPanel');
+    if (rows.length === 0) { panel.innerHTML = '<div style="color:#666;">No spending recorded today.</div>'; return; }
+    const byCat = {};
+    rows.forEach(x => {
+      const c = byCat[x.category] || (byCat[x.category] = { total: 0, count: 0, names: [] });
+      c.total += x.amount; c.count++;
+      if (x.paidTo && !c.names.includes(x.paidTo)) c.names.push(x.paidTo);
+    });
+    let html = `<div style="font-weight:bold; margin-bottom:4px;">Where today's money went</div>`;
+    Object.keys(byCat).sort((a, b) => byCat[b].total - byCat[a].total).forEach(k => {
+      const c = byCat[k];
+      html += `<div style="display:flex; justify-content:space-between; gap:10px; border-top:1px solid #eee; padding:3px 0;">
+        <span>${escapeHtml(k)}${c.count > 1 ? ' ×' + c.count : ''}${c.names.length ? `<br><small style="color:#777;">${escapeHtml(c.names.join(', '))}</small>` : ''}</span>
+        <b style="color:#c0392b; white-space:nowrap;">${fmtINR(c.total)}</b></div>`;
+    });
+    html += `<div style="border-top:2px solid #c0392b; margin-top:3px; padding-top:3px; display:flex; justify-content:space-between;"><b>Total</b><b style="color:#c0392b;">${fmtINR(total)}</b></div>`;
+    panel.innerHTML = html;
+  }
+
+  // ---------- PREVIOUS BALANCE (cash left over from the diary) ----------
+  function addPreviousBalance(e) {
+    e.preventDefault();
+    const iso = ddmmyyyyToISO(document.getElementById('pbDate').value);
+    if (!iso) { alert("Invalid date. Please enter a valid date in DD/MM/YYYY format."); return; }
+    const amount = parseFloat(document.getElementById('pbAmount').value) || 0;
+    if (amount <= 0) { alert("Amount must be greater than 0."); return; }
+    const note = document.getElementById('pbNote').value.trim();
+    const data = {
+      type: 'opening_balance',
+      category: 'Previous Balance',
+      unit: TEJ_UNIT,
+      date: iso,
+      amount: amount,
+      note: note,
+      addedBy: activeStaffName || 'Staff',
+      addedByEmail: activeStaffEmail || '',
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    db.collection("expenses").add(data).then(() => {
+      logActivity('PREVIOUS_BALANCE_ADDED', 'Tej Singh', `Added previous balance ₹${amount} as on ${formatDateToDMY(iso)}${note ? ' - ' + note : ''}`);
+      document.getElementById('pbAmount').value = '';
+      document.getElementById('pbNote').value = '';
+    }).catch(err => alert("Previous balance could not be saved: " + err.message));
+  }
+
+  function editPreviousBalance(id) {
+    const pb = globalPrevBalances.find(x => x.id === id);
+    if (!pb) return;
+    const input = prompt("Edit Previous Balance amount (₹):", pb.amount);
+    if (input === null) return;
+    const newAmt = parseFloat(input);
+    if (!(newAmt > 0)) { alert("Amount must be greater than 0."); return; }
+    if (newAmt === pb.amount) return;
+    db.collection("expenses").doc(id).update({ amount: newAmt }).then(() => {
+      logActivity('PREVIOUS_BALANCE_EDITED', 'Tej Singh', `Changed previous balance dated ${formatDateToDMY(pb.date)} from ₹${pb.amount} to ₹${newAmt}`);
+    }).catch(err => alert("Edit error: " + err.message));
+  }
+
+  function deletePreviousBalance(id) {
+    const pb = globalPrevBalances.find(x => x.id === id);
+    if (!pb) return;
+    if (!confirm(`Delete this previous balance?\n${formatDateToDMY(pb.date)} | ₹${pb.amount}`)) return;
+    db.collection("expenses").doc(id).delete().then(() => {
+      logActivity('PREVIOUS_BALANCE_DELETED', 'Tej Singh', `Deleted previous balance ₹${pb.amount} dated ${formatDateToDMY(pb.date)}${pb.note ? ' - ' + pb.note : ''}`);
+    }).catch(err => alert("Delete error: " + err.message));
+  }
+
+  function renderPrevBalance() {
+    const body = document.getElementById('pbBody');
+    const sum = document.getElementById('pbSummary');
+    body.innerHTML = ''; sum.innerHTML = '';
+
+    if (window.expensesLoadError) {
+      body.innerHTML = `<tr><td colspan="5" style="color:#c00; text-align:center;">Could not load: ${escapeHtml(window.expensesLoadError)}</td></tr>`;
+      return;
+    }
+    if (globalPrevBalances.length === 0) {
+      body.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#666;">No previous balance added yet.</td></tr>`;
+      return;
+    }
+
+    globalPrevBalances.forEach(x => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${escapeHtml(formatDateToDMY(x.date))}</td>
+        <td style="color:#8a5a00; font-weight:bold;">₹${escapeHtml(String(x.amount))}</td>
+        <td>${escapeHtml(x.note || '-')}</td><td>${escapeHtml(x.addedBy || '-')}</td>`;
+      const td = document.createElement('td');
+      td.appendChild(makeBtn('Edit', 'btn-sm btn-details', () => editPreviousBalance(x.id)));
+      const del = makeBtn('Del', 'close-modal', () => deletePreviousBalance(x.id));
+      del.style.padding = '3px 8px';
+      td.appendChild(del);
+      tr.appendChild(td);
+      body.appendChild(tr);
+    });
+
+    // Cash Balance = Previous Balance + income received on/after the first balance date - expenses on/after that date
+    const prevTotal = globalPrevBalances.reduce((a, x) => a + x.amount, 0);
+    const since = globalPrevBalances[0].date;
+    let incomeSince = 0;
+    globalRecords.forEach(d => {
+      if ((d.schoolUnit || TEJ_UNIT) !== TEJ_UNIT) return;
+      (d.installmentsList || []).forEach(inst => {
+        const dt = inst.date || d.paymentDate || '';
+        if (dt && dt >= since) incomeSince += parseFloat(inst.amount) || 0;
+      });
+    });
+    const expSince = globalExpenses.filter(x => x.date >= since).reduce((a, x) => a + x.amount, 0);
+    const cash = prevTotal + incomeSince - expSince;
+
+    sum.innerHTML =
+      `<span>Previous Balance: <b style="color:#8a5a00;">${fmtINR(prevTotal)}</b></span>` +
+      `<span>+ Income since ${escapeHtml(formatDateToDMY(since))}: <b style="color:#1e7e34;">${fmtINR(incomeSince)}</b></span>` +
+      `<span>− Expenses since then: <b style="color:#c0392b;">${fmtINR(expSince)}</b></span>` +
+      `<span>= Cash Balance: <b style="color:${cash >= 0 ? '#1e7e34' : '#c0392b'};">${cash < 0 ? '−' : ''}${fmtINR(Math.abs(cash))}</b></span>`;
   }
 
   // ---------- ALL EXPENSES (filtered list) ----------
@@ -2584,6 +3199,75 @@
     };
     reader.readAsText(file);
   }
+
+  // ================= DIWALI THEME (switches itself off after 11 Nov 2026) =================
+  (function () {
+    const DIWALI_LAST_DAY = '2026-11-11';            // the theme is visible up to and including this day
+    const nowISO = () => {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    };
+    const isActive = () => nowISO() <= DIWALI_LAST_DAY;
+
+    function enableTheme() {
+      if (document.body.classList.contains('diwali')) return;
+      document.body.classList.add('diwali');
+
+      // 1. String of fairy lights along the top of the page
+      const lights = document.createElement('div');
+      lights.id = 'diwaliLights';
+      const colors = ['#ff3b30', '#ffb300', '#ffd84d', '#ff7a00', '#ff4fa3', '#7CFC00'];
+      for (let i = 0; i < 60; i++) {
+        const b = document.createElement('span');
+        b.className = 'bulb';
+        b.style.background = colors[i % colors.length];
+        b.style.color = colors[i % colors.length];
+        b.style.marginTop = (4 + Math.round(9 * Math.sin((i % 10) / 9 * Math.PI))) + 'px';
+        b.style.animationDelay = ((i % 6) * 0.25) + 's';
+        lights.appendChild(b);
+      }
+      document.body.appendChild(lights);
+
+      // 2. Greeting on the login card and in the dashboard header
+      const makeGreeting = () => {
+        const g = document.createElement('div');
+        g.className = 'diwali-greeting';
+        g.textContent = '🪔 Happy Diwali! Wishing you light, joy and prosperity ✨';
+        return g;
+      };
+      const login = document.getElementById('loginSection');
+      if (login) login.insertBefore(makeGreeting(), login.firstChild);
+      const headerP = document.querySelector('.header p');
+      if (headerP) headerP.insertAdjacentElement('afterend', makeGreeting());
+
+      // 3. A few slowly falling sparkles and diyas
+      const fall = document.createElement('div');
+      fall.id = 'diwaliFall';
+      const icons = ['✨', '🪔', '✨', '🎇'];
+      for (let i = 0; i < 12; i++) {
+        const sp = document.createElement('span');
+        sp.textContent = icons[i % icons.length];
+        sp.style.left = (i * 8 + 3) + '%';
+        sp.style.fontSize = (14 + (i % 3) * 6) + 'px';
+        sp.style.animationDuration = (10 + (i % 5) * 2) + 's';
+        sp.style.animationDelay = (-(i * 1.7)) + 's';
+        fall.appendChild(sp);
+      }
+      document.body.appendChild(fall);
+    }
+
+    function disableTheme() {
+      document.body.classList.remove('diwali');
+      ['diwaliLights', 'diwaliFall'].forEach(id => { const el = document.getElementById(id); if (el) el.remove(); });
+      document.querySelectorAll('.diwali-greeting').forEach(el => el.remove());
+    }
+
+    if (isActive()) enableTheme();
+    // If the page stays open past the end date, remove the theme without needing a refresh
+    setInterval(() => { if (!isActive()) disableTheme(); }, 10 * 60 * 1000);
+  })();
+  // ================= END DIWALI THEME =================
+
 </script>
 </body>
 </html>
