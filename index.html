@@ -940,13 +940,23 @@
   let undoStack = [];
   let debounceTimer = null;
 
-  const ADMIN_EMAILS = ["singharvind1082@gmail.com", "shlok44066@gmail.com"];
+  // All emails below must be in lowercase. The old emails are kept for now so nobody gets locked out;
+  // once every new account works, delete the old lines (the ones marked OLD).
+  const ADMIN_EMAILS = [
+    "shlok44066+admin1555@gmail.com",
+    "shlok44066+shlok@gmail.com",
+    "singharvind1082@gmail.com",        // OLD
+    "shlok44066@gmail.com"              // OLD
+  ];
 
   // Only these people will see the "Expenses" button. (The same emails must also be in the Firestore Rules.)
   const EXPENSE_VIEWERS = [
-    "singharvind1082@gmail.com",   // Arvind Singh
-    "shlok44066@gmail.com",        // Shlok
-    "aishnaaz29791mah@gmail.com"   // Aish Naaz
+    "shlok44066+admin1555@gmail.com",   // Admin (Arvind Sir)
+    "shlok44066+shlok@gmail.com",       // Shlok
+    "shlok44066+aish@gmail.com",        // Aish Naaz
+    "singharvind1082@gmail.com",        // OLD - Arvind Singh
+    "shlok44066@gmail.com",             // OLD - Shlok
+    "aishnaaz29791mah@gmail.com"        // OLD - Aish Naaz
   ];
 
   document.getElementById('paymentDate').value = todayDDMMYYYY();
@@ -1012,7 +1022,7 @@
   // Put the head Gmail here. Staff then type only a short name (e.g. "shlok") and the site
   // builds  headgmail+shlok@gmail.com  automatically. Anyone can still log in with a full email.
   // While this still says PUT_HEAD_GMAIL_HERE, short usernames are switched off and only full emails work.
-  const HEAD GMAIL = "shlok44066@gmail.com";
+  const HEAD_EMAIL = "shlok44066@gmail.com";
 
   function toLoginEmail(input) {
     const v = String(input || '').trim().toLowerCase();
