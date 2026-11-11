@@ -188,7 +188,7 @@
 <div id="loginSection" class="auth-card">
   <h2 style="color: #0b3c5d; margin-top: 0;">Tej Singh Portal</h2>
   <p style="color: #666; font-size: 14px;">Login to Access Multi-School Register</p>
-  <input type="email" id="loginEmail" placeholder="Enter Staff Email" required>
+  <input type="text" id="loginEmail" placeholder="Enter Username (or full Email)" autocapitalize="none" autocomplete="username" autocorrect="off" spellcheck="false" required>
   <input type="password" id="loginPassword" placeholder="Enter Password" required>
   <button onclick="loginUser()">Login to Portal</button>
   <p id="loginError" style="color: red; font-size: 13px; margin-top: 10px;"></p>
@@ -1008,8 +1008,24 @@
     document.getElementById('mainDashboard').style.display = 'none';
   }
 
+  // ---- Short usernames ----
+  // Put the head Gmail here. Staff then type only a short name (e.g. "shlok") and the site
+  // builds  headgmail+shlok@gmail.com  automatically. Anyone can still log in with a full email.
+  // While this still says PUT_HEAD_GMAIL_HERE, short usernames are switched off and only full emails work.
+  const HEAD GMAIL = "shlok44066@gmail.com";
+
+  function toLoginEmail(input) {
+    const v = String(input || '').trim().toLowerCase();
+    if (!v) return '';
+    if (v.includes('@')) return v;                                   // full email typed: use as is
+    if (HEAD_EMAIL.startsWith('PUT_HEAD_GMAIL_HERE')) return v;     // head Gmail not set yet
+    const [local, domain] = HEAD_EMAIL.toLowerCase().split('@');
+    const name = v.replace(/[^a-z0-9._-]/g, '');
+    return `${local.split('+')[0]}+${name}@${domain}`;
+  }
+
   function loginUser() {
-    const email = document.getElementById('loginEmail').value;
+    const email = toLoginEmail(document.getElementById('loginEmail').value);
     const pass = document.getElementById('loginPassword').value;
     const errorEl = document.getElementById('loginError');
 
