@@ -541,6 +541,7 @@
             <th>Discount (₹)</th>
             <th>Current Pending Balance (₹)</th>
             <th>Staff</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody id="dateWiseTransactionsBody">
@@ -1736,6 +1737,7 @@
           let instDate = inst.date || d.paymentDate || '-';
           if (selectedDate && instDate === selectedDate) {
             let instObj = {
+              id: d.id,
               date: instDate,
               customerName: d.customerName,
               schoolUnit: unit,
@@ -1864,7 +1866,7 @@
     let dateBody = document.getElementById('dateWiseTransactionsBody');
     dateBody.innerHTML = "";
     if (dateWiseTransactions.length === 0) {
-      dateBody.innerHTML = `<tr><td colspan="8" style="text-align:center; color:#666;">No payment transactions found on ${formatDateToDMY(selectedDate)}${selectedSchoolFilter ? ' for ' + selectedSchoolFilter : ''}.</td></tr>`;
+      dateBody.innerHTML = `<tr><td colspan="9" style="text-align:center; color:#666;">No payment transactions found on ${formatDateToDMY(selectedDate)}${selectedSchoolFilter ? ' for ' + selectedSchoolFilter : ''}.</td></tr>`;
     } else {
       dateWiseTransactions.forEach(item => {
         let tr = document.createElement('tr');
@@ -1878,6 +1880,16 @@
           <td style="color:red; font-weight:bold;">₹${item.currentBalance}</td>
           <td>${escapeHtml(item.operator)}</td>
         `;
+        const actionTd = document.createElement('td');
+        const viewBtn = document.createElement('button');
+        viewBtn.className = 'btn-sm btn-details';
+        viewBtn.textContent = 'View';
+        viewBtn.title = 'Open the full details of this customer';
+        viewBtn.onclick = () => openDetailsModal(item.id);
+        actionTd.appendChild(viewBtn);
+        tr.appendChild(actionTd);
+        tr.style.cursor = 'pointer';
+        tr.onclick = (ev) => { if (ev.target.closest('button')) return; openDetailsModal(item.id); };
         dateBody.appendChild(tr);
       });
     }
