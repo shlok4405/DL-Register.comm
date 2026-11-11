@@ -191,6 +191,9 @@
   <input type="text" id="loginEmail" placeholder="Enter Username (or full Email)" autocapitalize="none" autocomplete="username" autocorrect="off" spellcheck="false" required>
   <input type="password" id="loginPassword" placeholder="Enter Password" required>
   <button onclick="loginUser()">Login to Portal</button>
+  <div style="text-align:center; margin-top:12px;">
+    <a href="#" onclick="forgotPassword(event)" style="color:#1d70b8; font-size:13px; font-weight:bold; text-decoration:none;">Forgot password?</a>
+  </div>
   <p id="loginError" style="color: red; font-size: 13px; margin-top: 10px;"></p>
 </div>
 
@@ -927,6 +930,9 @@
 
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
+  // Session-only login: closing the tab or the browser logs the user out automatically.
+  // (A page refresh keeps the user logged in; opening the site in a new tab asks for the login again.)
+  auth.setPersistence(firebase.auth.Auth.Persistence.SESSION).catch(err => console.error("Persistence error:", err));
   const db = firebase.firestore();
 
   let globalRecords = [];
@@ -1038,10 +1044,41 @@
     const email = toLoginEmail(document.getElementById('loginEmail').value);
     const pass = document.getElementById('loginPassword').value;
     const errorEl = document.getElementById('loginError');
+    errorEl.style.color = 'red';
 
     auth.signInWithEmailAndPassword(email, pass)
       .then(() => { errorEl.innerText = ""; })
       .catch(err => { errorEl.innerText = "Login Failed: " + err.message; });
+  }
+
+  // ---- Forgot password ----
+  // The reset link is sent to the login email. For short usernames (e.g. "aish") that email is
+  // headgmail+aish@gmail.com, which lands in the head Gmail inbox, so the admin can open the link
+  // and set a new password for that person.
+  function forgotPassword(ev) {
+    if (ev) ev.preventDefault();
+    const errorEl = document.getElementById('loginError');
+    const typed = document.getElementById('loginEmail').value.trim();
+    if (!typed) {
+      errorEl.style.color = 'red';
+      errorEl.innerText = "Please type your username first, then click 'Forgot password?'.";
+      return;
+    }
+    const email = toLoginEmail(typed);
+    const sentTo = typed.includes('@') ? 'that email address' : "the admin's email";
+    const okMsg = `If this account exists, a password reset link has been sent to ${sentTo}. Please ask the admin to open it and set your new password.`;
+
+    auth.sendPasswordResetEmail(email)
+      .then(() => { errorEl.style.color = '#1e7e34'; errorEl.innerText = okMsg; })
+      .catch(err => {
+        if (err.code === 'auth/user-not-found') {
+          errorEl.style.color = '#1e7e34'; errorEl.innerText = okMsg;     // same message, so usernames can't be guessed
+        } else if (err.code === 'auth/too-many-requests') {
+          errorEl.style.color = 'red'; errorEl.innerText = "Too many attempts. Please wait a few minutes and try again.";
+        } else {
+          errorEl.style.color = 'red'; errorEl.innerText = "Could not send the reset link: " + err.message;
+        }
+      });
   }
 
   function sendVerificationEmail() {
